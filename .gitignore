@@ -134,4 +134,5 @@ build*
 */bin/*/training_data/*
 *.ckpt
 *.pb
+*.data
 checkpoint
