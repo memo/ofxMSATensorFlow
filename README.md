@@ -218,7 +218,7 @@ Here are some outstanding issues and misc notes.
 ofImage.load doesn't work for some reason. FreeImage_Load fails. Neither does cvLoadImage (or cv::imread). If I don't use tensorflow, it works. If I use tensorflow, it doesn't. Just fails silently. Needs serious investigation. (So for the inception demo, I had to test it by converting jpgs to raw data in gimp and load them via ofBuffers :/)
 
 ## No system dialogs - see UPDATE below
-ofSystemDialog was linked with protobuf 2.6.1 whereas tensorflow needs protobuf>3.0.0 (not released yet, using dev version). So can't use ofSystemDialogs. Also needs investigation. 
+Whatever it is that implements ofSystemDialog, was compiled with protobuf 2.6.1 whereas tensorflow needs protobuf>3.0.0 (not released yet, using dev version). So can't use ofSystemDialogs. Also needs investigation. 
 
 ## X.h defines
 X.h was #defining a bunch of common words like Success, Status, None etc to ints. Those are class names in tensorflow so it was causing the compilation to fail. So before including any tensorflow headers I #undef them (I do this in ofxMSATensorFlow.h, so you don't have to do it). BUT there might be side effects.
@@ -248,7 +248,9 @@ e.g. /home/memo/DEV/of_v0.9.0_linux64_release/addons/ofxMSATensorFlow/
 ## Trained variables not saved
 Nothing to do with ofxMSATensorFlow, but a big gotcha for me was discovering that models saved from python don't save the trained parameters!
 Python's *tf.train.write_graph* method saves the graph, but doesn't save the variable values (i.e. parameters) of the model. Which kind of defeats the purpose. Currently there's a few hack workarounds for this. I have these implented and commented in the MNIST examples.
+
 -----
+
 #UPDATE
 QT Creator requires libgtk-3-dev, which requires libprotobuf v2.6
 So removing libprotobuf renders QT Creator useless.
