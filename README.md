@@ -71,7 +71,7 @@ Download or clone the repo ofxMSATensorFlow into your openframeworks/addons fold
 https://github.com/memo/ofxMSATensorFlow
 
 ## Download binaries
-Important! You need the precompiled lib, and data for the examples. You can find these in the Releases section. https://github.com/memo/ofxMSATensorFlow/releases
+**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the Releases section. https://github.com/memo/ofxMSATensorFlow/releases
 
 
 Copy the files to their corresponding folders. (e.g. from *downloaded/libs/lib/* to *ofxMSATensorFlow/libs/lib/*)
