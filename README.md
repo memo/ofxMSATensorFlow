@@ -27,6 +27,8 @@ The hello world (no not MNIST, that comes next). Build a graph in python that mu
 
 ## example-mnist
 MNIST clasffication with two different models - shallow and deep. Both models are built and trained in python (in bin/py folder). Loaded, manipulated and interacted with in openframeworks.
+![](https://cloud.githubusercontent.com/assets/144230/12665280/8fa4612a-c62e-11e5-950e-eaec14d4211d.png)
+
 ####Single layer softmax regression: 
 Very simple, quick'n'easy but not very good. Trains in seconds. Accuracy on validation ~90%. 
 Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/beginners/index.html
@@ -35,8 +37,11 @@ Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/begi
 Conv layers, maxpools, RELU's etc. Slower and heavier than above, but much better. Trains in a few minutes (on CPU). Accuracy 99.2%
 Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/pros/index.html#build-a-multilayer-convolutional-network
 
+
 ## example-inception3
 openframeworks implementation for image recognition using Google's 'Inception-v3' architecture network, pre-trained on ImageNet. Background info at https://www.tensorflow.org/versions/0.6.0/tutorials/image_recognition/index.html
+![](https://cloud.githubusercontent.com/assets/144230/12665278/8caf4e8a-c62e-11e5-962a-8cd97af173ff.png)
+
 
 ## example-trainer
 Builds a graph fully in openframeworks/C++ without using any python. (really not very exciting to look at. more of a syntax demo than anything)
