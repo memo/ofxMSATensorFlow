@@ -106,6 +106,13 @@ public:
     static void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, float scaler=1.0f);
 
 
+
+    //--------------------------------------------------------------
+    // pass in tensor (usually containing scores or probabilities of labels) and number of top items desired
+    // function returns topk scores and corresponding indices
+    inline static void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores);
+
+
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -207,6 +214,7 @@ ofVec3f ofxMSATensorFlow::tensorToPixelDims(const tensorflow::Tensor &t, string 
 }
 
 
+//--------------------------------------------------------------
 // flatten tensor and copy into std::vector. vector will be allocated if nessecary
 template<typename T>
 void ofxMSATensorFlow::tensorToVector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy) {
@@ -214,6 +222,8 @@ void ofxMSATensorFlow::tensorToVector(const tensorflow::Tensor &src, std::vector
     tensorToArray(src, dst.data(), do_memcpy);
 }
 
+
+//--------------------------------------------------------------
 // copy into pixels. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
 template<typename T>
 void ofxMSATensorFlow::tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy, string chmap) {
@@ -225,6 +235,8 @@ void ofxMSATensorFlow::tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T
     tensorToArray(src, dst.getData(), do_memcpy);
 }
 
+
+//--------------------------------------------------------------
 // copy into image. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
 template<typename T>
 void ofxMSATensorFlow::tensorToImage(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy, string chmap) {
@@ -236,6 +248,8 @@ void ofxMSATensorFlow::tensorToImage(const tensorflow::Tensor &src, ofImage_<T> 
     dst.update();
 }
 
+
+//--------------------------------------------------------------
 // flatten tensor and copy into array. array must already be allocated
 template<typename T>
 void ofxMSATensorFlow::tensorToArray(const tensorflow::Tensor &src, T *dst, bool do_memcpy) {
@@ -246,24 +260,31 @@ void ofxMSATensorFlow::tensorToArray(const tensorflow::Tensor &src, T *dst, bool
 }
 
 
+//--------------------------------------------------------------
 // copy std::vector into flattened tensor. tensor must already be allocated and will not be reshaped
 template<typename T>
 void ofxMSATensorFlow::vectorToTensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
     arrayToTensor(src.data(), dst, do_memcpy);
 }
 
+
+//--------------------------------------------------------------
 // copy pixels into tensor. tensor must already be allocated and will not be reshaped
 template<typename T>
 void ofxMSATensorFlow::pixelsToTensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
     arrayToTensor(src.getData(), dst, do_memcpy);
 }
 
+
+//--------------------------------------------------------------
 // copy image into tensor. tensor must already be allocated and will not be reshaped
 template<typename T>
 void ofxMSATensorFlow::imageToTensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
     pixelsToTensor(src.getPixels(), dst, do_memcpy);
 }
 
+
+//--------------------------------------------------------------
 // copy array into flattened tensor. tensor must already be allocated and will not be reshaped
 template<typename T>
 void ofxMSATensorFlow::arrayToTensor(const T *in, tensorflow::Tensor &dst, bool do_memcpy) {
@@ -274,6 +295,7 @@ void ofxMSATensorFlow::arrayToTensor(const T *in, tensorflow::Tensor &dst, bool 
 }
 
 
+//--------------------------------------------------------------
 // convert grayscale float image into RGB float image where R -ve and B is +ve
 // dst image is allocated if nessecary
 template<typename T>
@@ -289,8 +311,32 @@ void ofxMSATensorFlow::grayToColor(const ofPixels_<T> &src, ofPixels_<T> &dst, f
     }
 }
 
+//--------------------------------------------------------------
 template<typename T>
 void ofxMSATensorFlow::grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, float scaler) {
     grayToColor(src.getPixels(), dst.getPixels(), scaler);
     dst.update();
+}
+
+
+//--------------------------------------------------------------
+void ofxMSATensorFlow::getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores) {
+    tensorflow::GraphDefBuilder b;
+    string output_name = "top_k";
+    tensorflow::ops::TopK(tensorflow::ops::Const(scores_tensor, b.opts()), topk_count, b.opts().WithName(output_name));
+
+    // This runs the GraphDef network definition that we've just constructed, and
+    // returns the results in the output tensors.
+    tensorflow::GraphDef graph;
+    b.ToGraphDef(&graph);
+
+    std::unique_ptr<tensorflow::Session> session(tensorflow::NewSession(tensorflow::SessionOptions()));
+    session->Create(graph);
+
+    // The TopK node returns two outputs, the scores and their original indices,
+    // so we have to append :0 and :1 to specify them both.
+    std::vector<tensorflow::Tensor> output_tensors;
+    session->Run({}, {output_name + ":0", output_name + ":1"},{}, &output_tensors);
+    tensorToVector(output_tensors[0], out_scores);
+    tensorToVector(output_tensors[1], out_indices);
 }

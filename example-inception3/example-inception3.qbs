@@ -12,8 +12,6 @@ Project{
         name: { return FileInfo.baseName(path) }
 
         files: [
-            "src/ImageHelpers.h",
-            "src/MousePainter.h",
             "src/main.cpp",
             "src/ofApp.cpp",
             "src/ofApp.h",

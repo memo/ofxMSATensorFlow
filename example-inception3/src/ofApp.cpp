@@ -10,44 +10,135 @@
  */
 
 #include "ofApp.h"
-#include "ImageHelpers.h"
-
 
 // input image dimensions dictated by trained model
 #define kInputWidth     299
 #define kInputHeight    299
 #define kInputSize      (kInputWidth * kInputHeight)
 
-#define kInputMean      128
-#define kInputStd       128
 
-
-#define kTestImagePath  "images/grace_hopper.jpg"
-
+// we need to normalize the images before feeding into the network
+// from each pixel we subtract the mean and divide by variance
+// this is also dictated by the trained model
+#define kInputMean      (128.0f/255.0f)
+#define kInputStd       (128.0f/255.0f)
 
 // model & labels files to load
 #define kModelPath      "models/tensorflow_inception_graph.pb"
 #define kLabelsPath     "models/imagenet_comp_graph_label_strings.txt"
 
-// layer names
+
+// every node in the network has a name
+// when passing in data to the network, or reading data back, we need to refer to the node by name
+// i.e. 'pass this data to node A', or 'read data back from node X'
+// these node names are specific to the architecture of the model
 #define kInputLayer     "Mul"
 #define kOutputLayer    "softmax"
 
 
 
+//--------------------------------------------------------------
+// ofImage::load() (ie. Freeimage load) doesn't work with TensorFlow! (See README.md)
+// so I have to resort to this awful trick of loading raw image data 299x299 RGB
 void loadImageRaw(string path, ofImage &img) {
     ofFile file(path);
     img.setFromPixels((unsigned char*)file.readToBuffer().getData(), kInputWidth, kInputHeight, OF_IMAGE_COLOR);
 }
 
+
+
+//--------------------------------------------------------------
+// Takes a file name, and loads a list of labels from it, one per line, and
+// returns a vector of the strings. It pads with empty strings so the length
+// of the result is a multiple of 16, because our model expects that.
+bool ReadLabelsFile(string file_name, std::vector<string>* result) {
+    std::ifstream file(file_name);
+    if (!file) {
+        ofLogError() <<"ReadLabelsFile: " << file_name << " not found.";
+        return false;
+    }
+
+    result->clear();
+    string line;
+    while (std::getline(file, line)) {
+        result->push_back(line);
+    }
+    const int padding = 16;
+    while (result->size() % padding) {
+        result->emplace_back();
+    }
+    return true;
+}
+
+
+//---------------------------------------------------------
+// Load pixels into the network, get the results
+void ofApp::classify(ofPixels &pix) {
+
+    // interesting workaround I need to do to convert unsiged char pix to float
+    ofImage temp;
+    temp.setFromPixels(pix);    // this is an unsigned char image with the same pixels
+    processed_image = temp;     // convert unsigned char image to float image
+
+    // need to resize image to specific dimensions the model is expecting
+    processed_image.resize(kInputWidth, kInputHeight);
+
+    // pixelwise normalize image by subtracting the mean and dividing by variance (across entire dataset)
+    // I could do this without iterating over the pixels, by setting up a TensorFlow Graph, but I can't be bothered, this is less code
+    float* pix_data = processed_image.getPixels().getData();
+    if(!pix_data) {
+        ofLogError() << "Could not classify. pixel data is NULL";
+        return;
+    }
+    for(int i=0; i<kInputSize*3; i++) pix_data[i] = pix_data[i] = (pix_data[i] - kInputMean) / kInputStd;
+
+    //  make sure opengl texture is updated with new pixel info (needed for correct rendering)
+    processed_image.update();
+
+    // copy data from image into tensorflow's Tensor class
+    ofxMSATensorFlow::imageToTensor(processed_image, image_tensor);
+
+    // feed the data into the network, and request output
+    // output_tensors don't need to be initialized or allocated. they will be filled once the network runs
+    if( !msa_tf.run({ {kInputLayer, image_tensor } }, { kOutputLayer }, {}, &output_tensors) ) {
+        ofLogError() << "Error during running. Check console for details." << endl;
+        return;
+    }
+
+    // the output from the network above is an array of probabilities for every single label
+    // i.e. thousands of probabilities, we only want to the top few
+    ofxMSATensorFlow::getTopScores(output_tensors[0], 6, top_label_indices, top_scores);
+}
+
+
+
+//--------------------------------------------------------------
+void ofApp::loadNextImage() {
+    static int file_index = 0;
+
+    // System load dialog doesn't work with tensorflow :(
+    //auto o = ofSystemLoadDialog("Select image");
+    //if(!o.bSuccess) return;
+
+    // FreeImage doesn't work with tensorflow! :(
+    //img.load("images/fanboy.jpg");
+
+    // resorting to awful raw data file load hack!
+    loadImageRaw(image_dir.getPath(file_index), input_image);
+    classify(input_image.getPixels());
+    file_index = (file_index+1) % image_dir.getFiles().size();
+}
+
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     ofLogNotice() << "Initializing... ";
-    ofSetColor(255);
     ofBackground(0);
     ofSetVerticalSync(true);
+    ofSetFrameRate(60);
 
-    mouse_painter.setup(299);
+    // get a list of all images in the 'images' folder
+    image_dir.listDir("images");
 
     // Initialize tensorflow session, return if error
     if( !msa_tf.setup() ) return;
@@ -55,135 +146,96 @@ void ofApp::setup(){
     // Load graph (i.e. trained model) add to session, return if error
     if( !msa_tf.loadGraph(kModelPath) ) return;
 
-    // initialize input tensor dimensions
-    // (not sure what the best way to do this was as there isn't an 'init' method, just a constructor)
-    x_inputs = tensorflow::Tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape({ 1, kInputHeight, kInputWidth, 3 }));
-
+    // load text file containing labels (i.e. associating classification index with human readable text)
     if( !ReadLabelsFile(ofToDataPath(kLabelsPath), &labels) ) return;
 
+    // initialize input tensor dimensions
+    // (not sure what the best way to do this was as there isn't an 'init' method, just a constructor)
+    image_tensor = tensorflow::Tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape({ 1, kInputHeight, kInputWidth, 3 }));
+
+    // load first image to classify
     loadNextImage();
 
     ofLogNotice() << "Init successfull";
 }
 
-//---------------------------------------------------------
-void ofApp::runModel() {
-    // Run the graph, pass in our inputs and desired outputs, evaluate operation and return
-    if( !msa_tf.run({ {kInputLayer, x_inputs } }, { kOutputLayer }, {}, &outputs) )
-        ofLogError() << "Error during running. Check console for details." << endl;
-}
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    // get pixels from mousepainter and resize to correct dimensions
-    resized_img.setFromPixels(mouse_painter.get_pixels());
-    resized_img.resize(kInputWidth, kInputHeight);
-    resized_img.setImageType(OF_IMAGE_COLOR);
 
-    // convert to float and normalize
-    // there's probably a fancier way to copy these values over and normalize, but this works
-    processed_img = resized_img;
-    float* fimg_data = processed_img.getPixels().getData();
+    // if video_grabber active,
+    if(video_grabber) {
+        // grab frame
+        video_grabber->update();
 
-    float mean = kInputMean / 256.0f;
-    float std = kInputStd / 256.0f;
+        if(video_grabber->isFrameNew()) {
 
-    auto x_flat_data = x_inputs.flat<float>().data();    // get tensorflow::Tensor data as a flattened Eigen::Tensor
-    for(int i=0; i<kInputSize*3; i++) {
-        x_flat_data[i] =
-                fimg_data[i] = (fimg_data[i] - mean) / std;
+            // update input_image so it's drawn in the right place
+            input_image.setFromPixels(video_grabber->getPixels());
+
+            // send to classification if keypressed
+            if(ofGetKeyPressed(' ')) classify(input_image.getPixels());
+        }
     }
-    processed_img.update();
-
-
-    if(msa_tf.isReady() && (ofGetFrameNum() % 60 == 0)) runModel();
 }
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-
-    // if video_grabber active, draw into active square
-    if(video_grabber) {
-        video_grabber->update();
-        mouse_painter.drawIntoMe(*video_grabber);
+    // draw input image if it's available
+    float x = 0;
+    if(input_image.isAllocated()) {
+        input_image.draw(x, 0);
+        x += input_image.getWidth();
     }
 
-    // draw mouse painter
-    mouse_painter.draw();
+    // draw processed image if it's available
+    //    if(processed_image.isAllocated()) {
+    //        processed_image.draw(x, 0);
+    //        x += input_image.getWidth();
+    //    }
 
-    //    resized_img.draw(mouse_painter.getWidth()*2, 0);
-    processed_img.draw(mouse_painter.getWidth(), 0);
+    x += 20;
+    float w = ofGetWidth() - 400 - x;
+    float y = 40;
+    float bar_height = 35;
 
-    if(msa_tf.isReady() && !outputs.empty() && outputs[0].IsInitialized()) {
+    // iterate top scores and draw them
+    for(int i=0; i<top_scores.size(); i++) {
+        int label_index = top_label_indices[i];
+        string label = labels[label_index];
+        float p = top_scores[i];    // the score (i.e. probability, 0...1)
 
-        const int how_many_labels = 10;
-        Tensor indices;
-        Tensor scores;
-        GetTopLabels(outputs, how_many_labels, &indices, &scores);
-        tensorflow::TTypes<float>::Flat scores_flat = scores.flat<float>();
-        tensorflow::TTypes<int32>::Flat indices_flat = indices.flat<int32>();
+        // draw full bar
+        ofSetColor(ofLerp(50.0, 255.0, p), ofLerp(100.0, 0.0, p), ofLerp(150.0, 0.0, p));
+        ofDrawRectangle(x, y, w * p, bar_height);
+        ofSetColor(40);
 
-        float x = mouse_painter.getWidth() * 2 + 10;
-        float w = ofGetWidth() - 300 - x;
-        float y = 30;
-        float bar_height = 50;
+        // draw outline
+        ofNoFill();
+        ofDrawRectangle(x, y, w, bar_height);
+        ofFill();
 
-
-        for(int i=0; i<how_many_labels; i++) {
-            const int label_index = indices_flat(i);
-            const float p = scores_flat(i);
-
-            // draw full bar
-            ofSetColor(ofLerp(50.0, 255.0, p), ofLerp(100.0, 0.0, p), ofLerp(150.0, 0.0, p));
-            ofDrawRectangle(x, y, w * p, bar_height);
-            ofSetColor(40);
-
-            // draw outline
-            ofNoFill();
-            ofDrawRectangle(x, y, w, bar_height);
-            ofFill();
-
-            // draw text
-            ofSetColor(255);
-            ofDrawBitmapString(labels.at(label_index) + " (" + ofToString(label_index) + "): " + ofToString(p,4), x + w, y + 30);
-            y += bar_height + 5;
-        }
+        // draw text
+        ofSetColor(255);
+        ofDrawBitmapString(label + " (" + ofToString(label_index) + "): " + ofToString(p,4), x + w + 10, y + 20);
+        y += bar_height + 5;
     }
+
 
     ofSetColor(255);
     ofDrawBitmapString(ofToString(ofGetFrameRate()), ofGetWidth() - 100, 30);
 
     stringstream str_inst;
-    str_inst << "Paint in the box above\n";
-    str_inst << "Right-click to erase\n";
-    str_inst << "'c' to clear\n";
-    str_inst << endl;
     str_inst << "'l' to load image\n";
+    str_inst << "or drag an image (must be raw, 299x299) onto the window\n";
     str_inst << "'v' to toggle video input";
-    ofDrawBitmapString(str_inst.str(), 15, mouse_painter.getHeight() + 15);
-
-    if(video_grabber) video_grabber->draw(0, 0);
+    ofDrawBitmapString(str_inst.str(), 15, input_image.getHeight() + 30);
 }
 
-static string files[] = {"images/grace_hopper299.data, images/fanboy299.data"};
-static int file_index = 0;
-void ofApp::loadNextImage() {
-    //auto o = ofSystemLoadDialog("Select image"); // doesn't work with tensorflow :(
-    //if(!o.bSuccess) return;
-    ofImage img;
-    //img.load("images/fanboy.jpg");    // FreeImage doesn't work with tensorflow! :(
-    //loadImageRaw(o.getPath(), img);
-    loadImageRaw(files[file_index], img);
-    mouse_painter.drawIntoMe(img);
-    file_index = (file_index+1) % 2;
-}
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
     switch(key) {
-    case 'c':
-        mouse_painter.clear();
-        break;
 
     case 'v':
         if(video_grabber) video_grabber = NULL;
@@ -195,64 +247,16 @@ void ofApp::keyPressed(int key){
 
     case 'l':
         loadNextImage();
-        runModel();
         break;
     }
 }
 
 //--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-    mouse_painter.penDrag(ofVec2f(x, y), button==2, 150);
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-    mouse_painter.penDown(ofVec2f(x, y), button==2, 150);
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-    mouse_painter.penUp();
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseEntered(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseExited(int x, int y){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-
-}
-
-//---------------------------tenso-----------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){
     if(dragInfo.files.empty()) return;
 
     string filePath = dragInfo.files[0];
-    ofImage img;
     //img.load(filePath);  // FreeImage doesn't work :(
-    loadImageRaw(filePath, img);
-    mouse_painter.drawIntoMe(img);
-    runModel();
+    loadImageRaw(filePath, input_image);
+    classify(input_image.getPixels());
 }
