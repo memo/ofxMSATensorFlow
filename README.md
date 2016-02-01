@@ -71,10 +71,13 @@ Download or clone the repo ofxMSATensorFlow into your openframeworks/addons fold
 https://github.com/memo/ofxMSATensorFlow
 
 ## Download binaries
-**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the Releases section. https://github.com/memo/ofxMSATensorFlow/releases
+**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the Releases section. The 'exdata' contains data for the examples. Copy the files to their corresponding folders. (e.g. from *downloaded/examples-mnist/bin/data/model-deep/* to *ofxMSATensorFlow/example-mnist/bin/data/model-deep/*). 
+And make sure to download the lib for your platform (currently only linux64).
+
+https://github.com/memo/ofxMSATensorFlow/releases
 
 
-Copy the files to their corresponding folders. (e.g. from *downloaded/libs/lib/* to *ofxMSATensorFlow/libs/lib/*)
+
 
 ## Set your library folder
 I made the library a shared library (.so) instead of static (.a) because it's huge! (340MB for debug).
