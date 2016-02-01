@@ -29,7 +29,6 @@
 #endif
 
 #include "tensorflow/core/public/session.h"
-#include "tensorflow/core/public/env.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/graph/default_device.h"
 #include "tensorflow/core/graph/graph_def_builder.h"

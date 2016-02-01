@@ -125,19 +125,9 @@ class TensorShape {
   /// For error messages.
   string DebugString() const;
 
-  /// Same as DebugString()
-  string ShortDebugString() const { return DebugString(); }
-  // TODO(irving): Remove, used to be different but isn't now.
-
   /// Same as `TensorShape(proto).DebugString()` but doesn't crash for
   /// invalid protos.
   static string DebugString(const TensorShapeProto& proto);
-
-  /// Same as DebugString()
-  static string ShortDebugString(const TensorShapeProto& proto) {
-    return DebugString(proto);
-  }
-  // TODO(irving): Remove in favor of DebugString
 
  private:
   // Recalculates the dimensions of this tensor after they are modified.
@@ -153,7 +143,7 @@ class TensorShape {
 
 struct TensorShapeDim {
   explicit TensorShapeDim(int64 s) : size(s) {}
-  int size;
+  int64 size;
 };
 
 class TensorShapeIter {

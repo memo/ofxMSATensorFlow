@@ -27,9 +27,9 @@ limitations under the License.
 #include "tensorflow/core/lib/strings/strcat.h"
 #include "tensorflow/core/platform/macros.h"
 #include "tensorflow/core/platform/mutex.h"
-#include "tensorflow/core/platform/port.h"
 #include "tensorflow/core/platform/stream_executor.h"
 #include "tensorflow/core/platform/thread_annotations.h"
+#include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
 
@@ -69,6 +69,8 @@ class GPUBFCAllocator : public VisitableAllocator {
 
  private:
   struct Bin;
+
+  void MaybeInitialize() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   void* AllocateRawInternal(size_t alignment, size_t num_bytes,
                             bool dump_log_on_failure);

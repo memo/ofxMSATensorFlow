@@ -29,16 +29,14 @@ limitations under the License.
 #include "tensorflow/core/framework/allocator.h"
 #include "tensorflow/core/framework/device_base.h"
 #include "tensorflow/core/framework/op_kernel.h"
+#include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/platform/mutex.h"
-#include "tensorflow/core/platform/port.h"
 #include "tensorflow/core/platform/stream_executor.h"
+#include "tensorflow/core/platform/types.h"
 #include "tensorflow/core/public/session_options.h"
-#include "tensorflow/core/public/status.h"
-#include "tensorflow/core/public/tensor.h"
 
 namespace tensorflow {
-
-class EigenAllocator;
 
 class BaseGPUDevice : public LocalDevice {
  public:
@@ -74,8 +72,10 @@ class BaseGPUDevice : public LocalDevice {
                              Tensor* tensor) override;
 
   // The caller owns the returned device.
-  const PerOpGpuDevice* MakeGpuDevice(DeviceContext* dc,
-                                      Allocator* allocator) override;
+  PerOpGpuDevice* MakeGpuDevice() override;
+
+  void ReinitializeGpuDevice(PerOpGpuDevice* device, DeviceContext* dc,
+                             Allocator* allocator) override;
 
  protected:
   Allocator* gpu_allocator_;  // not owned
@@ -90,7 +90,8 @@ class BaseGPUDevice : public LocalDevice {
   const bool sync_every_op_ = false;
   std::unique_ptr<EventMgr> em_;
 
-  const PerOpGpuDevice* NewDevice(int stream_id, Allocator* allocator);
+  void ReinitializeDevice(PerOpGpuDevice* device, int stream_id,
+                          Allocator* allocator);
 };
 
 class BaseGPUDeviceFactory : public DeviceFactory {

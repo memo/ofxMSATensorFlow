@@ -3,11 +3,11 @@
 #ifndef TENSORFLOW_CC_OPS_NN_OPS_H_
 #define TENSORFLOW_CC_OPS_NN_OPS_H_
 
+#include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
-#include "tensorflow/core/public/tensor.h"
-#include "tensorflow/core/public/tensor_shape.h"
 
 namespace tensorflow {
 namespace ops {
@@ -626,6 +626,32 @@ Node* Softsign(NodeOut features, const GraphDefBuilder::Options& opts);
 // The gradients: `gradients / (1 + abs(-features)) ** 2`.
 Node* SoftsignGrad(NodeOut gradients, NodeOut features, const
                    GraphDefBuilder::Options& opts);
+
+// Computes softmax cross entropy cost and gradients to backpropagate.
+//
+// Unlike `SoftmaxCrossEntropyWithLogits`, this operation does not accept
+// a matrix of label probabilities, but rather a single label per row
+// of features.  This label is considered to have probability 1.0 for the
+// given row.
+//
+// Inputs are the logits, not probabilities.
+//
+// Arguments:
+// * features: batch_size x num_classes matrix
+// * labels: batch_size vector with values in [0, num_classes).
+// This is the label for the given minibatch entry.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with outputs:
+// * loss: Per example loss (batch_size vector).
+// * backprop: backpropagated gradients (batch_size x num_classes matrix).
+Node* SparseSoftmaxCrossEntropyWithLogits(NodeOut features, NodeOut labels,
+                                          const GraphDefBuilder::Options&
+                                          opts);
 
 // Finds values and indices of the `k` largest elements for the last dimension.
 //

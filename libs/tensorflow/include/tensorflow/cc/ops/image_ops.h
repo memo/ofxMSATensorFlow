@@ -3,11 +3,11 @@
 #ifndef TENSORFLOW_CC_OPS_IMAGE_OPS_H_
 #define TENSORFLOW_CC_OPS_IMAGE_OPS_H_
 
+#include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
-#include "tensorflow/core/public/tensor.h"
-#include "tensorflow/core/public/tensor_shape.h"
 
 namespace tensorflow {
 namespace ops {
@@ -287,6 +287,10 @@ Node* RandomCrop(NodeOut image, NodeOut size, const GraphDefBuilder::Options&
 // * size: = A 1-D int32 Tensor of 2 elements: `new_height, new_width`.  The
 // new size for the images.
 // * opts:
+//   .WithAttr("align_corners", bool): Defaults to false.
+//     If true, rescale input by (new_height - 1) / (height - 1), which
+// exactly aligns the 4 corners of images and resized images. If false, rescale
+// by new_height / height. Treat similarly the width dimension.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -307,6 +311,10 @@ Node* ResizeArea(NodeOut images, NodeOut size, const GraphDefBuilder::Options&
 // * size: = A 1-D int32 Tensor of 2 elements: `new_height, new_width`.  The
 // new size for the images.
 // * opts:
+//   .WithAttr("align_corners", bool): Defaults to false.
+//     If true, rescale input by (new_height - 1) / (height - 1), which
+// exactly aligns the 4 corners of images and resized images. If false, rescale
+// by new_height / height. Treat similarly the width dimension.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -372,6 +380,10 @@ Node* ResizeBilinearGrad(NodeOut grads, NodeOut original_image, const
 // * size: = A 1-D int32 Tensor of 2 elements: `new_height, new_width`.  The
 // new size for the images.
 // * opts:
+//   .WithAttr("align_corners", bool): Defaults to false.
+//     If true, rescale input by (new_height - 1) / (height - 1), which
+// exactly aligns the 4 corners of images and resized images. If false, rescale
+// by new_height / height. Treat similarly the width dimension.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -390,6 +402,10 @@ Node* ResizeNearestNeighbor(NodeOut images, NodeOut size, const
 // * size: = A 1-D int32 Tensor of 2 elements: `orig_height, orig_width`. The
 // original input size.
 // * opts:
+//   .WithAttr("align_corners", bool): Defaults to false.
+//     If true, rescale grads by (orig_height - 1) / (height - 1), which
+// exactly aligns the 4 corners of grads and original_image. If false, rescale by
+// orig_height / height. Treat similarly the width dimension.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):

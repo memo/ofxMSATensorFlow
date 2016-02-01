@@ -26,8 +26,8 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
-#include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/framework/summary.pb.h"
 // @@protoc_insertion_point(includes)
 
@@ -39,7 +39,33 @@ void protobuf_AssignDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
 void protobuf_ShutdownFile_tensorflow_2fcore_2futil_2fevent_2eproto();
 
 class Event;
+class LogMessage;
 
+enum LogMessage_Level {
+  LogMessage_Level_UNKNOWN = 0,
+  LogMessage_Level_DEBUG = 10,
+  LogMessage_Level_INFO = 20,
+  LogMessage_Level_WARN = 30,
+  LogMessage_Level_ERROR = 40,
+  LogMessage_Level_FATAL = 50,
+  LogMessage_Level_LogMessage_Level_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
+  LogMessage_Level_LogMessage_Level_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
+};
+bool LogMessage_Level_IsValid(int value);
+const LogMessage_Level LogMessage_Level_Level_MIN = LogMessage_Level_UNKNOWN;
+const LogMessage_Level LogMessage_Level_Level_MAX = LogMessage_Level_FATAL;
+const int LogMessage_Level_Level_ARRAYSIZE = LogMessage_Level_Level_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* LogMessage_Level_descriptor();
+inline const ::std::string& LogMessage_Level_Name(LogMessage_Level value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    LogMessage_Level_descriptor(), value);
+}
+inline bool LogMessage_Level_Parse(
+    const ::std::string& name, LogMessage_Level* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<LogMessage_Level>(
+    LogMessage_Level_descriptor(), name, value);
+}
 // ===================================================================
 
 class Event : public ::google::protobuf::Message {
@@ -61,6 +87,7 @@ class Event : public ::google::protobuf::Message {
     kFileVersion = 3,
     kGraphDef = 4,
     kSummary = 5,
+    kLogMessage = 6,
     WHAT_NOT_SET = 0,
   };
 
@@ -131,14 +158,19 @@ class Event : public ::google::protobuf::Message {
   ::std::string* release_file_version();
   void set_allocated_file_version(::std::string* file_version);
 
-  // optional .tensorflow.GraphDef graph_def = 4;
+  // optional bytes graph_def = 4;
+  private:
   bool has_graph_def() const;
+  public:
   void clear_graph_def();
   static const int kGraphDefFieldNumber = 4;
-  const ::tensorflow::GraphDef& graph_def() const;
-  ::tensorflow::GraphDef* mutable_graph_def();
-  ::tensorflow::GraphDef* release_graph_def();
-  void set_allocated_graph_def(::tensorflow::GraphDef* graph_def);
+  const ::std::string& graph_def() const;
+  void set_graph_def(const ::std::string& value);
+  void set_graph_def(const char* value);
+  void set_graph_def(const void* value, size_t size);
+  ::std::string* mutable_graph_def();
+  ::std::string* release_graph_def();
+  void set_allocated_graph_def(::std::string* graph_def);
 
   // optional .tensorflow.Summary summary = 5;
   bool has_summary() const;
@@ -149,12 +181,22 @@ class Event : public ::google::protobuf::Message {
   ::tensorflow::Summary* release_summary();
   void set_allocated_summary(::tensorflow::Summary* summary);
 
+  // optional .tensorflow.LogMessage log_message = 6;
+  bool has_log_message() const;
+  void clear_log_message();
+  static const int kLogMessageFieldNumber = 6;
+  const ::tensorflow::LogMessage& log_message() const;
+  ::tensorflow::LogMessage* mutable_log_message();
+  ::tensorflow::LogMessage* release_log_message();
+  void set_allocated_log_message(::tensorflow::LogMessage* log_message);
+
   WhatCase what_case() const;
   // @@protoc_insertion_point(class_scope:tensorflow.Event)
  private:
   inline void set_has_file_version();
   inline void set_has_graph_def();
   inline void set_has_summary();
+  inline void set_has_log_message();
 
   inline bool has_what() const;
   void clear_what();
@@ -167,8 +209,9 @@ class Event : public ::google::protobuf::Message {
   union WhatUnion {
     WhatUnion() {}
     ::google::protobuf::internal::ArenaStringPtr file_version_;
-    ::tensorflow::GraphDef* graph_def_;
+    ::google::protobuf::internal::ArenaStringPtr graph_def_;
     ::tensorflow::Summary* summary_;
+    ::tensorflow::LogMessage* log_message_;
   } what_;
   mutable int _cached_size_;
   ::google::protobuf::uint32 _oneof_case_[1];
@@ -179,6 +222,124 @@ class Event : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static Event* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class LogMessage : public ::google::protobuf::Message {
+ public:
+  LogMessage();
+  virtual ~LogMessage();
+
+  LogMessage(const LogMessage& from);
+
+  inline LogMessage& operator=(const LogMessage& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const LogMessage& default_instance();
+
+  void Swap(LogMessage* other);
+
+  // implements Message ----------------------------------------------
+
+  inline LogMessage* New() const { return New(NULL); }
+
+  LogMessage* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const LogMessage& from);
+  void MergeFrom(const LogMessage& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(LogMessage* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef LogMessage_Level Level;
+  static const Level UNKNOWN = LogMessage_Level_UNKNOWN;
+  static const Level DEBUG = LogMessage_Level_DEBUG;
+  static const Level INFO = LogMessage_Level_INFO;
+  static const Level WARN = LogMessage_Level_WARN;
+  static const Level ERROR = LogMessage_Level_ERROR;
+  static const Level FATAL = LogMessage_Level_FATAL;
+  static inline bool Level_IsValid(int value) {
+    return LogMessage_Level_IsValid(value);
+  }
+  static const Level Level_MIN =
+    LogMessage_Level_Level_MIN;
+  static const Level Level_MAX =
+    LogMessage_Level_Level_MAX;
+  static const int Level_ARRAYSIZE =
+    LogMessage_Level_Level_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  Level_descriptor() {
+    return LogMessage_Level_descriptor();
+  }
+  static inline const ::std::string& Level_Name(Level value) {
+    return LogMessage_Level_Name(value);
+  }
+  static inline bool Level_Parse(const ::std::string& name,
+      Level* value) {
+    return LogMessage_Level_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional .tensorflow.LogMessage.Level level = 1;
+  void clear_level();
+  static const int kLevelFieldNumber = 1;
+  ::tensorflow::LogMessage_Level level() const;
+  void set_level(::tensorflow::LogMessage_Level value);
+
+  // optional string message = 2;
+  void clear_message();
+  static const int kMessageFieldNumber = 2;
+  const ::std::string& message() const;
+  void set_message(const ::std::string& value);
+  void set_message(const char* value);
+  void set_message(const char* value, size_t size);
+  ::std::string* mutable_message();
+  ::std::string* release_message();
+  void set_allocated_message(::std::string* message);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.LogMessage)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr message_;
+  int level_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
+  friend void protobuf_AssignDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
+  friend void protobuf_ShutdownFile_tensorflow_2fcore_2futil_2fevent_2eproto();
+
+  void InitAsDefaultInstance();
+  static LogMessage* default_instance_;
 };
 // ===================================================================
 
@@ -296,7 +457,7 @@ inline void Event::set_allocated_file_version(::std::string* file_version) {
   // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.file_version)
 }
 
-// optional .tensorflow.GraphDef graph_def = 4;
+// optional bytes graph_def = 4;
 inline bool Event::has_graph_def() const {
   return what_case() == kGraphDef;
 }
@@ -305,40 +466,73 @@ inline void Event::set_has_graph_def() {
 }
 inline void Event::clear_graph_def() {
   if (has_graph_def()) {
-    delete what_.graph_def_;
+    what_.graph_def_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     clear_has_what();
   }
 }
-inline  const ::tensorflow::GraphDef& Event::graph_def() const {
+inline const ::std::string& Event::graph_def() const {
   // @@protoc_insertion_point(field_get:tensorflow.Event.graph_def)
-  return has_graph_def()
-      ? *what_.graph_def_
-      : ::tensorflow::GraphDef::default_instance();
+  if (has_graph_def()) {
+    return what_.graph_def_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  return *&::google::protobuf::internal::GetEmptyStringAlreadyInited();
 }
-inline ::tensorflow::GraphDef* Event::mutable_graph_def() {
+inline void Event::set_graph_def(const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.Event.graph_def)
   if (!has_graph_def()) {
     clear_what();
     set_has_graph_def();
-    what_.graph_def_ = new ::tensorflow::GraphDef;
+    what_.graph_def_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  what_.graph_def_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.Event.graph_def)
+}
+inline void Event::set_graph_def(const char* value) {
+  if (!has_graph_def()) {
+    clear_what();
+    set_has_graph_def();
+    what_.graph_def_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  what_.graph_def_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.Event.graph_def)
+}
+inline void Event::set_graph_def(const void* value, size_t size) {
+  if (!has_graph_def()) {
+    clear_what();
+    set_has_graph_def();
+    what_.graph_def_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  what_.graph_def_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.Event.graph_def)
+}
+inline ::std::string* Event::mutable_graph_def() {
+  if (!has_graph_def()) {
+    clear_what();
+    set_has_graph_def();
+    what_.graph_def_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   // @@protoc_insertion_point(field_mutable:tensorflow.Event.graph_def)
-  return what_.graph_def_;
+  return what_.graph_def_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::tensorflow::GraphDef* Event::release_graph_def() {
+inline ::std::string* Event::release_graph_def() {
   if (has_graph_def()) {
     clear_has_what();
-    ::tensorflow::GraphDef* temp = what_.graph_def_;
-    what_.graph_def_ = NULL;
-    return temp;
+    return what_.graph_def_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   } else {
     return NULL;
   }
 }
-inline void Event::set_allocated_graph_def(::tensorflow::GraphDef* graph_def) {
+inline void Event::set_allocated_graph_def(::std::string* graph_def) {
+  if (!has_graph_def()) {
+    what_.graph_def_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
   clear_what();
-  if (graph_def) {
+  if (graph_def != NULL) {
     set_has_graph_def();
-    what_.graph_def_ = graph_def;
+    what_.graph_def_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+        graph_def);
   }
   // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.graph_def)
 }
@@ -390,6 +584,53 @@ inline void Event::set_allocated_summary(::tensorflow::Summary* summary) {
   // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.summary)
 }
 
+// optional .tensorflow.LogMessage log_message = 6;
+inline bool Event::has_log_message() const {
+  return what_case() == kLogMessage;
+}
+inline void Event::set_has_log_message() {
+  _oneof_case_[0] = kLogMessage;
+}
+inline void Event::clear_log_message() {
+  if (has_log_message()) {
+    delete what_.log_message_;
+    clear_has_what();
+  }
+}
+inline  const ::tensorflow::LogMessage& Event::log_message() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Event.log_message)
+  return has_log_message()
+      ? *what_.log_message_
+      : ::tensorflow::LogMessage::default_instance();
+}
+inline ::tensorflow::LogMessage* Event::mutable_log_message() {
+  if (!has_log_message()) {
+    clear_what();
+    set_has_log_message();
+    what_.log_message_ = new ::tensorflow::LogMessage;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.Event.log_message)
+  return what_.log_message_;
+}
+inline ::tensorflow::LogMessage* Event::release_log_message() {
+  if (has_log_message()) {
+    clear_has_what();
+    ::tensorflow::LogMessage* temp = what_.log_message_;
+    what_.log_message_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Event::set_allocated_log_message(::tensorflow::LogMessage* log_message) {
+  clear_what();
+  if (log_message) {
+    set_has_log_message();
+    what_.log_message_ = log_message;
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.log_message)
+}
+
 inline bool Event::has_what() const {
   return what_case() != WHAT_NOT_SET;
 }
@@ -399,11 +640,88 @@ inline void Event::clear_has_what() {
 inline Event::WhatCase Event::what_case() const {
   return Event::WhatCase(_oneof_case_[0]);
 }
+// -------------------------------------------------------------------
+
+// LogMessage
+
+// optional .tensorflow.LogMessage.Level level = 1;
+inline void LogMessage::clear_level() {
+  level_ = 0;
+}
+inline ::tensorflow::LogMessage_Level LogMessage::level() const {
+  // @@protoc_insertion_point(field_get:tensorflow.LogMessage.level)
+  return static_cast< ::tensorflow::LogMessage_Level >(level_);
+}
+inline void LogMessage::set_level(::tensorflow::LogMessage_Level value) {
+  
+  level_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.LogMessage.level)
+}
+
+// optional string message = 2;
+inline void LogMessage::clear_message() {
+  message_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& LogMessage::message() const {
+  // @@protoc_insertion_point(field_get:tensorflow.LogMessage.message)
+  return message_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void LogMessage::set_message(const ::std::string& value) {
+  
+  message_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.LogMessage.message)
+}
+inline void LogMessage::set_message(const char* value) {
+  
+  message_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.LogMessage.message)
+}
+inline void LogMessage::set_message(const char* value, size_t size) {
+  
+  message_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.LogMessage.message)
+}
+inline ::std::string* LogMessage::mutable_message() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.LogMessage.message)
+  return message_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* LogMessage::release_message() {
+  
+  return message_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void LogMessage::set_allocated_message(::std::string* message) {
+  if (message != NULL) {
+    
+  } else {
+    
+  }
+  message_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), message);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.LogMessage.message)
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace tensorflow
+
+#ifndef SWIG
+namespace google {
+namespace protobuf {
+
+template <> struct is_proto_enum< ::tensorflow::LogMessage_Level> : ::google::protobuf::internal::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tensorflow::LogMessage_Level>() {
+  return ::tensorflow::LogMessage_Level_descriptor();
+}
+
+}  // namespace protobuf
+}  // namespace google
+#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

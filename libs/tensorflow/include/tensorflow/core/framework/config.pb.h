@@ -28,6 +28,7 @@
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_field_inl.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
@@ -41,7 +42,30 @@ void protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2fconfig_2eproto();
 class ConfigProto;
 class GPUOptions;
 class GraphOptions;
+class GraphOptions_OptimizerOptions;
 
+enum GraphOptions_OptimizerOptions_Level {
+  GraphOptions_OptimizerOptions_Level_L1 = 0,
+  GraphOptions_OptimizerOptions_Level_L2 = 2,
+  GraphOptions_OptimizerOptions_Level_L0 = -1,
+  GraphOptions_OptimizerOptions_Level_GraphOptions_OptimizerOptions_Level_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
+  GraphOptions_OptimizerOptions_Level_GraphOptions_OptimizerOptions_Level_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
+};
+bool GraphOptions_OptimizerOptions_Level_IsValid(int value);
+const GraphOptions_OptimizerOptions_Level GraphOptions_OptimizerOptions_Level_Level_MIN = GraphOptions_OptimizerOptions_Level_L0;
+const GraphOptions_OptimizerOptions_Level GraphOptions_OptimizerOptions_Level_Level_MAX = GraphOptions_OptimizerOptions_Level_L2;
+const int GraphOptions_OptimizerOptions_Level_Level_ARRAYSIZE = GraphOptions_OptimizerOptions_Level_Level_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* GraphOptions_OptimizerOptions_Level_descriptor();
+inline const ::std::string& GraphOptions_OptimizerOptions_Level_Name(GraphOptions_OptimizerOptions_Level value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    GraphOptions_OptimizerOptions_Level_descriptor(), value);
+}
+inline bool GraphOptions_OptimizerOptions_Level_Parse(
+    const ::std::string& name, GraphOptions_OptimizerOptions_Level* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<GraphOptions_OptimizerOptions_Level>(
+    GraphOptions_OptimizerOptions_Level_descriptor(), name, value);
+}
 // ===================================================================
 
 class GPUOptions : public ::google::protobuf::Message {
@@ -141,6 +165,123 @@ class GPUOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
+class GraphOptions_OptimizerOptions : public ::google::protobuf::Message {
+ public:
+  GraphOptions_OptimizerOptions();
+  virtual ~GraphOptions_OptimizerOptions();
+
+  GraphOptions_OptimizerOptions(const GraphOptions_OptimizerOptions& from);
+
+  inline GraphOptions_OptimizerOptions& operator=(const GraphOptions_OptimizerOptions& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const GraphOptions_OptimizerOptions& default_instance();
+
+  void Swap(GraphOptions_OptimizerOptions* other);
+
+  // implements Message ----------------------------------------------
+
+  inline GraphOptions_OptimizerOptions* New() const { return New(NULL); }
+
+  GraphOptions_OptimizerOptions* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const GraphOptions_OptimizerOptions& from);
+  void MergeFrom(const GraphOptions_OptimizerOptions& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(GraphOptions_OptimizerOptions* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef GraphOptions_OptimizerOptions_Level Level;
+  static const Level L1 = GraphOptions_OptimizerOptions_Level_L1;
+  static const Level L2 = GraphOptions_OptimizerOptions_Level_L2;
+  static const Level L0 = GraphOptions_OptimizerOptions_Level_L0;
+  static inline bool Level_IsValid(int value) {
+    return GraphOptions_OptimizerOptions_Level_IsValid(value);
+  }
+  static const Level Level_MIN =
+    GraphOptions_OptimizerOptions_Level_Level_MIN;
+  static const Level Level_MAX =
+    GraphOptions_OptimizerOptions_Level_Level_MAX;
+  static const int Level_ARRAYSIZE =
+    GraphOptions_OptimizerOptions_Level_Level_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  Level_descriptor() {
+    return GraphOptions_OptimizerOptions_Level_descriptor();
+  }
+  static inline const ::std::string& Level_Name(Level value) {
+    return GraphOptions_OptimizerOptions_Level_Name(value);
+  }
+  static inline bool Level_Parse(const ::std::string& name,
+      Level* value) {
+    return GraphOptions_OptimizerOptions_Level_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional bool do_common_subexpression_elimination = 1;
+  void clear_do_common_subexpression_elimination();
+  static const int kDoCommonSubexpressionEliminationFieldNumber = 1;
+  bool do_common_subexpression_elimination() const;
+  void set_do_common_subexpression_elimination(bool value);
+
+  // optional bool do_constant_folding = 2;
+  void clear_do_constant_folding();
+  static const int kDoConstantFoldingFieldNumber = 2;
+  bool do_constant_folding() const;
+  void set_do_constant_folding(bool value);
+
+  // optional .tensorflow.GraphOptions.OptimizerOptions.Level opt_level = 3;
+  void clear_opt_level();
+  static const int kOptLevelFieldNumber = 3;
+  ::tensorflow::GraphOptions_OptimizerOptions_Level opt_level() const;
+  void set_opt_level(::tensorflow::GraphOptions_OptimizerOptions_Level value);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.GraphOptions.OptimizerOptions)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  bool do_common_subexpression_elimination_;
+  bool do_constant_folding_;
+  int opt_level_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_tensorflow_2fcore_2fframework_2fconfig_2eproto();
+  friend void protobuf_AssignDesc_tensorflow_2fcore_2fframework_2fconfig_2eproto();
+  friend void protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2fconfig_2eproto();
+
+  void InitAsDefaultInstance();
+  static GraphOptions_OptimizerOptions* default_instance_;
+};
+// -------------------------------------------------------------------
+
 class GraphOptions : public ::google::protobuf::Message {
  public:
   GraphOptions();
@@ -195,13 +336,9 @@ class GraphOptions : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
-  // accessors -------------------------------------------------------
+  typedef GraphOptions_OptimizerOptions OptimizerOptions;
 
-  // optional bool skip_common_subexpression_elimination = 1;
-  void clear_skip_common_subexpression_elimination();
-  static const int kSkipCommonSubexpressionEliminationFieldNumber = 1;
-  bool skip_common_subexpression_elimination() const;
-  void set_skip_common_subexpression_elimination(bool value);
+  // accessors -------------------------------------------------------
 
   // optional bool enable_recv_scheduling = 2;
   void clear_enable_recv_scheduling();
@@ -209,12 +346,21 @@ class GraphOptions : public ::google::protobuf::Message {
   bool enable_recv_scheduling() const;
   void set_enable_recv_scheduling(bool value);
 
+  // optional .tensorflow.GraphOptions.OptimizerOptions optimizer_options = 3;
+  bool has_optimizer_options() const;
+  void clear_optimizer_options();
+  static const int kOptimizerOptionsFieldNumber = 3;
+  const ::tensorflow::GraphOptions_OptimizerOptions& optimizer_options() const;
+  ::tensorflow::GraphOptions_OptimizerOptions* mutable_optimizer_options();
+  ::tensorflow::GraphOptions_OptimizerOptions* release_optimizer_options();
+  void set_allocated_optimizer_options(::tensorflow::GraphOptions_OptimizerOptions* optimizer_options);
+
   // @@protoc_insertion_point(class_scope:tensorflow.GraphOptions)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
-  bool skip_common_subexpression_elimination_;
+  ::tensorflow::GraphOptions_OptimizerOptions* optimizer_options_;
   bool enable_recv_scheduling_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_tensorflow_2fcore_2fframework_2fconfig_2eproto();
@@ -476,21 +622,53 @@ inline void GPUOptions::set_deferred_deletion_bytes(::google::protobuf::int64 va
 
 // -------------------------------------------------------------------
 
-// GraphOptions
+// GraphOptions_OptimizerOptions
 
-// optional bool skip_common_subexpression_elimination = 1;
-inline void GraphOptions::clear_skip_common_subexpression_elimination() {
-  skip_common_subexpression_elimination_ = false;
+// optional bool do_common_subexpression_elimination = 1;
+inline void GraphOptions_OptimizerOptions::clear_do_common_subexpression_elimination() {
+  do_common_subexpression_elimination_ = false;
 }
-inline bool GraphOptions::skip_common_subexpression_elimination() const {
-  // @@protoc_insertion_point(field_get:tensorflow.GraphOptions.skip_common_subexpression_elimination)
-  return skip_common_subexpression_elimination_;
+inline bool GraphOptions_OptimizerOptions::do_common_subexpression_elimination() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphOptions.OptimizerOptions.do_common_subexpression_elimination)
+  return do_common_subexpression_elimination_;
 }
-inline void GraphOptions::set_skip_common_subexpression_elimination(bool value) {
+inline void GraphOptions_OptimizerOptions::set_do_common_subexpression_elimination(bool value) {
   
-  skip_common_subexpression_elimination_ = value;
-  // @@protoc_insertion_point(field_set:tensorflow.GraphOptions.skip_common_subexpression_elimination)
+  do_common_subexpression_elimination_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.GraphOptions.OptimizerOptions.do_common_subexpression_elimination)
 }
+
+// optional bool do_constant_folding = 2;
+inline void GraphOptions_OptimizerOptions::clear_do_constant_folding() {
+  do_constant_folding_ = false;
+}
+inline bool GraphOptions_OptimizerOptions::do_constant_folding() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphOptions.OptimizerOptions.do_constant_folding)
+  return do_constant_folding_;
+}
+inline void GraphOptions_OptimizerOptions::set_do_constant_folding(bool value) {
+  
+  do_constant_folding_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.GraphOptions.OptimizerOptions.do_constant_folding)
+}
+
+// optional .tensorflow.GraphOptions.OptimizerOptions.Level opt_level = 3;
+inline void GraphOptions_OptimizerOptions::clear_opt_level() {
+  opt_level_ = 0;
+}
+inline ::tensorflow::GraphOptions_OptimizerOptions_Level GraphOptions_OptimizerOptions::opt_level() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphOptions.OptimizerOptions.opt_level)
+  return static_cast< ::tensorflow::GraphOptions_OptimizerOptions_Level >(opt_level_);
+}
+inline void GraphOptions_OptimizerOptions::set_opt_level(::tensorflow::GraphOptions_OptimizerOptions_Level value) {
+  
+  opt_level_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.GraphOptions.OptimizerOptions.opt_level)
+}
+
+// -------------------------------------------------------------------
+
+// GraphOptions
 
 // optional bool enable_recv_scheduling = 2;
 inline void GraphOptions::clear_enable_recv_scheduling() {
@@ -504,6 +682,43 @@ inline void GraphOptions::set_enable_recv_scheduling(bool value) {
   
   enable_recv_scheduling_ = value;
   // @@protoc_insertion_point(field_set:tensorflow.GraphOptions.enable_recv_scheduling)
+}
+
+// optional .tensorflow.GraphOptions.OptimizerOptions optimizer_options = 3;
+inline bool GraphOptions::has_optimizer_options() const {
+  return !_is_default_instance_ && optimizer_options_ != NULL;
+}
+inline void GraphOptions::clear_optimizer_options() {
+  if (GetArenaNoVirtual() == NULL && optimizer_options_ != NULL) delete optimizer_options_;
+  optimizer_options_ = NULL;
+}
+inline const ::tensorflow::GraphOptions_OptimizerOptions& GraphOptions::optimizer_options() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphOptions.optimizer_options)
+  return optimizer_options_ != NULL ? *optimizer_options_ : *default_instance_->optimizer_options_;
+}
+inline ::tensorflow::GraphOptions_OptimizerOptions* GraphOptions::mutable_optimizer_options() {
+  
+  if (optimizer_options_ == NULL) {
+    optimizer_options_ = new ::tensorflow::GraphOptions_OptimizerOptions;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.GraphOptions.optimizer_options)
+  return optimizer_options_;
+}
+inline ::tensorflow::GraphOptions_OptimizerOptions* GraphOptions::release_optimizer_options() {
+  
+  ::tensorflow::GraphOptions_OptimizerOptions* temp = optimizer_options_;
+  optimizer_options_ = NULL;
+  return temp;
+}
+inline void GraphOptions::set_allocated_optimizer_options(::tensorflow::GraphOptions_OptimizerOptions* optimizer_options) {
+  delete optimizer_options_;
+  optimizer_options_ = optimizer_options;
+  if (optimizer_options) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.GraphOptions.optimizer_options)
 }
 
 // -------------------------------------------------------------------
@@ -745,10 +960,26 @@ inline void ConfigProto::set_allocated_graph_options(::tensorflow::GraphOptions*
 
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
 
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace tensorflow
+
+#ifndef SWIG
+namespace google {
+namespace protobuf {
+
+template <> struct is_proto_enum< ::tensorflow::GraphOptions_OptimizerOptions_Level> : ::google::protobuf::internal::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tensorflow::GraphOptions_OptimizerOptions_Level>() {
+  return ::tensorflow::GraphOptions_OptimizerOptions_Level_descriptor();
+}
+
+}  // namespace protobuf
+}  // namespace google
+#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

@@ -62,7 +62,7 @@ Get openframeworks for linux (download or clone repo) http://openframeworks.cc/d
 Follow instructions on setting it up, dependencies, compiling etc. http://openframeworks.cc/setup/linux-install/
 
 ## Get QT Creator IDE
-I've supplied project files for QT Creator IDE. So quickest way to get up and running is to use that (I've never used it before, but so far it looks pretty decent). Download and install the QT Creator IDE http://openframeworks.cc/setup/qtcreator/
+I've supplied project files for QT Creator IDE. So quickest way to get up and running is to use that (I'd never used it before, but so far it looks pretty decent). Download and install the QT Creator IDE http://openframeworks.cc/setup/qtcreator/
 It shouldn't be too hard to setup a new projects for other IDEs. More on this below. 
 
 
@@ -164,10 +164,10 @@ On the tensorflow website 'build from sources section' there are instructions to
 **This is the important step to rebuld the c++ lib. Go to the root of your tensorflow folder and type**
 
 	# for optimized (release) lib (~42.MB)
-	bazel build -c opt //tensorflow:libtensorflow.so
+	bazel build -c opt //tensorflow:libtensorflow_cc.so
 
 	# for debug lib (~330MB)
-	bazel build //tensorflow:libtensorflow.so
+	bazel build //tensorflow:libtensorflow_cc.so
 
 Once it's finished, grab the file tensorflow/bazel-bin/tensorflow/libtensorflow.so and overwrite the one in ofxMSATensorFlow/libs/lib and anywhere else that you need it (e.g. the LD search path that you decided to put it in above)
 

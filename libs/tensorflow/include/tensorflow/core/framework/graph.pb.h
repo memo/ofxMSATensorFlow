@@ -31,6 +31,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include "tensorflow/core/framework/attr_value.pb.h"
 #include "tensorflow/core/framework/function.pb.h"
+#include "tensorflow/core/framework/versions.pb.h"
 // @@protoc_insertion_point(includes)
 
 namespace tensorflow {
@@ -113,11 +114,20 @@ class GraphDef : public ::google::protobuf::Message {
   const ::google::protobuf::RepeatedPtrField< ::tensorflow::NodeDef >&
       node() const;
 
-  // optional int32 version = 3;
-  void clear_version();
+  // optional .tensorflow.VersionDef versions = 4;
+  bool has_versions() const;
+  void clear_versions();
+  static const int kVersionsFieldNumber = 4;
+  const ::tensorflow::VersionDef& versions() const;
+  ::tensorflow::VersionDef* mutable_versions();
+  ::tensorflow::VersionDef* release_versions();
+  void set_allocated_versions(::tensorflow::VersionDef* versions);
+
+  // optional int32 version = 3 [deprecated = true];
+  void clear_version() PROTOBUF_DEPRECATED;
   static const int kVersionFieldNumber = 3;
-  ::google::protobuf::int32 version() const;
-  void set_version(::google::protobuf::int32 value);
+  ::google::protobuf::int32 version() const PROTOBUF_DEPRECATED;
+  void set_version(::google::protobuf::int32 value) PROTOBUF_DEPRECATED;
 
   // optional .tensorflow.FunctionDefLibrary library = 2;
   bool has_library() const;
@@ -134,6 +144,7 @@ class GraphDef : public ::google::protobuf::Message {
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
   ::google::protobuf::RepeatedPtrField< ::tensorflow::NodeDef > node_;
+  ::tensorflow::VersionDef* versions_;
   ::tensorflow::FunctionDefLibrary* library_;
   ::google::protobuf::int32 version_;
   mutable int _cached_size_;
@@ -327,7 +338,44 @@ GraphDef::node() const {
   return node_;
 }
 
-// optional int32 version = 3;
+// optional .tensorflow.VersionDef versions = 4;
+inline bool GraphDef::has_versions() const {
+  return !_is_default_instance_ && versions_ != NULL;
+}
+inline void GraphDef::clear_versions() {
+  if (GetArenaNoVirtual() == NULL && versions_ != NULL) delete versions_;
+  versions_ = NULL;
+}
+inline const ::tensorflow::VersionDef& GraphDef::versions() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphDef.versions)
+  return versions_ != NULL ? *versions_ : *default_instance_->versions_;
+}
+inline ::tensorflow::VersionDef* GraphDef::mutable_versions() {
+  
+  if (versions_ == NULL) {
+    versions_ = new ::tensorflow::VersionDef;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.GraphDef.versions)
+  return versions_;
+}
+inline ::tensorflow::VersionDef* GraphDef::release_versions() {
+  
+  ::tensorflow::VersionDef* temp = versions_;
+  versions_ = NULL;
+  return temp;
+}
+inline void GraphDef::set_allocated_versions(::tensorflow::VersionDef* versions) {
+  delete versions_;
+  versions_ = versions;
+  if (versions) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.GraphDef.versions)
+}
+
+// optional int32 version = 3 [deprecated = true];
 inline void GraphDef::clear_version() {
   version_ = 0;
 }

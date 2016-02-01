@@ -201,12 +201,19 @@ class TensorShapeProto : public ::google::protobuf::Message {
   const ::google::protobuf::RepeatedPtrField< ::tensorflow::TensorShapeProto_Dim >&
       dim() const;
 
+  // optional bool unknown_rank = 3;
+  void clear_unknown_rank();
+  static const int kUnknownRankFieldNumber = 3;
+  bool unknown_rank() const;
+  void set_unknown_rank(bool value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.TensorShapeProto)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
   ::google::protobuf::RepeatedPtrField< ::tensorflow::TensorShapeProto_Dim > dim_;
+  bool unknown_rank_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_5fshape_2eproto();
   friend void protobuf_AssignDesc_tensorflow_2fcore_2fframework_2ftensor_5fshape_2eproto();
@@ -312,6 +319,20 @@ inline const ::google::protobuf::RepeatedPtrField< ::tensorflow::TensorShapeProt
 TensorShapeProto::dim() const {
   // @@protoc_insertion_point(field_list:tensorflow.TensorShapeProto.dim)
   return dim_;
+}
+
+// optional bool unknown_rank = 3;
+inline void TensorShapeProto::clear_unknown_rank() {
+  unknown_rank_ = false;
+}
+inline bool TensorShapeProto::unknown_rank() const {
+  // @@protoc_insertion_point(field_get:tensorflow.TensorShapeProto.unknown_rank)
+  return unknown_rank_;
+}
+inline void TensorShapeProto::set_unknown_rank(bool value) {
+  
+  unknown_rank_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.TensorShapeProto.unknown_rank)
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS

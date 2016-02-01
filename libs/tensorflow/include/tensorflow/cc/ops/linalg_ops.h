@@ -3,11 +3,11 @@
 #ifndef TENSORFLOW_CC_OPS_LINALG_OPS_H_
 #define TENSORFLOW_CC_OPS_LINALG_OPS_H_
 
+#include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
-#include "tensorflow/core/public/tensor.h"
-#include "tensorflow/core/public/tensor_shape.h"
 
 namespace tensorflow {
 namespace ops {
@@ -102,6 +102,57 @@ Node* BatchMatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
 // Shape is `[..., M, K]`.
 Node* BatchMatrixSolve(NodeOut matrix, NodeOut rhs, const
                        GraphDefBuilder::Options& opts);
+
+// Solves multiple linear least-squares problems.
+//
+// `matrix` is a tensor of shape `[..., M, N]` whose inner-most 2 dimensions
+// form square matrices. Rhs is a tensor of shape `[..., M, K]`. The output
+// is a tensor shape `[..., N, K]` where each output matrix solves each of
+// the equations matrix[..., :, :] * output[..., :, :] = rhs[..., :, :] in the
+// least squares sense.
+//
+// Below we will use the following notation for each pair of
+// matrix and right-hand sides in the batch:
+//
+// `matrix`=\\(A \in \Re^{m \times n}\\),
+// `rhs`=\\(B  \in \Re^{m \times k}\\),
+// `output`=\\(X  \in \Re^{n \times k}\\),
+// `l2_regularizer`=\\(\lambda\\).
+//
+// If `fast` is `True`, then the solution is computed by solving the normal
+// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
+// \\(X = (A^T A + \lambda I)^{-1} A^T B\\), which solves the least-squares
+// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||A Z - B||_F^2 +
+// \lambda ||Z||_F^2\\). If \\(m \lt n\\) then `output` is computed as
+// \\(X = A^T (A A^T + \lambda I)^{-1} B\\), which (for \\(\lambda = 0\\)) is the
+// minimum-norm solution to the under-determined linear system, i.e.
+// \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||Z||_F^2 \\), subject to
+// \\(A Z = B\\). Notice that the fast path is only numerically stable when
+// \\(A\\) is numerically full rank and has a condition number
+// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach}}}\\) or\\(\lambda\\) is
+// sufficiently large.
+//
+// If `fast` is `False` then the solution is computed using the rank revealing QR
+// decomposition with column pivoting. This will always compute a least-squares
+// solution that minimizes the residual norm \\(||A X - B||_F^2\\), even when
+// \\(A\\) is rank deficient or ill-conditioned. Notice: The current version does
+// not compute a minimum norm solution. If `fast` is `False` then `l2_regularizer`
+// is ignored.
+//
+// Arguments:
+// * matrix: Shape is `[..., M, N]`.
+// * rhs: Shape is `[..., M, K]`.
+// * opts:
+//   .WithAttr("fast", bool): Defaults to true.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Shape is `[..., N, K]`.
+Node* BatchMatrixSolveLs(NodeOut matrix, NodeOut rhs, NodeOut l2_regularizer,
+                         const GraphDefBuilder::Options& opts);
 
 // Solves systems of linear equations with upper or lower triangular matrices by
 //
@@ -228,6 +279,52 @@ Node* MatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
 // matrix * output = rhs.
 Node* MatrixSolve(NodeOut matrix, NodeOut rhs, const GraphDefBuilder::Options&
                   opts);
+
+// Solves a linear least-squares problem.
+//
+// Below we will use the following notation
+// `matrix`=\\(A \in \Re^{m \times n}\\),
+// `rhs`=\\(B  \in \Re^{m \times k}\\),
+// `output`=\\(X  \in \Re^{n \times k}\\),
+// `l2_regularizer`=\\(\lambda\\).
+//
+// If `fast` is `True`, then the solution is computed by solving the normal
+// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
+// \\(X = (A^T A + \lambda I)^{-1} A^T B\\), which solves the least-squares
+// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||A Z - B||_F^2 +
+// \lambda ||Z||_F^2\\). If \\(m \lt n\\) then `output` is computed as
+// \\(X = A^T (A A^T + \lambda I)^{-1} B\\),
+// which (for \\(\lambda = 0\\)) is the minimum-norm solution to the
+// under-determined linear system, i.e.
+// \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||Z||_F^2 \\),
+// subject to \\(A Z = B\\).
+// Notice that the fast path is only numerically stable when \\(A\\) is
+// numerically full rank and has a condition number
+// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach}}}\\)
+// or \\(\lambda\\) is sufficiently large.
+//
+// If `fast` is `False` then the solution is computed using the rank revealing QR
+// decomposition with column pivoting. This will always compute a least-squares
+// solution that minimizes the residual norm \\(||A X - B||_F^2 \\), even when
+// \\( A \\) is rank deficient or ill-conditioned. Notice: The current version
+// does not compute a minimum norm solution. If `fast` is `False` then
+// `l2_regularizer` is ignored.
+//
+// Arguments:
+// * matrix: Shape is `[M, N]`.
+// * rhs: Shape is `[M, K]`.
+// * opts:
+//   .WithAttr("fast", bool): Defaults to true.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Shape is `[N, K]` containing the tensor that solves
+// `matrix * output = rhs` in the least-squares sense.
+Node* MatrixSolveLs(NodeOut matrix, NodeOut rhs, NodeOut l2_regularizer, const
+                    GraphDefBuilder::Options& opts);
 
 // Solves a system of linear equations with an upper or lower triangular matrix by
 //

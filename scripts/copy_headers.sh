@@ -37,7 +37,7 @@ cp -R $SRC/bazel-genfiles/tensorflow/cc/ $DST/tensorflow
 cp -R $SRC/bazel-genfiles/tensorflow/core/ $DST/tensorflow
 
 mkdir -p $DST/external/eigen_archive
-cp -R $SRC/bazel-tensorflow/external/eigen_archive/eigen-eigen-fb2fa0527077/ $DST/external/eigen_archive
+cp -R $SRC/bazel-tensorflow/external/eigen_archive/eigen-eigen*/ $DST/external/eigen_archive
 
 
 

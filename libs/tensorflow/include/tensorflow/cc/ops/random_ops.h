@@ -3,11 +3,11 @@
 #ifndef TENSORFLOW_CC_OPS_RANDOM_OPS_H_
 #define TENSORFLOW_CC_OPS_RANDOM_OPS_H_
 
+#include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
-#include "tensorflow/core/public/tensor.h"
-#include "tensorflow/core/public/tensor_shape.h"
 
 namespace tensorflow {
 namespace ops {

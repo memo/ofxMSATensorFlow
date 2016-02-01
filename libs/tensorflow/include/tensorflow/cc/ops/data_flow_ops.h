@@ -3,11 +3,11 @@
 #ifndef TENSORFLOW_CC_OPS_DATA_FLOW_OPS_H_
 #define TENSORFLOW_CC_OPS_DATA_FLOW_OPS_H_
 
+#include "tensorflow/core/framework/tensor.h"
+#include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
-#include "tensorflow/core/public/tensor.h"
-#include "tensorflow/core/public/tensor_shape.h"
 
 namespace tensorflow {
 namespace ops {
@@ -522,8 +522,9 @@ Node* StackPush(NodeOut handle, NodeOut elem, const GraphDefBuilder::Options&
 // * dtype: The type of the elements on the tensor_array.
 // * opts:
 //   .WithAttr("tensor_array_name", StringPiece): Defaults to "".
-//     Overrides the name used for the temporary tensor_array resource. Default
-// value is the name of the 'TensorArray' op (which is guaranteed unique).
+//     Overrides the name used for the temporary tensor_array
+// resource. Default value is the name of the 'TensorArray' op (which
+// is guaranteed unique).
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -553,8 +554,25 @@ Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts);
 //
 // If the given TensorArray gradient already exists, returns a reference to it.
 //
+// TensorArray gradient calls use an accumulator TensorArray object.  If
+// multiple gradients are calculated and run in the same session, the multiple
+// gradient nodes may accidentally flow throuth the same accumulator TensorArray.
+// This double counts and generally breaks the TensorArray gradient flow.
+//
+// The solution is to identify which gradient call this particular
+// TensorArray gradient is being called in.  This is performed by identifying
+// a unique string (e.g. "gradients", "gradients_1", ...) from the input
+// gradient Tensor's name.  This string is used as a suffix when creating
+// the TensorArray gradient object here (the attribute `source`).
+//
+// The attribute `source` is added as a suffix to the forward TensorArray's
+// name when performing the creation / lookup, so that each separate gradient
+// calculation gets its own TensorArray accumulator.
+//
 // Arguments:
 // * handle: The handle to the forward TensorArray.
+// * source: The gradient source string, used to decide which gradient TensorArray
+// to return.
 // * opts:
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
@@ -562,7 +580,8 @@ Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts);
 //     Add control dependencies on the specified Node(s).
 //
 // Returns a pointer to the created Node.
-Node* TensorArrayGrad(NodeOut handle, const GraphDefBuilder::Options& opts);
+Node* TensorArrayGrad(NodeOut handle, StringPiece source, const
+                      GraphDefBuilder::Options& opts);
 
 // Pack the elements from the TensorArray.
 //
@@ -608,9 +627,6 @@ Node* TensorArrayRead(NodeOut handle, NodeOut index, NodeOut flow_in, DataType
 // * value: The concatenated tensor to write to the TensorArray.
 // * flow_in: A float scalar that enforces proper chaining of operations.
 // * opts:
-//   .WithAttr("gradient_add", bool): Defaults to false.
-//     Used for gradient back-propagation.  If values are already
-// written to the handle, validate shapes and add to them.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
@@ -629,9 +645,6 @@ Node* TensorArrayUnpack(NodeOut handle, NodeOut value, NodeOut flow_in, const
 // * value: The tensor to write to the TensorArray.
 // * flow_in: A float scalar that enforces proper chaining of operations.
 // * opts:
-//   .WithAttr("gradient_add", bool): Defaults to false.
-//     Used for gradient back-propagation.  If the value has already
-// been written to the handle, validate input shape and add to it.
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
 //   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):

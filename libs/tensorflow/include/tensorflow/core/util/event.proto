@@ -3,7 +3,6 @@ syntax = "proto3";
 package tensorflow;
 // option cc_enable_arenas = true;
 
-import "tensorflow/core/framework/graph.proto";
 import "tensorflow/core/framework/summary.proto";
 
 // Protocol buffer representing an event that happened during
@@ -21,9 +20,26 @@ message Event {
     // easily.  Current version is "tensorflow.Event:1".  All versions
     // start with "tensorflow.Event:".
     string file_version = 3;
-    // A model was constructed.
-    GraphDef graph_def = 4;
+    // An encoded version of a GraphDef.
+    bytes graph_def = 4;
     // A summary was generated.
     Summary summary = 5;
+    // The user output a log message. Not all messages are logged, only ones
+    // generated via the Python tensorboard_logging module.
+    LogMessage log_message = 6;
   }
+}
+
+// Protocol buffer used for logging messages to the events file.
+message LogMessage {
+  enum Level {
+    UNKNOWN = 0;
+    DEBUG = 10;
+    INFO = 20;
+    WARN = 30;
+    ERROR = 40;
+    FATAL = 50;
+  }
+  Level level = 1;
+  string message = 2;
 }
