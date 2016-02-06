@@ -11,10 +11,10 @@ You could potentially do steps 1-2 in openframeworks as well, but it seems a lot
 
 *(TBH Since training deep learning models takes so long and is very non-realtime, I don't think it makes too much sense to put yourself through the pain of implementing models in a syntactically tortuous language like C++, when C-backed, highly optimized, often GPU based python front ends are available for building and training models. However, once a model is trained, linking it to all kinds of other bits in realtime in an openframworks-like environment is where the fun's at!)*
 
-**Note**: The pre-compiled library I provide is for **Linux only**, though building for OSX should be very simple (I just don't have a Mac right now). Windows might be a bit more of a pain since Bazel (the build platform) is *nix only - and would involve either porting Bazel, or rebuilding make/cmake files.
-The project files for the examples are for **QTCreator**, so should work on all platforms out of the box? But anyways it's just one library and 3 header include files, so setting up other IDEs should be very simple. 
+**Note**: The pre-compiled library I provide is for **Linux only**, and I've provided libraries for both **CPU** and **GPU**. Though building for OSX should be very simple, I just don't have a Mac right now (Tensorflow supports GPU only on linux currently). Windows might be a bit more of a pain since Bazel (the build platform) is *nix only - and would involve either porting Bazel, or rebuilding make/cmake files.
+The project files for the examples are for **QTCreator**, so should work on all platforms out of the box. But anyways it's just one library and a few header include files, so setting up other IDEs should be very simple. 
 
-Since this is such an early version of the addon, I'll probably break backwards  compatibility with new updates. Sorry about that!
+Since this is such an early version of the addon, I'll probably break backwards compatibility with new updates. Sorry about that!
 
 And there are a number of issues which I'll mention at the end. 
 
@@ -26,15 +26,15 @@ I have a bunch more half-finished examples which I need to tidy up. In the meant
 The hello world (no not MNIST, that comes next). Build a graph in python that multiplies two numbers. Load the graph in openframeworks and hey presto. 100s of lines of code, just to build a simple multiplication function. 
 
 ## example-mnist
-MNIST clasffication with two different models - shallow and deep. Both models are built and trained in python (in bin/py folder). Loaded, manipulated and interacted with in openframeworks.
+MNIST clasffication with two different models - shallow and deep. Both models are built and trained in python (in bin/py folder). Loaded, manipulated and interacted with in openframeworks. Comment/uncomment the #define GO_DEEP line at the top of the .cpp to switch between the two. 
 ![](https://cloud.githubusercontent.com/assets/144230/12665280/8fa4612a-c62e-11e5-950e-eaec14d4211d.png)
 
 ####Single layer softmax regression: 
-Very simple, quick'n'easy but not very good. Trains in seconds. Accuracy on validation ~90%. 
+Very simple multinomial logistic regression. Quick'n'easy but not very good. Trains in seconds. Accuracy on test set ~90%. 
 Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/beginners/index.html
 
 ####Deep(ish) Convolutional Neural Network:
-Conv layers, maxpools, RELU's etc. Slower and heavier than above, but much better. Trains in a few minutes (on CPU). Accuracy 99.2%
+Basic convolutional neural network. Very similar to LeNet. Conv layers, maxpools, RELU's etc. Slower and heavier than above, but much better. Trains in a few minutes (on CPU). Accuracy 99.2%
 Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/pros/index.html#build-a-multilayer-convolutional-network
 
 
@@ -62,7 +62,7 @@ Get openframeworks for linux (download or clone repo) http://openframeworks.cc/d
 Follow instructions on setting it up, dependencies, compiling etc. http://openframeworks.cc/setup/linux-install/
 
 ## Get QT Creator IDE
-I've supplied project files for QT Creator IDE. So quickest way to get up and running is to use that (I'd never used it before, but so far it looks pretty decent). Download and install the QT Creator IDE http://openframeworks.cc/setup/qtcreator/
+I've supplied project files for QT Creator IDE. So quickest way to get up and running is to use that. I'd never used it before, but I'm really liking it so far. (Note, you don't need Qt SDK. just the IDE). Download and install the QT Creator IDE http://openframeworks.cc/setup/qtcreator/
 It shouldn't be too hard to setup a new projects for other IDEs. More on this below. 
 
 
@@ -71,13 +71,9 @@ Download or clone the repo ofxMSATensorFlow into your openframeworks/addons fold
 https://github.com/memo/ofxMSATensorFlow
 
 ## Download binaries
-**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the Releases section. The 'exdata' contains data for the examples. Copy the files to their corresponding folders. (e.g. from *downloaded/examples-mnist/bin/data/model-deep/* to *ofxMSATensorFlow/example-mnist/bin/data/model-deep/*). 
-And make sure to download the lib for your platform (currently only linux64).
+**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the Releases section of this repo. Copy the files to their corresponding folders. e.g. from example-mnist-data.tar.gz / data to ofxMSATensorFlow/example-mnist/data. etc. And make sure to download the lib for your platform (currently only linux64). e.g. to ofxMSATensorFlow/libs/tensorflow/lib/linux64/libtensorflow_cc.so (GPU instructions below)
 
 https://github.com/memo/ofxMSATensorFlow/releases
-
-
-
 
 ## Set your library folder
 I made the library a shared library (.so) instead of static (.a) because it's huge! (340MB for debug).
@@ -94,6 +90,15 @@ Save and close. Then in the terminal again type
 
 	sudo ldconfig
 
+
+## GPU
+
+If you want to use your GPU (currently linux only) you need to:
+
+1. Install CUDA and cuDNN https://www.tensorflow.org/versions/0.6.0/get_started/os_setup.html#install_cuda
+2. I provide a pre-compiled library for GPU support. Use this library instead of the other one. I.e. from the releases tab of this repo, download the zip ofxMSATensorFlow_lib_linux64_GPU and copy contents to ofxMSATensorFlow/libs/tensorflow/lib/linux64/libtensorflow_cc.so (Note that the library has the same name, but is much larger. 136MB vs 42MB for release) 
+
+The above will automatically switch to using GPU implementations of all operations where possible. However for more intricate control (see multi-GPU systems etc) https://www.tensorflow.org/versions/0.6.0/how_tos/using_gpu/index.html
 
 
 ## THAT'S IT!!! (See my notes section at the end for caveats)
@@ -164,7 +169,7 @@ On the tensorflow website 'build from sources section' there are instructions to
 *(Note, due to various reasons, I had to do sudo pip install for the last command)*
 	
 
-**This is the important step to rebuld the c++ lib. Go to the root of your tensorflow folder and type**
+**This is the important step to rebuild the c++ lib. Go to the root of your tensorflow folder and type**
 
 	# for optimized (release) lib (~42.MB)
 	bazel build -c opt //tensorflow:libtensorflow_cc.so
@@ -183,9 +188,9 @@ Also note that some of the headers needed are generated by the build processes m
 
 
 ### Protobuf
-Is a PITA. Protobuf has caused endless pain for me on various projects. Usually due to version issues. Tensorflow requires >v3. Public release is v2.6.1. So if you have that installed somewhere on your system it might break things. The instructions above should install v3+ (v3.0.0.a3 at time of writing) from source. But if you run into problems mentioning protobuf, it's probably a version conflict.
+Is a PITA. Protobuf has caused endless pain for me on various projects. As far as I understand, protobuf is a library for serialization, and generates headers based on message serialization structure defined in .proto files. It's a nice idea, but is incredibly sensistive to versions. I.e. it doesn't seem backwards compatible so if you're using a library compiled with one version of protobuf with headers generated from an ever so slightly different version, it'll fail. Tensorflow requires >v3. Public release is v2.6.1. So if you have that installed somewhere on your system it might break things. The instructions above should install v3+ (v3.0.0.a3 at time of writing) from source. But if you run into problems mentioning protobuf, it's probably a version conflict. The below should fix it, BUT it might break other software which requires older versions of protobuf. Running isolated environments would be your best bet in that case. JOY. 
 
-#### Python
+#### Protobuf problems in Python
 
 If you have problems in python regarding protobuf (e.g. when importing) try the below:
 
@@ -199,14 +204,18 @@ Note. The name of the tensorflow-xxxx.whl might be different on your system. Loo
 	ls -l /tmp/tensorflow_pkg
 
 
-#### C++
+#### Protobuf problems in C++
 In some cases, you might have problems in C++. If you have remnants of old protobuf headers somewhere in your header search paths, the compiler might load that instead of the v3+ ones and cry about it. In this case  I've had to install protobuf from source (not the python pip wheel, but the actual library in the system).
 
 First remove all traces of protobuf installed via apt
 
 	sudo apt-get purge libprotobuf-dev
 
-Clone the protobuf repo to a *new* folder (not the one inside tensorflow, as it can mess up things). Go into the folder and type
+Clone the protobuf repo to a *new* folder (don't build from the protobuf folder inside tensorflow, as it can mess things up). Somewhere other than your tensorflow folder:
+
+	git clone https://github.com/google/protobuf
+
+Go into the folder and type
 
 	sudo apt-get install autoconf automake libtool curl # get dependencies
 	./autogen.sh
