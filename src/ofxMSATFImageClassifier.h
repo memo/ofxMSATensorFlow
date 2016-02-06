@@ -23,8 +23,11 @@ public:
     } settings;
 
 
-    bool setup(const Settings& settings);
+    ImageClassifier()                                           {}
+    ImageClassifier(const Settings& settings)                   { setup(settings); }
 
+
+    bool setup(const Settings& settings);
     bool isReady() const;
 
 

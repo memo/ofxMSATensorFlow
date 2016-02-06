@@ -68,7 +68,7 @@ inline void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vecto
 // Takes a file name, and loads a list of labels from it, one per line, and
 // returns a vector of the strings. It pads with empty strings so the length
 // of the result is a multiple of 16, because our model expects that.
-bool readLabelsFile(string file_name, vector<string>& result);
+inline bool readLabelsFile(string file_name, vector<string>& result);
 
 
 // IMPLEMENTATIONS
