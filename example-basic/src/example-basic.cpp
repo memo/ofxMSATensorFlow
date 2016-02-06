@@ -18,7 +18,7 @@ class ofApp : public ofBaseApp{
 public:
 
     // main interface to everything tensorflow
-    ofxMSATensorFlow    msa_tf;
+    msa::tf::ofxMSATensorFlow    msa_tf;
 
     // input tensors
     tensorflow::Tensor a, b;

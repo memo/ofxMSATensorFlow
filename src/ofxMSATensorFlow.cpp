@@ -1,5 +1,10 @@
 #include "ofxMSATensorFlow.h"
 
+
+namespace msa {
+namespace tf {
+
+
 //--------------------------------------------------------------
 ofxMSATensorFlow::~ofxMSATensorFlow() {
     closeSession();
@@ -89,3 +94,7 @@ void ofxMSATensorFlow::logError() {
     if(!_status.ok())  {
         ofLogError() << _status.ToString(); }
 }
+
+
+}   // namespace tf
+}   // namespace msa

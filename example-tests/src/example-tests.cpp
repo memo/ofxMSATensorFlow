@@ -46,46 +46,46 @@ public:
 
         // bounce data around a bunch of different data types and size, see if data is preserved
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputChannels, kInputWidth, kInputHeight}));
-        ofxMSATensorFlow::pixelsToTensor(img[0].getPixels(), tensor, do_memcpy);
+        msa::tf::pixelsToTensor(img[0].getPixels(), tensor, do_memcpy);
 
-        ofxMSATensorFlow::tensorToPixels(tensor, img[1].getPixels(), do_memcpy);
+        msa::tf::tensorToPixels(tensor, img[1].getPixels(), do_memcpy);
         img[1].update();
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputWidth / 2, kInputHeight * kInputChannels * 2}));
-        ofxMSATensorFlow::arrayToTensor(img[1].getPixels().getData(), tensor, do_memcpy);
+        msa::tf::arrayToTensor(img[1].getPixels().getData(), tensor, do_memcpy);
 
         vector<float> v1;
-        ofxMSATensorFlow::tensorToVector(tensor, v1, do_memcpy);
+        msa::tf::tensorToVector(tensor, v1, do_memcpy);
         assert(v1.size() == kInputElements);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputElements }));
-        ofxMSATensorFlow::vectorToTensor(v1, tensor, do_memcpy);
+        msa::tf::vectorToTensor(v1, tensor, do_memcpy);
 
-        ofxMSATensorFlow::tensorToArray(tensor, img[2].getPixels().getData(), do_memcpy);
+        msa::tf::tensorToArray(tensor, img[2].getPixels().getData(), do_memcpy);
         img[2].update();
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputChannels*16, kInputHeight/16, kInputWidth/32, 32}));
-        ofxMSATensorFlow::imageToTensor(img[2], tensor, do_memcpy);
-        ofxMSATensorFlow::tensorToImage(tensor, img[3], do_memcpy);
+        msa::tf::imageToTensor(img[2], tensor, do_memcpy);
+        msa::tf::tensorToImage(tensor, img[3], do_memcpy);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputChannels, kInputWidth, kInputHeight }));
-        ofxMSATensorFlow::imageToTensor(img[3], tensor, do_memcpy);
+        msa::tf::imageToTensor(img[3], tensor, do_memcpy);
 
         // CLEAR ALL IMAGES TO TEST AUTO ALLOCATIONS
         for(int i=4; i<kNumImages; i++) img[i].clear();
 
-        ofxMSATensorFlow::tensorToImage(tensor, img[4], do_memcpy);
+        msa::tf::tensorToImage(tensor, img[4], do_memcpy);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputChannels, kInputWidth*2, kInputHeight/2 }));
-        ofxMSATensorFlow::imageToTensor(img[4], tensor, do_memcpy);
+        msa::tf::imageToTensor(img[4], tensor, do_memcpy);
 
         // it's normal that this looks mangled, it's not supposed to be resized, just reshaped
-        ofxMSATensorFlow::tensorToImage(tensor, img[5], do_memcpy);
+        msa::tf::tensorToImage(tensor, img[5], do_memcpy);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputChannels, kInputWidth, kInputHeight }));
-        ofxMSATensorFlow::imageToTensor(img[5], tensor, do_memcpy);
+        msa::tf::imageToTensor(img[5], tensor, do_memcpy);
 
-        ofxMSATensorFlow::tensorToImage(tensor, img[6], do_memcpy);
+        msa::tf::tensorToImage(tensor, img[6], do_memcpy);
 
         // convert to grayscale
         ofImage img_temp;
@@ -94,19 +94,19 @@ public:
         img[7] = img_temp;
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputWidth, kInputHeight }));
-        ofxMSATensorFlow::imageToTensor(img[7], tensor, do_memcpy);
+        msa::tf::imageToTensor(img[7], tensor, do_memcpy);
 
-        ofxMSATensorFlow::tensorToImage(tensor, img[8], do_memcpy);
+        msa::tf::tensorToImage(tensor, img[8], do_memcpy);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputWidth/2, kInputHeight*2 }));
-        ofxMSATensorFlow::imageToTensor(img[8], tensor, do_memcpy);
+        msa::tf::imageToTensor(img[8], tensor, do_memcpy);
 
-        ofxMSATensorFlow::tensorToImage(tensor, img[9], do_memcpy);
+        msa::tf::tensorToImage(tensor, img[9], do_memcpy);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ kInputWidth, kInputHeight }));
-        ofxMSATensorFlow::imageToTensor(img[9], tensor, do_memcpy);
+        msa::tf::imageToTensor(img[9], tensor, do_memcpy);
 
-        ofxMSATensorFlow::tensorToImage(tensor, img[10], do_memcpy);
+        msa::tf::tensorToImage(tensor, img[10], do_memcpy);
     }
 
     //--------------------------------------------------------------
