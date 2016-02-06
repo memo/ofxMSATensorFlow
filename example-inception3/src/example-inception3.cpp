@@ -44,7 +44,7 @@
 //--------------------------------------------------------------
 // ofImage::load() (ie. Freeimage load) doesn't work with TensorFlow! (See README.md)
 // so I have to resort to this awful trick of loading raw image data 299x299 RGB
-void loadImageRaw(string path, ofImage &img) {
+static void loadImageRaw(string path, ofImage &img) {
     ofFile file(path);
     img.setFromPixels((unsigned char*)file.readToBuffer().getData(), kInputWidth, kInputHeight, OF_IMAGE_COLOR);
 }
@@ -55,7 +55,7 @@ void loadImageRaw(string path, ofImage &img) {
 // Takes a file name, and loads a list of labels from it, one per line, and
 // returns a vector of the strings. It pads with empty strings so the length
 // of the result is a multiple of 16, because our model expects that.
-bool ReadLabelsFile(string file_name, std::vector<string>* result) {
+static bool ReadLabelsFile(string file_name, std::vector<string>* result) {
     std::ifstream file(file_name);
     if (!file) {
         ofLogError() <<"ReadLabelsFile: " << file_name << " not found.";

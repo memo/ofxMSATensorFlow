@@ -13,9 +13,7 @@ Project{
 
         files: [
             "src/MousePainter.h",
-            "src/main.cpp",
-            "src/ofApp.cpp",
-            "src/ofApp.h",
+            "src/example-mnist.cpp",
         ]
 
         of.addons: [
