@@ -1,3 +1,7 @@
+/*
+ * General helper functions
+ */
+
 #pragma once
 
 #include "ofxMSATFIncludes.h"
@@ -17,68 +21,54 @@ inline ofVec3f tensorToPixelDims(const tensorflow::Tensor &t, string chmap = "12
 
 //--------------------------------------------------------------
 // TENSOR DATA COPY FUNCTIONS
-// src & dest must be of same TYPE otherwise will fail/assert/crash! (e.g. Tensor<float>, ofImage<float, vector<float>
+// src & dest must be of same TYPE otherwise will fail/assert/crash! (e.g. Tensor<float>, ofImage<float>, vector<float>
 // src & dest can be different shapes but must be SAME NUMBER OF ELEMENTS, bounds checking is not done, will crash if src is larger than dest
 // do_memcpy is very fast, but could be dangerous due to alignment issues?
-// (PS using explicit function names, because I find it more readable and less bug prone
+// (PS using explicit function names, because I find it more readable and less bug prone)
 
-// flatten tensor and copy into std::vector. vector will be allocated if nessecary
-template<typename T>
-void tensorToVector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy=false);
+// flatten tensor and copy into 1D std::vector. vector will be allocated if nessecary
+template<typename T> void tensorToVector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy=false);
 
 // copy into pixels. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T>
-void tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy=false, string chmap = "120");
+template<typename T> void tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy=false, string chmap = "120");
 
 // copy into image. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T>
-void tensorToImage(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy=false, string chmap = "120");
+template<typename T> void tensorToImage(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy=false, string chmap = "120");
 
 // flatten tensor and copy into array. array must already be allocated
-template<typename T>
-void tensorToArray(const tensorflow::Tensor &src, T *dst, bool do_memcpy=false);
+template<typename T> void tensorToArray(const tensorflow::Tensor &src, T *dst, bool do_memcpy=false);
 
 
-// copy std::vector into flattened tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void vectorToTensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false);
+// copy std::vector into tensor. tensor must already be allocated and will not be reshaped
+template<typename T> void vectorToTensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false);
 
 // copy pixels into tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void pixelsToTensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false);
+template<typename T> void pixelsToTensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false);
 
 // copy image into tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void imageToTensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false);
+template<typename T> void imageToTensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false);
 
-// copy array into flattened tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void arrayToTensor(const T *src, tensorflow::Tensor &dst, bool do_memcpy=false);
+// copy array into tensor. tensor must already be allocated and will not be reshaped
+template<typename T> void arrayToTensor(const T *src, tensorflow::Tensor &dst, bool do_memcpy=false);
 
 
 //--------------------------------------------------------------
 // convert grayscale float image into RGB float image where R -ve and B is +ve
 // dst image is allocated if nessecary
-template<typename T>
-void grayToColor(const ofPixels_<T> &src, ofPixels_<T> &dst, float scaler=1.0f);
-
-template<typename T>
-void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, float scaler=1.0f);
-
+template<typename T> void grayToColor(const ofPixels_<T> &src, ofPixels_<T> &dst, float scaler=1.0f);
+template<typename T> void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, float scaler=1.0f);
 
 
 //--------------------------------------------------------------
 // pass in tensor (usually containing scores or probabilities of labels) and number of top items desired
-// function returns topk scores and corresponding indices
+// function returns top_k scores and corresponding indices
 inline void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores);
 
 
 // Takes a file name, and loads a list of labels from it, one per line, and
 // returns a vector of the strings. It pads with empty strings so the length
 // of the result is a multiple of 16, because our model expects that.
-static bool readLabelsFile(string file_name, vector<string>& result);
-
-
+bool readLabelsFile(string file_name, vector<string>& result);
 
 
 // IMPLEMENTATIONS
@@ -100,7 +90,7 @@ static bool readLabelsFile(string file_name, vector<string>& result);
 //--------------------------------------------------------------
 
 
-// return dimensions of an image to hold the Tensor: [x: width, y: height, z: depth (number of channels)]
+//--------------------------------------------------------------
 ofVec3f tensorToPixelDims(const tensorflow::Tensor &t, string chmap) {
     int rank = t.shape().dims();
     vector<int> tensor_dims(rank);
@@ -134,18 +124,14 @@ ofVec3f tensorToPixelDims(const tensorflow::Tensor &t, string chmap) {
 
 
 //--------------------------------------------------------------
-// flatten tensor and copy into std::vector. vector will be allocated if nessecary
-template<typename T>
-void tensorToVector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy) {
+template<typename T> void tensorToVector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy) {
     if(dst.size() != src.NumElements()) dst.resize(src.NumElements());
     tensorToArray(src, dst.data(), do_memcpy);
 }
 
 
 //--------------------------------------------------------------
-// copy into pixels. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T>
-void tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy, string chmap) {
+template<typename T> void tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy, string chmap) {
     if(!dst.isAllocated()) {
         ofVec3f dims(tensorToPixelDims(src, chmap));
         dst.allocate((int)dims.x, (int)dims.y, (int)dims.z);
@@ -156,9 +142,7 @@ void tensorToPixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_me
 
 
 //--------------------------------------------------------------
-// copy into image. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T>
-void tensorToImage(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy, string chmap) {
+template<typename T> void tensorToImage(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy, string chmap) {
     if(!dst.isAllocated()) {
         ofVec3f dims(tensorToPixelDims(src, chmap));
         dst.allocate((int)dims.x, (int)dims.y, dims.z == 1 ? OF_IMAGE_GRAYSCALE : (dims.z == 3 ? OF_IMAGE_COLOR : OF_IMAGE_COLOR_ALPHA));
@@ -169,9 +153,7 @@ void tensorToImage(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memc
 
 
 //--------------------------------------------------------------
-// flatten tensor and copy into array. array must already be allocated
-template<typename T>
-void tensorToArray(const tensorflow::Tensor &src, T *dst, bool do_memcpy) {
+template<typename T> void tensorToArray(const tensorflow::Tensor &src, T *dst, bool do_memcpy) {
     auto src_data = src.flat<T>().data();
     int n = src.NumElements();
     if(do_memcpy) memcpy(dst, src_data, n * sizeof(T));
@@ -180,33 +162,25 @@ void tensorToArray(const tensorflow::Tensor &src, T *dst, bool do_memcpy) {
 
 
 //--------------------------------------------------------------
-// copy std::vector into flattened tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void vectorToTensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
+template<typename T> void vectorToTensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
     arrayToTensor(src.data(), dst, do_memcpy);
 }
 
 
 //--------------------------------------------------------------
-// copy pixels into tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void pixelsToTensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
+template<typename T> void pixelsToTensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
     arrayToTensor(src.getData(), dst, do_memcpy);
 }
 
 
 //--------------------------------------------------------------
-// copy image into tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void imageToTensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
+template<typename T> void imageToTensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy) {
     pixelsToTensor(src.getPixels(), dst, do_memcpy);
 }
 
 
 //--------------------------------------------------------------
-// copy array into flattened tensor. tensor must already be allocated and will not be reshaped
-template<typename T>
-void arrayToTensor(const T *in, tensorflow::Tensor &dst, bool do_memcpy) {
+template<typename T> void arrayToTensor(const T *in, tensorflow::Tensor &dst, bool do_memcpy) {
     auto dst_data = dst.flat<T>().data();
     int n = dst.NumElements();
     if(do_memcpy) memcpy(dst_data, in, n * sizeof(T));
@@ -215,10 +189,7 @@ void arrayToTensor(const T *in, tensorflow::Tensor &dst, bool do_memcpy) {
 
 
 //--------------------------------------------------------------
-// convert grayscale float image into RGB float image where R -ve and B is +ve
-// dst image is allocated if nessecary
-template<typename T>
-void grayToColor(const ofPixels_<T> &src, ofPixels_<T> &dst, float scaler) {
+template<typename T> void grayToColor(const ofPixels_<T> &src, ofPixels_<T> &dst, float scaler) {
     dst.allocate(src.getWidth(), src.getHeight(), 3);
     const T *src_data = src.getData();
     T *dst_data = dst.getData();
@@ -231,8 +202,7 @@ void grayToColor(const ofPixels_<T> &src, ofPixels_<T> &dst, float scaler) {
 }
 
 //--------------------------------------------------------------
-template<typename T>
-void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, float scaler) {
+template<typename T> void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, float scaler) {
     grayToColor(src.getPixels(), dst.getPixels(), scaler);
     dst.update();
 }
@@ -261,7 +231,6 @@ void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> 
 }
 
 
-
 //--------------------------------------------------------------
 bool readLabelsFile(string file_name, vector<string>& result) {
     std::ifstream file(file_name);
@@ -281,7 +250,6 @@ bool readLabelsFile(string file_name, vector<string>& result) {
     }
     return true;
 }
-
 
 
 }   // namespace tf
