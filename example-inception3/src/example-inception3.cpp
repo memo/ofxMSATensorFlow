@@ -14,16 +14,6 @@
 #include "ofxMSATensorFlow.h"
 
 
-//--------------------------------------------------------------
-// ofImage::load() (ie. Freeimage load) doesn't work with TensorFlow! (See README.md)
-// so I have to resort to this awful trick of loading raw image data 299x299 RGB
-static void loadImageRaw(string path, ofImage &img, int w, int h) {
-    ofFile file(path);
-    img.setFromPixels((unsigned char*)file.readToBuffer().getData(), w, h, OF_IMAGE_COLOR);
-}
-
-
-
 class ofApp : public ofBaseApp {
 public:
 
@@ -45,19 +35,15 @@ public:
     //--------------------------------------------------------------
     void loadNextImage() {
         static int file_index = 0;
-        ofImage img;
-
         // System load dialog doesn't work with tensorflow :(
         //auto o = ofSystemLoadDialog("Select image");
         //if(!o.bSuccess) return;
 
-        // FreeImage doesn't work with tensorflow! :(
-        //img.load("images/fanboy.jpg");
+        // only PNGs work for some reason when Tensorflow is linked in
+        ofImage img;
+        img.load(image_dir.getPath(file_index));
+        if(img.isAllocated()) classify(img.getPixels());
 
-        // resorting to awful raw data file load hack!
-        loadImageRaw(image_dir.getPath(file_index), img, 299, 299);
-
-        classify(img.getPixels());
         file_index = (file_index+1) % image_dir.getFiles().size();
     }
 
@@ -202,12 +188,12 @@ public:
     void dragEvent(ofDragInfo dragInfo){
         if(dragInfo.files.empty()) return;
 
-        ofImage img;
+        string file_path = dragInfo.files[0];
 
-        string filePath = dragInfo.files[0];
-        //img.load(filePath);  // FreeImage doesn't work :(
-        loadImageRaw(filePath, img, 299, 299);
-        classify(img.getPixels());
+        // only PNGs work for some reason when Tensorflow is linked in
+        ofImage img;
+        img.load(file_path);
+        if(img.isAllocated()) classify(img.getPixels());
     }
 
 };
