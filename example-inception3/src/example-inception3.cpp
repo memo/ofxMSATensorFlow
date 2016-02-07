@@ -112,8 +112,11 @@ public:
             ofSetColor(255);
 
             // if video grabber active, draw in bottom left corner
-            if(video_grabber) video_grabber->draw(0, ofGetHeight() - 240, 320, 240);
-
+            if(video_grabber) {
+                int vy = ofGetHeight() - 240;
+                ofDrawBitmapString("Press SPACE to classify", 10, vy - 10);
+                video_grabber->draw(0, vy, 320, 240);
+            }
 
             float x = 0;
 
@@ -160,7 +163,7 @@ public:
 
         stringstream str_inst;
         str_inst << "'l' to load image\n";
-        str_inst << "or drag an image (must be raw, 299x299) onto the window\n";
+        str_inst << "or drag an image (must be PNG) onto the window\n";
         str_inst << "'v' to toggle video input";
         ofDrawBitmapString(str_inst.str(), 15, classifier.getHeight() + 30);
     }
