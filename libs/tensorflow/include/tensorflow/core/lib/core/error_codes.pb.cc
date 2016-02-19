@@ -71,7 +71,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2flib_2fcore_2ferror_5fcodes_2eproto() {
     "LEMENTED\020\014\022\014\n\010INTERNAL\020\r\022\017\n\013UNAVAILABLE\020"
     "\016\022\r\n\tDATA_LOSS\020\017\022K\nGDO_NOT_USE_RESERVED_"
     "FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWIT"
-    "CH_INSTEAD_\020\024b\006proto3", 461);
+    "CH_INSTEAD_\020\024B.\n\030org.tensorflow.framewor"
+    "kB\020ErrorCodesProtosP\001b\006proto3", 509);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/lib/core/error_codes.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_tensorflow_2fcore_2flib_2fcore_2ferror_5fcodes_2eproto);

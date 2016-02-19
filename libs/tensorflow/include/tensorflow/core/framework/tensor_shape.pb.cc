@@ -107,7 +107,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_5fshape_2eproto() {
     ".proto\022\ntensorflow\"z\n\020TensorShapeProto\022-"
     "\n\003dim\030\002 \003(\0132 .tensorflow.TensorShapeProt"
     "o.Dim\022\024\n\014unknown_rank\030\003 \001(\010\032!\n\003Dim\022\014\n\004si"
-    "ze\030\001 \001(\003\022\014\n\004name\030\002 \001(\tb\006proto3", 190);
+    "ze\030\001 \001(\003\022\014\n\004name\030\002 \001(\tB/\n\030org.tensorflow"
+    ".frameworkB\021TensorShapeProtosP\001b\006proto3", 239);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/tensor_shape.proto", &protobuf_RegisterTypes);
   TensorShapeProto::default_instance_ = new TensorShapeProto();

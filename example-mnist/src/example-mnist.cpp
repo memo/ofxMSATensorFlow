@@ -80,7 +80,7 @@ public:
         mouse_painter.setup(256);
 
         // initialize classifier
-        init_classifier(false);
+        init_classifier(true);
 
         ofLogNotice() << "Init successfull";
     }

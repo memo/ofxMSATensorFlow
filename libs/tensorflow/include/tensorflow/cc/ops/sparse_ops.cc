@@ -84,6 +84,20 @@ Node* SparseSplit(NodeOut split_dim, NodeOut indices, NodeOut values, NodeOut
   return opts.FinalizeBuilder(&node_builder);
 }
 
+Node* SparseTensorDenseMatMul(NodeOut a_indices, NodeOut a_values, NodeOut
+                              a_shape, NodeOut b, const
+                              GraphDefBuilder::Options& opts) {
+  if (opts.HaveError()) return nullptr;
+  static const string kOpName = "SparseTensorDenseMatMul";
+  NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
+                           opts.op_registry());
+  node_builder.Input(a_indices);
+  node_builder.Input(a_values);
+  node_builder.Input(a_shape);
+  node_builder.Input(b);
+  return opts.FinalizeBuilder(&node_builder);
+}
+
 Node* SparseToDense(NodeOut sparse_indices, NodeOut output_shape, NodeOut
                     sparse_values, NodeOut default_value, const
                     GraphDefBuilder::Options& opts) {

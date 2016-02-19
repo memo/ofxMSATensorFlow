@@ -64,6 +64,8 @@ Node* AvgPoolGrad(NodeOut orig_input_shape, NodeOut grad, gtl::ArraySlice<int>
 
 // Batch normalization.
 //
+// This op is deprecated. Prefer `tf.nn.batch_normalization`.
+//
 // Arguments:
 // * t: A 4D input Tensor.
 // * m: A 1D mean Tensor with size matching the last dimension of t.
@@ -94,6 +96,8 @@ Node* BatchNormWithGlobalNormalization(NodeOut t, NodeOut m, NodeOut v, NodeOut
                                        GraphDefBuilder::Options& opts);
 
 // Gradients for batch normalization.
+//
+// This op is deprecated. See `tf.nn.batch_normalization`.
 //
 // Arguments:
 // * t: A 4D input Tensor.

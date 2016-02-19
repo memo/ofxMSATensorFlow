@@ -181,7 +181,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fsummary_2eproto() {
     "tyle_histogram\030\003 \001(\014H\000\022*\n\005image\030\004 \001(\0132\031."
     "tensorflow.Summary.ImageH\000\022+\n\005histo\030\005 \001("
     "\0132\032.tensorflow.HistogramProtoH\000B\007\n\005value"
-    "b\006proto3", 528);
+    "B+\n\030org.tensorflow.frameworkB\rSummaryPro"
+    "tosP\001b\006proto3", 573);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/summary.proto", &protobuf_RegisterTypes);
   HistogramProto::default_instance_ = new HistogramProto();

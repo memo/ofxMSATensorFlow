@@ -102,7 +102,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_2eproto() {
     "ble_val\030\006 \003(\001B\002\020\001\022\023\n\007int_val\030\007 \003(\005B\002\020\001\022\022"
     "\n\nstring_val\030\010 \003(\014\022\030\n\014scomplex_val\030\t \003(\002"
     "B\002\020\001\022\025\n\tint64_val\030\n \003(\003B\002\020\001\022\024\n\010bool_val\030"
-    "\013 \003(\010B\002\020\001b\006proto3", 457);
+    "\013 \003(\010B\002\020\001B*\n\030org.tensorflow.frameworkB\014T"
+    "ensorProtosP\001b\006proto3", 501);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/tensor.proto", &protobuf_RegisterTypes);
   TensorProto::default_instance_ = new TensorProto();

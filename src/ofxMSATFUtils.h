@@ -62,7 +62,7 @@ template<typename T> void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, 
 //--------------------------------------------------------------
 // pass in tensor (usually containing scores or probabilities of labels) and number of top items desired
 // function returns top_k scores and corresponding indices
-inline void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores);
+inline void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name = "top_k");
 
 
 // Takes a file name, and loads a list of labels from it, one per line, and
@@ -209,10 +209,9 @@ template<typename T> void grayToColor(const ofImage_<T> &src, ofImage_<T> &dst, 
 
 
 //--------------------------------------------------------------
-void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores) {
+void getTopScores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name) {
     tensorflow::GraphDefBuilder b;
-    string output_name = "top_k";
-    tensorflow::ops::TopK(tensorflow::ops::Const(scores_tensor, b.opts()), topk_count, b.opts().WithName(output_name));
+    tensorflow::ops::TopKV2(tensorflow::ops::Const(scores_tensor, b.opts()), tensorflow::ops::Const(topk_count, b.opts()), b.opts().WithName(output_name));
 
     // This runs the GraphDef network definition that we've just constructed, and
     // returns the results in the output tensors.

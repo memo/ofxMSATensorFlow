@@ -148,8 +148,9 @@ class FunctionLibraryRuntimeTest : public ::testing::Test {
     delete lib_def_;
     lib_def_ = new FunctionLibraryDefinition(proto);
     delete lib_;
+    OptimizerOptions opts;
     lib_ = NewFunctionLibraryRuntime(device_, FunctionTestSchedClosure,
-                                     TF_GRAPH_DEF_VERSION, lib_def_);
+                                     TF_GRAPH_DEF_VERSION, lib_def_, opts);
   }
 
   Status Run(const string& name, InstantiateAttrValueSlice attrs,
@@ -171,7 +172,7 @@ class FunctionLibraryRuntimeTest : public ::testing::Test {
       return status;
     }
     CHECK_EQ(rets.size(), out.size());
-    for (int i = 0; i < rets.size(); ++i) {
+    for (size_t i = 0; i < rets.size(); ++i) {
       *rets[i] = out[i];
     }
     return Status::OK();
@@ -212,6 +213,12 @@ class FunctionLibraryRuntimeTest : public ::testing::Test {
   FunctionLibraryDefinition* lib_def_ = nullptr;
   FunctionLibraryRuntime* lib_ = nullptr;
 };
+
+TEST_F(FunctionLibraryRuntimeTest, IsStateful) {
+  Init({});
+  EXPECT_TRUE(lib_->IsStateful("Variable"));
+  EXPECT_FALSE(lib_->IsStateful("Matmul"));
+}
 
 TEST_F(FunctionLibraryRuntimeTest, XTimesTwo) {
   Init({test::function::XTimesTwo()});
@@ -297,7 +304,7 @@ TEST_F(FunctionLibraryRuntimeTest, ExpandInlineFunctions) {
   ExpandInlineFunctions(lib_, g);
   EXPECT_EQ(e2, DebugString(g));
 
-  // Get rid of redunant Identity nodes.
+  // Get rid of redundant Identity nodes.
   RemoveIdentityNodes(g);
   const char* e3 = R"P(
 (n2:float) -> (n42:float) {
@@ -327,13 +334,12 @@ TEST_F(FunctionLibraryRuntimeTest, OptimizeGraph) {
   ExpandInlineFunctions(lib_, g);
   OptimizeGraph(lib_, &g);
   const char* e0 = R"P(
-(n2:float) -> (n9:float) {
-  n7 = Const[dtype=int64, value=Tensor<type: int64 shape: [] values: 2>]()
-  n8 = Cast[DstT=float, SrcT=int64](n7)
+(n2:float) -> (n7:float) {
+  n8 = Const[dtype=float, value=Tensor<type: float shape: [] values: 2>]()
   n4 = Mul[T=float](n2, n8)
   n5 = Mul[T=float](n4, n8)
   n6 = Mul[T=float](n5, n8)
-  n9 = Mul[T=float](n6, n8)
+  n7 = Mul[T=float](n6, n8)
 }
 )P";
   EXPECT_EQ(e0, DebugString(g));
@@ -480,15 +486,14 @@ TEST_F(FunctionLibraryRuntimeTest, Gradient_XTimesTwo) {
 
   OptimizeGraph(lib_, &g);
   const char* e2 = R"P(
-(n4:float, n5:float) -> (n12:float) {
-  n2 = Const[dtype=int64, value=Tensor<type: int64 shape: [] values: 2>]()
-  n3 = Cast[DstT=float, SrcT=int64](n2)
-  n9 = Shape[T=float](n4)
-  n8 = Shape[T=float](n3)
-  n7 = Mul[T=float](n5, n3)
-  n10 = BroadcastGradientArgs(n9, n8)
-  n11 = Sum[T=float, keep_dims=false](n7, n10)
-  n12 = Reshape[T=float](n11, n9)
+(n2:float, n3:float) -> (n9:float) {
+  n11 = Const[dtype=int32, value=Tensor<type: int32 shape: [0] values: >]()
+  n10 = Const[dtype=float, value=Tensor<type: float shape: [] values: 2>]()
+  n6 = Shape[T=float](n2)
+  n5 = Mul[T=float](n3, n10)
+  n7 = BroadcastGradientArgs(n6, n11)
+  n8 = Sum[T=float, keep_dims=false](n5, n7)
+  n9 = Reshape[T=float](n8, n6)
 }
 )P";
   EXPECT_EQ(e2, DebugString(g));
@@ -676,7 +681,7 @@ TEST(OptimizationTest, RemoveDeadNodes) {
        {{"a"}, "Square", {"x"}, {{"T", T}}},
        // 1
        FDH::Const("o", 1),
-       // A bunch of extra arithmatic that y doesn't depend on
+       // A bunch of extra arithmetic that y doesn't depend on
        {{"x1"}, "Add", {"o", "o"}, {{"T", T}}},
        {{"x2"}, "Mul", {"a", "x1"}, {{"T", T}}},
        {{"x3"}, "Mul", {"x1", "x2"}, {{"T", T}}},
@@ -701,6 +706,43 @@ TEST(OptimizationTest, RemoveDeadNodes) {
   EXPECT_EQ(Optimize(::tensorflow::RemoveDeadNodes, func), e0);
 }
 
+TEST(OptimizationTest, RemoveIdentityNodes_Ref) {
+  auto T = DT_FLOAT;
+  auto func = FDH::Define(
+      // Name
+      "F",
+      // Args
+      {},
+      // Return values
+      {"ret: float"},
+      // Attrs
+      {},
+      // Nodes
+      {// variable
+       {{"v"}, "Variable", {}, {{"dtype", T}, {"shape", TensorShape({})}}},
+       // read the variable. Shouldn't be removed.
+       {{"v_read"}, "Identity", {"v"}, {{"T", T}}},
+       // returns v + v
+       {{"ret"}, "Add", {"v_read", "v_read"}, {{"T", T}}}});
+  const char* e0 = R"S(
+() -> (n2:float) {
+  n0 = Variable[container="", dtype=float, shape=[], shared_name=""]()
+  n1 = Identity[T=float](n0)
+  n2 = Add[T=float](n1, n1)
+}
+)S";
+  EXPECT_EQ(Optimize(DoNothing, func), e0);
+
+  const char* e1 = R"S(
+() -> (n2:float) {
+  n0 = Variable[container="", dtype=float, shape=[], shared_name=""]()
+  n1 = Identity[T=float](n0)
+  n2 = Add[T=float](n1, n1)
+}
+)S";
+  EXPECT_EQ(Optimize(::tensorflow::RemoveIdentityNodes, func), e1);
+}
+
 TEST(OptimizationTest, RemoveIdentityNodes) {
   auto T = DT_INT32;
   auto func = FDH::Define(
@@ -717,7 +759,7 @@ TEST(OptimizationTest, RemoveIdentityNodes) {
        {{"a"}, "Square", {"x"}, {{"T", T}}},
        // 1
        FDH::Const("o", 1),
-       // A bunch of extra arithmatic that y doesn't depend on
+       // A bunch of extra arithmetic that y doesn't depend on
        {{"x1"}, "Identity", {"a"}, {{"T", T}}},
        {{"x2"}, "Identity", {"x1"}, {{"T", T}}},
        {{"x3"}, "Identity", {"x2"}, {{"T", T}}},

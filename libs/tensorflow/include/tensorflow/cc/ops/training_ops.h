@@ -76,6 +76,38 @@ Node* ApplyAdam(NodeOut var, NodeOut m, NodeOut v, NodeOut beta1_power, NodeOut
                 beta2_power, NodeOut lr, NodeOut beta1, NodeOut beta2, NodeOut
                 epsilon, NodeOut grad, const GraphDefBuilder::Options& opts);
 
+// Update '*var' according to the Ftrl-proximal scheme.
+//
+// accum_new = accum + grad * grad
+// linear += grad + (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
+// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
+// accum = accum_new
+//
+// Arguments:
+// * var: Should be from a Variable().
+// * accum: Should be from a Variable().
+// * linear: Should be from a Variable().
+// * grad: The gradient.
+// * lr: Scaling factor. Must be a scalar.
+// * l1: Scaling factor. Must be a scalar.
+// * l2: Scaling factor. Must be a scalar.
+// * lr_power: Scaling factor. Must be a scalar.
+// * opts:
+//   .WithAttr("use_locking", bool): Defaults to false.
+//     If True, updating of the var and accum tensors will be protected by
+// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Same as "var".
+Node* ApplyFtrl(NodeOut var, NodeOut accum, NodeOut linear, NodeOut grad,
+                NodeOut lr, NodeOut l1, NodeOut l2, NodeOut lr_power, const
+                GraphDefBuilder::Options& opts);
+
 // Update '*var' by subtracting 'alpha' * 'delta' from it.
 //
 // Arguments:
@@ -179,6 +211,40 @@ Node* ApplyRMSProp(NodeOut var, NodeOut ms, NodeOut mom, NodeOut lr, NodeOut
 Node* SparseApplyAdagrad(NodeOut var, NodeOut accum, NodeOut lr, NodeOut grad,
                          NodeOut indices, const GraphDefBuilder::Options&
                          opts);
+
+// Update relevant entries in '*var' according to the Ftrl-proximal scheme.
+//
+// That is for rows we have grad for, we update var, accum and linear as follows:
+// accum_new = accum + grad * grad
+// linear += grad + (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
+// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
+// accum = accum_new
+//
+// Arguments:
+// * var: Should be from a Variable().
+// * accum: Should be from a Variable().
+// * linear: Should be from a Variable().
+// * grad: The gradient.
+// * indices: A vector of indices into the first dimension of var and accum.
+// * lr: Scaling factor. Must be a scalar.
+// * l1: Scaling factor. Must be a scalar.
+// * l2: Scaling factor. Must be a scalar.
+// * lr_power: Scaling factor. Must be a scalar.
+// * opts:
+//   .WithAttr("use_locking", bool): Defaults to false.
+//     If True, updating of the var and accum tensors will be protected by
+// a lock; otherwise the behavior is undefined, but may exhibit less contention.
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Same as "var".
+Node* SparseApplyFtrl(NodeOut var, NodeOut accum, NodeOut linear, NodeOut grad,
+                      NodeOut indices, NodeOut lr, NodeOut l1, NodeOut l2,
+                      NodeOut lr_power, const GraphDefBuilder::Options& opts);
 
 // Update relevant entries in '*var' and '*accum' according to the momentum scheme.
 //

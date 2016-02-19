@@ -153,7 +153,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2ffunction_2eproto() {
     "\t\0224\n\004attr\030\005 \003(\0132&.tensorflow.FunctionDef"
     ".Node.AttrEntry\032B\n\tAttrEntry\022\013\n\003key\030\001 \001("
     "\t\022$\n\005value\030\002 \001(\0132\025.tensorflow.AttrValue:"
-    "\0028\001b\006proto3", 491);
+    "\0028\001B,\n\030org.tensorflow.frameworkB\016Functio"
+    "nProtosP\001b\006proto3", 537);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/function.proto", &protobuf_RegisterTypes);
   FunctionDefLibrary::default_instance_ = new FunctionDefLibrary();

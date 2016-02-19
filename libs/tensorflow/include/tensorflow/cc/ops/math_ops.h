@@ -291,6 +291,39 @@ Node* Conj(NodeOut in, const GraphDefBuilder::Options& opts);
 // Returns a pointer to the created Node.
 Node* Cos(NodeOut x, const GraphDefBuilder::Options& opts);
 
+// Compute the pairwise cross product.
+//
+// `a` and `b` must be the same shape; they can either be simple 3-element vectors,
+// or any shape where the innermost dimension is 3. In the latter case, each pair
+// of corresponding 3-element vectors is cross-multiplied independently.
+//
+// Arguments:
+// * a: A tensor containing 3-element vectors.
+// * b: Another tensor, of same type and shape as `a`.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// Pairwise cross product of the vectors in `a` and `b`.
+Node* Cross(NodeOut a, NodeOut b, const GraphDefBuilder::Options& opts);
+
+// Computes Psi, the derivative of Lgamma (the log of the absolute value of
+//
+// `Gamma(x)`), element-wise.
+//
+// Arguments:
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* Digamma(NodeOut x, const GraphDefBuilder::Options& opts);
+
 // Returns x / y element-wise.
 //
 // Arguments:
@@ -513,7 +546,7 @@ Node* Less(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts);
 // Returns a pointer to the created Node.
 Node* LessEqual(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts);
 
-// Computes the log of the absolute value of Gamma of `x` element-wise.
+// Computes the log of the absolute value of `Gamma(x)` element-wise.
 //
 // Arguments:
 // * opts:
@@ -1026,27 +1059,48 @@ Node* SegmentSum(NodeOut data, NodeOut segment_ids, const
 
 // Selects elements from `t` or `e`, depending on `condition`.
 //
-// The `condition`, `t`, and `e` tensors must all have the same shape,
-// and the output will also have that shape. The `condition` tensor acts
-// as an element-wise mask that chooses, based on the value at each
-// element, whether the corresponding element in the output should be
-// taken from `t` (if true) or `e` (if false). For example:
+// The `t`, and `e` tensors must all have the same shape,
+// and the output will also have that shape.  The `condition` tensor
+// must be a scalar if `t` and `e` are scalars.  If `t` and `e` are vectors
+// or higher rank, then `condition` must be either a vector with size
+// matching the first dimension of `t`, or must have the same shape as `t`.
+//
+// The `condition` tensor acts as a mask that chooses, based on the value at each
+// element, whether the corresponding element / row in the output should be
+// taken from `t` (if true) or `e` (if false).
+//
+// If `condition` is a vector and `t` and `e` are higher rank matrices, then
+// it chooses which row (outer dimension) to copy from `t` and `e`.
+// If `condition` has the same shape as `t` and `e`, then it chooses which
+// element to copy from `t` and `e`.
 //
 // For example:
 //
 // ```prettyprint
-// # 'condition' tensor is [[True, False]
-// #                        [True, False]]
-// # 't' is [[1, 1],
-// #         [1, 1]]
-// # 'e' is [[2, 2],
-// #         [2, 2]]
+// # 'condition' tensor is [[True,  False]
+// #                        [False, True]]
+// # 't' is [[1, 2],
+// #         [3, 4]]
+// # 'e' is [[5, 6],
+// #         [7, 8]]
+// select(condition, t, e) ==> [[1, 6],
+//                              [7, 4]]
+//
+//
+// # 'condition' tensor is [True, False]
+// # 't' is [[1, 2],
+// #         [3, 4]]
+// # 'e' is [[5, 6],
+// #         [7, 8]]
 // select(condition, t, e) ==> [[1, 2],
-//                              [1, 2]]
+//                              [7, 8]]
+//
 // ```
 //
 // Arguments:
-// * t: = A `Tensor` with the same shape as `condition`.
+// * t: = A `Tensor` which may have the same shape as `condition`.
+// If `condition` is rank 1, `t` may have higher rank,
+// but its first dimension must match the size of `condition`.
 // * e: = A `Tensor` with the same type and shape as `t`.
 // * opts:
 //   .WithName(StringPiece): Set the Node's name
@@ -1283,6 +1337,19 @@ Node* Sqrt(NodeOut x, const GraphDefBuilder::Options& opts);
 //
 // Returns a pointer to the created Node.
 Node* Square(NodeOut x, const GraphDefBuilder::Options& opts);
+
+// Returns (x - y)(x - y) element-wise.
+//
+// Arguments:
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* SquaredDifference(NodeOut x, NodeOut y, const GraphDefBuilder::Options&
+                        opts);
 
 // Returns x - y element-wise.
 //

@@ -134,8 +134,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fexample_2fexample_2eproto() {
     "/\n\rfeature_lists\030\002 \001(\0132\030.tensorflow.Feat"
     "ureLists\"a\n\020InferenceExample\022%\n\007context\030"
     "\001 \001(\0132\024.tensorflow.Features\022&\n\010features\030"
-    "\002 \003(\0132\024.tensorflow.FeaturesB\032\n\026org.tenso"
-    "rflow.exampleP\001b\006proto3", 383);
+    "\002 \003(\0132\024.tensorflow.FeaturesB)\n\026org.tenso"
+    "rflow.exampleB\rExampleProtosP\001b\006proto3", 398);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/example/example.proto", &protobuf_RegisterTypes);
   Example::default_instance_ = new Example();

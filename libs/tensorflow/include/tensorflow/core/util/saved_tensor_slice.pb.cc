@@ -62,8 +62,9 @@ void protobuf_AssignDesc_tensorflow_2fcore_2futil_2fsaved_5ftensor_5fslice_2epro
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SavedSliceMeta, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SavedSliceMeta, _is_default_instance_));
   SavedTensorSliceMeta_descriptor_ = file->message_type(1);
-  static const int SavedTensorSliceMeta_offsets_[1] = {
+  static const int SavedTensorSliceMeta_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SavedTensorSliceMeta, tensor_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SavedTensorSliceMeta, versions_),
   };
   SavedTensorSliceMeta_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -154,25 +155,29 @@ void protobuf_AddDesc_tensorflow_2fcore_2futil_2fsaved_5ftensor_5fslice_2eproto(
   ::tensorflow::protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_5fslice_2eproto();
   ::tensorflow::protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_2eproto();
   ::tensorflow::protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftypes_2eproto();
+  ::tensorflow::protobuf_AddDesc_tensorflow_2fcore_2fframework_2fversions_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n-tensorflow/core/util/saved_tensor_slic"
     "e.proto\022\ntensorflow\032,tensorflow/core/fra"
     "mework/tensor_shape.proto\032,tensorflow/co"
     "re/framework/tensor_slice.proto\032&tensorf"
     "low/core/framework/tensor.proto\032%tensorf"
-    "low/core/framework/types.proto\"\234\001\n\016Saved"
-    "SliceMeta\022\014\n\004name\030\001 \001(\t\022+\n\005shape\030\002 \001(\0132\034"
-    ".tensorflow.TensorShapeProto\022\"\n\004type\030\003 \001"
-    "(\0162\024.tensorflow.DataType\022+\n\005slice\030\004 \003(\0132"
-    "\034.tensorflow.TensorSliceProto\"B\n\024SavedTe"
-    "nsorSliceMeta\022*\n\006tensor\030\001 \003(\0132\032.tensorfl"
-    "ow.SavedSliceMeta\"n\n\nSavedSlice\022\014\n\004name\030"
-    "\001 \001(\t\022+\n\005slice\030\002 \001(\0132\034.tensorflow.Tensor"
-    "SliceProto\022%\n\004data\030\003 \001(\0132\027.tensorflow.Te"
-    "nsorProto\"i\n\021SavedTensorSlices\022.\n\004meta\030\001"
-    " \001(\0132 .tensorflow.SavedTensorSliceMeta\022$"
-    "\n\004data\030\002 \001(\0132\026.tensorflow.SavedSliceb\006pr"
-    "oto3", 684);
+    "low/core/framework/types.proto\032(tensorfl"
+    "ow/core/framework/versions.proto\"\234\001\n\016Sav"
+    "edSliceMeta\022\014\n\004name\030\001 \001(\t\022+\n\005shape\030\002 \001(\013"
+    "2\034.tensorflow.TensorShapeProto\022\"\n\004type\030\003"
+    " \001(\0162\024.tensorflow.DataType\022+\n\005slice\030\004 \003("
+    "\0132\034.tensorflow.TensorSliceProto\"l\n\024Saved"
+    "TensorSliceMeta\022*\n\006tensor\030\001 \003(\0132\032.tensor"
+    "flow.SavedSliceMeta\022(\n\010versions\030\002 \001(\0132\026."
+    "tensorflow.VersionDef\"n\n\nSavedSlice\022\014\n\004n"
+    "ame\030\001 \001(\t\022+\n\005slice\030\002 \001(\0132\034.tensorflow.Te"
+    "nsorSliceProto\022%\n\004data\030\003 \001(\0132\027.tensorflo"
+    "w.TensorProto\"i\n\021SavedTensorSlices\022.\n\004me"
+    "ta\030\001 \001(\0132 .tensorflow.SavedTensorSliceMe"
+    "ta\022$\n\004data\030\002 \001(\0132\026.tensorflow.SavedSlice"
+    "B/\n\023org.tensorflow.utilB\026SavedTensorSlic"
+    "eProtosP\001b\006proto3", 817);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/util/saved_tensor_slice.proto", &protobuf_RegisterTypes);
   SavedSliceMeta::default_instance_ = new SavedSliceMeta();
@@ -685,6 +690,7 @@ SavedSliceMeta::slice() const {
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int SavedTensorSliceMeta::kTensorFieldNumber;
+const int SavedTensorSliceMeta::kVersionsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 SavedTensorSliceMeta::SavedTensorSliceMeta()
@@ -695,6 +701,7 @@ SavedTensorSliceMeta::SavedTensorSliceMeta()
 
 void SavedTensorSliceMeta::InitAsDefaultInstance() {
   _is_default_instance_ = true;
+  versions_ = const_cast< ::tensorflow::VersionDef*>(&::tensorflow::VersionDef::default_instance());
 }
 
 SavedTensorSliceMeta::SavedTensorSliceMeta(const SavedTensorSliceMeta& from)
@@ -708,6 +715,7 @@ SavedTensorSliceMeta::SavedTensorSliceMeta(const SavedTensorSliceMeta& from)
 void SavedTensorSliceMeta::SharedCtor() {
     _is_default_instance_ = false;
   _cached_size_ = 0;
+  versions_ = NULL;
 }
 
 SavedTensorSliceMeta::~SavedTensorSliceMeta() {
@@ -717,6 +725,7 @@ SavedTensorSliceMeta::~SavedTensorSliceMeta() {
 
 void SavedTensorSliceMeta::SharedDtor() {
   if (this != default_instance_) {
+    delete versions_;
   }
 }
 
@@ -746,6 +755,8 @@ SavedTensorSliceMeta* SavedTensorSliceMeta::New(::google::protobuf::Arena* arena
 }
 
 void SavedTensorSliceMeta::Clear() {
+  if (GetArenaNoVirtual() == NULL && versions_ != NULL) delete versions_;
+  versions_ = NULL;
   tensor_.Clear();
 }
 
@@ -771,6 +782,19 @@ bool SavedTensorSliceMeta::MergePartialFromCodedStream(
         }
         if (input->ExpectTag(10)) goto parse_loop_tensor;
         input->UnsafeDecrementRecursionDepth();
+        if (input->ExpectTag(18)) goto parse_versions;
+        break;
+      }
+
+      // optional .tensorflow.VersionDef versions = 2;
+      case 2: {
+        if (tag == 18) {
+         parse_versions:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+               input, mutable_versions()));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -805,6 +829,12 @@ void SavedTensorSliceMeta::SerializeWithCachedSizes(
       1, this->tensor(i), output);
   }
 
+  // optional .tensorflow.VersionDef versions = 2;
+  if (this->has_versions()) {
+    ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+      2, *this->versions_, output);
+  }
+
   // @@protoc_insertion_point(serialize_end:tensorflow.SavedTensorSliceMeta)
 }
 
@@ -818,12 +848,26 @@ void SavedTensorSliceMeta::SerializeWithCachedSizes(
         1, this->tensor(i), target);
   }
 
+  // optional .tensorflow.VersionDef versions = 2;
+  if (this->has_versions()) {
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteMessageNoVirtualToArray(
+        2, *this->versions_, target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:tensorflow.SavedTensorSliceMeta)
   return target;
 }
 
 int SavedTensorSliceMeta::ByteSize() const {
   int total_size = 0;
+
+  // optional .tensorflow.VersionDef versions = 2;
+  if (this->has_versions()) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+        *this->versions_);
+  }
 
   // repeated .tensorflow.SavedSliceMeta tensor = 1;
   total_size += 1 * this->tensor_size();
@@ -854,6 +898,9 @@ void SavedTensorSliceMeta::MergeFrom(const ::google::protobuf::Message& from) {
 void SavedTensorSliceMeta::MergeFrom(const SavedTensorSliceMeta& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   tensor_.MergeFrom(from.tensor_);
+  if (from.has_versions()) {
+    mutable_versions()->::tensorflow::VersionDef::MergeFrom(from.versions());
+  }
 }
 
 void SavedTensorSliceMeta::CopyFrom(const ::google::protobuf::Message& from) {
@@ -879,6 +926,7 @@ void SavedTensorSliceMeta::Swap(SavedTensorSliceMeta* other) {
 }
 void SavedTensorSliceMeta::InternalSwap(SavedTensorSliceMeta* other) {
   tensor_.UnsafeArenaSwap(&other->tensor_);
+  std::swap(versions_, other->versions_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -922,6 +970,43 @@ const ::google::protobuf::RepeatedPtrField< ::tensorflow::SavedSliceMeta >&
 SavedTensorSliceMeta::tensor() const {
   // @@protoc_insertion_point(field_list:tensorflow.SavedTensorSliceMeta.tensor)
   return tensor_;
+}
+
+// optional .tensorflow.VersionDef versions = 2;
+bool SavedTensorSliceMeta::has_versions() const {
+  return !_is_default_instance_ && versions_ != NULL;
+}
+void SavedTensorSliceMeta::clear_versions() {
+  if (GetArenaNoVirtual() == NULL && versions_ != NULL) delete versions_;
+  versions_ = NULL;
+}
+const ::tensorflow::VersionDef& SavedTensorSliceMeta::versions() const {
+  // @@protoc_insertion_point(field_get:tensorflow.SavedTensorSliceMeta.versions)
+  return versions_ != NULL ? *versions_ : *default_instance_->versions_;
+}
+::tensorflow::VersionDef* SavedTensorSliceMeta::mutable_versions() {
+  
+  if (versions_ == NULL) {
+    versions_ = new ::tensorflow::VersionDef;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.SavedTensorSliceMeta.versions)
+  return versions_;
+}
+::tensorflow::VersionDef* SavedTensorSliceMeta::release_versions() {
+  
+  ::tensorflow::VersionDef* temp = versions_;
+  versions_ = NULL;
+  return temp;
+}
+void SavedTensorSliceMeta::set_allocated_versions(::tensorflow::VersionDef* versions) {
+  delete versions_;
+  versions_ = versions;
+  if (versions) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.SavedTensorSliceMeta.versions)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

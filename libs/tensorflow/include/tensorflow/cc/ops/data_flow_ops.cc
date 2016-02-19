@@ -203,13 +203,26 @@ Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts) {
   return UnaryOp(kOpName, handle, opts);
 }
 
-Node* TensorArrayGrad(NodeOut handle, StringPiece source, const
-                      GraphDefBuilder::Options& opts) {
+Node* TensorArrayConcat(NodeOut handle, NodeOut flow_in, DataType dtype, const
+                        GraphDefBuilder::Options& opts) {
+  if (opts.HaveError()) return nullptr;
+  static const string kOpName = "TensorArrayConcat";
+  NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
+                           opts.op_registry());
+  node_builder.Input(handle);
+  node_builder.Input(flow_in);
+  node_builder.Attr("dtype", dtype);
+  return opts.FinalizeBuilder(&node_builder);
+}
+
+Node* TensorArrayGrad(NodeOut handle, NodeOut flow_in, StringPiece source,
+                      const GraphDefBuilder::Options& opts) {
   if (opts.HaveError()) return nullptr;
   static const string kOpName = "TensorArrayGrad";
   NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
                            opts.op_registry());
   node_builder.Input(handle);
+  node_builder.Input(flow_in);
   node_builder.Attr("source", source);
   return opts.FinalizeBuilder(&node_builder);
 }
@@ -236,6 +249,25 @@ Node* TensorArrayRead(NodeOut handle, NodeOut index, NodeOut flow_in, DataType
   node_builder.Input(index);
   node_builder.Input(flow_in);
   node_builder.Attr("dtype", dtype);
+  return opts.FinalizeBuilder(&node_builder);
+}
+
+Node* TensorArraySize(NodeOut handle, NodeOut flow_in, const
+                      GraphDefBuilder::Options& opts) {
+  static const string kOpName = "TensorArraySize";
+  return BinaryOp(kOpName, handle, flow_in, opts);
+}
+
+Node* TensorArraySplit(NodeOut handle, NodeOut value, NodeOut lengths, NodeOut
+                       flow_in, const GraphDefBuilder::Options& opts) {
+  if (opts.HaveError()) return nullptr;
+  static const string kOpName = "TensorArraySplit";
+  NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
+                           opts.op_registry());
+  node_builder.Input(handle);
+  node_builder.Input(value);
+  node_builder.Input(lengths);
+  node_builder.Input(flow_in);
   return opts.FinalizeBuilder(&node_builder);
 }
 

@@ -135,7 +135,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fgraph_2eproto() {
     "ce\030\004 \001(\t\022+\n\004attr\030\005 \003(\0132\035.tensorflow.Node"
     "Def.AttrEntry\032B\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022"
     "$\n\005value\030\002 \001(\0132\025.tensorflow.AttrValue:\0028"
-    "\001b\006proto3", 529);
+    "\001B)\n\030org.tensorflow.frameworkB\013GraphProt"
+    "osP\001b\006proto3", 572);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/graph.proto", &protobuf_RegisterTypes);
   GraphDef::default_instance_ = new GraphDef();

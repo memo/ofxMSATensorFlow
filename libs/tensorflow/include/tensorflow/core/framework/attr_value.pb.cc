@@ -190,7 +190,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fattr_5fvalue_2eproto() {
     "\001 \001(\t\0220\n\004attr\030\002 \003(\0132\".tensorflow.NameAtt"
     "rList.AttrEntry\032B\n\tAttrEntry\022\013\n\003key\030\001 \001("
     "\t\022$\n\005value\030\002 \001(\0132\025.tensorflow.AttrValue:"
-    "\0028\001b\006proto3", 851);
+    "\0028\001B-\n\030org.tensorflow.frameworkB\017AttrVal"
+    "ueProtosP\001b\006proto3", 898);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/attr_value.proto", &protobuf_RegisterTypes);
   AttrValue::default_instance_ = new AttrValue();

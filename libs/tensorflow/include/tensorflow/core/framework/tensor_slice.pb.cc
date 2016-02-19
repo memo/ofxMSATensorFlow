@@ -113,7 +113,9 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftensor_5fslice_2eproto() {
     ".proto\022\ntensorflow\"\200\001\n\020TensorSliceProto\022"
     "3\n\006extent\030\001 \003(\0132#.tensorflow.TensorSlice"
     "Proto.Extent\0327\n\006Extent\022\r\n\005start\030\001 \001(\003\022\020\n"
-    "\006length\030\002 \001(\003H\000B\014\n\nhas_lengthb\006proto3", 197);
+    "\006length\030\002 \001(\003H\000B\014\n\nhas_lengthB/\n\030org.ten"
+    "sorflow.frameworkB\021TensorSliceProtosP\001b\006"
+    "proto3", 246);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/tensor_slice.proto", &protobuf_RegisterTypes);
   TensorSliceProto::default_instance_ = new TensorSliceProto();

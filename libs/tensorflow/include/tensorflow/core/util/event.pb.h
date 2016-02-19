@@ -40,6 +40,7 @@ void protobuf_ShutdownFile_tensorflow_2fcore_2futil_2fevent_2eproto();
 
 class Event;
 class LogMessage;
+class SessionLog;
 
 enum LogMessage_Level {
   LogMessage_Level_UNKNOWN = 0,
@@ -66,6 +67,29 @@ inline bool LogMessage_Level_Parse(
   return ::google::protobuf::internal::ParseNamedEnum<LogMessage_Level>(
     LogMessage_Level_descriptor(), name, value);
 }
+enum SessionLog_SessionStatus {
+  SessionLog_SessionStatus_STATUS_UNSPECIFIED = 0,
+  SessionLog_SessionStatus_START = 1,
+  SessionLog_SessionStatus_STOP = 2,
+  SessionLog_SessionStatus_CHECKPOINT = 3,
+  SessionLog_SessionStatus_SessionLog_SessionStatus_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
+  SessionLog_SessionStatus_SessionLog_SessionStatus_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
+};
+bool SessionLog_SessionStatus_IsValid(int value);
+const SessionLog_SessionStatus SessionLog_SessionStatus_SessionStatus_MIN = SessionLog_SessionStatus_STATUS_UNSPECIFIED;
+const SessionLog_SessionStatus SessionLog_SessionStatus_SessionStatus_MAX = SessionLog_SessionStatus_CHECKPOINT;
+const int SessionLog_SessionStatus_SessionStatus_ARRAYSIZE = SessionLog_SessionStatus_SessionStatus_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* SessionLog_SessionStatus_descriptor();
+inline const ::std::string& SessionLog_SessionStatus_Name(SessionLog_SessionStatus value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    SessionLog_SessionStatus_descriptor(), value);
+}
+inline bool SessionLog_SessionStatus_Parse(
+    const ::std::string& name, SessionLog_SessionStatus* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<SessionLog_SessionStatus>(
+    SessionLog_SessionStatus_descriptor(), name, value);
+}
 // ===================================================================
 
 class Event : public ::google::protobuf::Message {
@@ -88,6 +112,7 @@ class Event : public ::google::protobuf::Message {
     kGraphDef = 4,
     kSummary = 5,
     kLogMessage = 6,
+    kSessionLog = 7,
     WHAT_NOT_SET = 0,
   };
 
@@ -190,6 +215,15 @@ class Event : public ::google::protobuf::Message {
   ::tensorflow::LogMessage* release_log_message();
   void set_allocated_log_message(::tensorflow::LogMessage* log_message);
 
+  // optional .tensorflow.SessionLog session_log = 7;
+  bool has_session_log() const;
+  void clear_session_log();
+  static const int kSessionLogFieldNumber = 7;
+  const ::tensorflow::SessionLog& session_log() const;
+  ::tensorflow::SessionLog* mutable_session_log();
+  ::tensorflow::SessionLog* release_session_log();
+  void set_allocated_session_log(::tensorflow::SessionLog* session_log);
+
   WhatCase what_case() const;
   // @@protoc_insertion_point(class_scope:tensorflow.Event)
  private:
@@ -197,6 +231,7 @@ class Event : public ::google::protobuf::Message {
   inline void set_has_graph_def();
   inline void set_has_summary();
   inline void set_has_log_message();
+  inline void set_has_session_log();
 
   inline bool has_what() const;
   void clear_what();
@@ -212,6 +247,7 @@ class Event : public ::google::protobuf::Message {
     ::google::protobuf::internal::ArenaStringPtr graph_def_;
     ::tensorflow::Summary* summary_;
     ::tensorflow::LogMessage* log_message_;
+    ::tensorflow::SessionLog* session_log_;
   } what_;
   mutable int _cached_size_;
   ::google::protobuf::uint32 _oneof_case_[1];
@@ -340,6 +376,134 @@ class LogMessage : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static LogMessage* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class SessionLog : public ::google::protobuf::Message {
+ public:
+  SessionLog();
+  virtual ~SessionLog();
+
+  SessionLog(const SessionLog& from);
+
+  inline SessionLog& operator=(const SessionLog& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SessionLog& default_instance();
+
+  void Swap(SessionLog* other);
+
+  // implements Message ----------------------------------------------
+
+  inline SessionLog* New() const { return New(NULL); }
+
+  SessionLog* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SessionLog& from);
+  void MergeFrom(const SessionLog& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(SessionLog* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  typedef SessionLog_SessionStatus SessionStatus;
+  static const SessionStatus STATUS_UNSPECIFIED = SessionLog_SessionStatus_STATUS_UNSPECIFIED;
+  static const SessionStatus START = SessionLog_SessionStatus_START;
+  static const SessionStatus STOP = SessionLog_SessionStatus_STOP;
+  static const SessionStatus CHECKPOINT = SessionLog_SessionStatus_CHECKPOINT;
+  static inline bool SessionStatus_IsValid(int value) {
+    return SessionLog_SessionStatus_IsValid(value);
+  }
+  static const SessionStatus SessionStatus_MIN =
+    SessionLog_SessionStatus_SessionStatus_MIN;
+  static const SessionStatus SessionStatus_MAX =
+    SessionLog_SessionStatus_SessionStatus_MAX;
+  static const int SessionStatus_ARRAYSIZE =
+    SessionLog_SessionStatus_SessionStatus_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  SessionStatus_descriptor() {
+    return SessionLog_SessionStatus_descriptor();
+  }
+  static inline const ::std::string& SessionStatus_Name(SessionStatus value) {
+    return SessionLog_SessionStatus_Name(value);
+  }
+  static inline bool SessionStatus_Parse(const ::std::string& name,
+      SessionStatus* value) {
+    return SessionLog_SessionStatus_Parse(name, value);
+  }
+
+  // accessors -------------------------------------------------------
+
+  // optional .tensorflow.SessionLog.SessionStatus status = 1;
+  void clear_status();
+  static const int kStatusFieldNumber = 1;
+  ::tensorflow::SessionLog_SessionStatus status() const;
+  void set_status(::tensorflow::SessionLog_SessionStatus value);
+
+  // optional string checkpoint_path = 2;
+  void clear_checkpoint_path();
+  static const int kCheckpointPathFieldNumber = 2;
+  const ::std::string& checkpoint_path() const;
+  void set_checkpoint_path(const ::std::string& value);
+  void set_checkpoint_path(const char* value);
+  void set_checkpoint_path(const char* value, size_t size);
+  ::std::string* mutable_checkpoint_path();
+  ::std::string* release_checkpoint_path();
+  void set_allocated_checkpoint_path(::std::string* checkpoint_path);
+
+  // optional string msg = 3;
+  void clear_msg();
+  static const int kMsgFieldNumber = 3;
+  const ::std::string& msg() const;
+  void set_msg(const ::std::string& value);
+  void set_msg(const char* value);
+  void set_msg(const char* value, size_t size);
+  ::std::string* mutable_msg();
+  ::std::string* release_msg();
+  void set_allocated_msg(::std::string* msg);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.SessionLog)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr checkpoint_path_;
+  ::google::protobuf::internal::ArenaStringPtr msg_;
+  int status_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
+  friend void protobuf_AssignDesc_tensorflow_2fcore_2futil_2fevent_2eproto();
+  friend void protobuf_ShutdownFile_tensorflow_2fcore_2futil_2fevent_2eproto();
+
+  void InitAsDefaultInstance();
+  static SessionLog* default_instance_;
 };
 // ===================================================================
 
@@ -631,6 +795,53 @@ inline void Event::set_allocated_log_message(::tensorflow::LogMessage* log_messa
   // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.log_message)
 }
 
+// optional .tensorflow.SessionLog session_log = 7;
+inline bool Event::has_session_log() const {
+  return what_case() == kSessionLog;
+}
+inline void Event::set_has_session_log() {
+  _oneof_case_[0] = kSessionLog;
+}
+inline void Event::clear_session_log() {
+  if (has_session_log()) {
+    delete what_.session_log_;
+    clear_has_what();
+  }
+}
+inline  const ::tensorflow::SessionLog& Event::session_log() const {
+  // @@protoc_insertion_point(field_get:tensorflow.Event.session_log)
+  return has_session_log()
+      ? *what_.session_log_
+      : ::tensorflow::SessionLog::default_instance();
+}
+inline ::tensorflow::SessionLog* Event::mutable_session_log() {
+  if (!has_session_log()) {
+    clear_what();
+    set_has_session_log();
+    what_.session_log_ = new ::tensorflow::SessionLog;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.Event.session_log)
+  return what_.session_log_;
+}
+inline ::tensorflow::SessionLog* Event::release_session_log() {
+  if (has_session_log()) {
+    clear_has_what();
+    ::tensorflow::SessionLog* temp = what_.session_log_;
+    what_.session_log_ = NULL;
+    return temp;
+  } else {
+    return NULL;
+  }
+}
+inline void Event::set_allocated_session_log(::tensorflow::SessionLog* session_log) {
+  clear_what();
+  if (session_log) {
+    set_has_session_log();
+    what_.session_log_ = session_log;
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.Event.session_log)
+}
+
 inline bool Event::has_what() const {
   return what_case() != WHAT_NOT_SET;
 }
@@ -701,7 +912,113 @@ inline void LogMessage::set_allocated_message(::std::string* message) {
   // @@protoc_insertion_point(field_set_allocated:tensorflow.LogMessage.message)
 }
 
+// -------------------------------------------------------------------
+
+// SessionLog
+
+// optional .tensorflow.SessionLog.SessionStatus status = 1;
+inline void SessionLog::clear_status() {
+  status_ = 0;
+}
+inline ::tensorflow::SessionLog_SessionStatus SessionLog::status() const {
+  // @@protoc_insertion_point(field_get:tensorflow.SessionLog.status)
+  return static_cast< ::tensorflow::SessionLog_SessionStatus >(status_);
+}
+inline void SessionLog::set_status(::tensorflow::SessionLog_SessionStatus value) {
+  
+  status_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.SessionLog.status)
+}
+
+// optional string checkpoint_path = 2;
+inline void SessionLog::clear_checkpoint_path() {
+  checkpoint_path_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& SessionLog::checkpoint_path() const {
+  // @@protoc_insertion_point(field_get:tensorflow.SessionLog.checkpoint_path)
+  return checkpoint_path_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SessionLog::set_checkpoint_path(const ::std::string& value) {
+  
+  checkpoint_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.SessionLog.checkpoint_path)
+}
+inline void SessionLog::set_checkpoint_path(const char* value) {
+  
+  checkpoint_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.SessionLog.checkpoint_path)
+}
+inline void SessionLog::set_checkpoint_path(const char* value, size_t size) {
+  
+  checkpoint_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.SessionLog.checkpoint_path)
+}
+inline ::std::string* SessionLog::mutable_checkpoint_path() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.SessionLog.checkpoint_path)
+  return checkpoint_path_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* SessionLog::release_checkpoint_path() {
+  
+  return checkpoint_path_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SessionLog::set_allocated_checkpoint_path(::std::string* checkpoint_path) {
+  if (checkpoint_path != NULL) {
+    
+  } else {
+    
+  }
+  checkpoint_path_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), checkpoint_path);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.SessionLog.checkpoint_path)
+}
+
+// optional string msg = 3;
+inline void SessionLog::clear_msg() {
+  msg_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& SessionLog::msg() const {
+  // @@protoc_insertion_point(field_get:tensorflow.SessionLog.msg)
+  return msg_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SessionLog::set_msg(const ::std::string& value) {
+  
+  msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:tensorflow.SessionLog.msg)
+}
+inline void SessionLog::set_msg(const char* value) {
+  
+  msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:tensorflow.SessionLog.msg)
+}
+inline void SessionLog::set_msg(const char* value, size_t size) {
+  
+  msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:tensorflow.SessionLog.msg)
+}
+inline ::std::string* SessionLog::mutable_msg() {
+  
+  // @@protoc_insertion_point(field_mutable:tensorflow.SessionLog.msg)
+  return msg_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* SessionLog::release_msg() {
+  
+  return msg_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void SessionLog::set_allocated_msg(::std::string* msg) {
+  if (msg != NULL) {
+    
+  } else {
+    
+  }
+  msg_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), msg);
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.SessionLog.msg)
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 
@@ -717,6 +1034,11 @@ template <> struct is_proto_enum< ::tensorflow::LogMessage_Level> : ::google::pr
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::tensorflow::LogMessage_Level>() {
   return ::tensorflow::LogMessage_Level_descriptor();
+}
+template <> struct is_proto_enum< ::tensorflow::SessionLog_SessionStatus> : ::google::protobuf::internal::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tensorflow::SessionLog_SessionStatus>() {
+  return ::tensorflow::SessionLog_SessionStatus_descriptor();
 }
 
 }  // namespace protobuf

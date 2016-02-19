@@ -115,7 +115,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fkernel_5fdef_2eproto() {
     "raint\022\027\n\017host_memory_arg\030\004 \003(\t\022\r\n\005label\030"
     "\005 \001(\t\032M\n\016AttrConstraint\022\014\n\004name\030\001 \001(\t\022-\n"
     "\016allowed_values\030\002 \001(\0132\025.tensorflow.AttrV"
-    "alueb\006proto3", 332);
+    "alueB-\n\030org.tensorflow.frameworkB\017Kernel"
+    "DefProtosP\001b\006proto3", 379);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/kernel_def.proto", &protobuf_RegisterTypes);
   KernelDef::default_instance_ = new KernelDef();

@@ -7,6 +7,17 @@
 namespace tensorflow {
 namespace ops {
 
+Node* Bitcast(NodeOut input, DataType type, const GraphDefBuilder::Options&
+              opts) {
+  if (opts.HaveError()) return nullptr;
+  static const string kOpName = "Bitcast";
+  NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
+                           opts.op_registry());
+  node_builder.Input(input);
+  node_builder.Attr("type", type);
+  return opts.FinalizeBuilder(&node_builder);
+}
+
 Node* BroadcastGradientArgs(NodeOut s0, NodeOut s1, const
                             GraphDefBuilder::Options& opts) {
   static const string kOpName = "BroadcastGradientArgs";

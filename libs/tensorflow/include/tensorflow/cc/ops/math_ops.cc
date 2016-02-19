@@ -92,6 +92,16 @@ Node* Cos(NodeOut x, const GraphDefBuilder::Options& opts) {
   return UnaryOp(kOpName, x, opts);
 }
 
+Node* Cross(NodeOut a, NodeOut b, const GraphDefBuilder::Options& opts) {
+  static const string kOpName = "Cross";
+  return BinaryOp(kOpName, a, b, opts);
+}
+
+Node* Digamma(NodeOut x, const GraphDefBuilder::Options& opts) {
+  static const string kOpName = "Digamma";
+  return UnaryOp(kOpName, x, opts);
+}
+
 Node* Div(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts) {
   static const string kOpName = "Div";
   return BinaryOp(kOpName, x, y, opts);
@@ -436,6 +446,12 @@ Node* Sqrt(NodeOut x, const GraphDefBuilder::Options& opts) {
 Node* Square(NodeOut x, const GraphDefBuilder::Options& opts) {
   static const string kOpName = "Square";
   return UnaryOp(kOpName, x, opts);
+}
+
+Node* SquaredDifference(NodeOut x, NodeOut y, const GraphDefBuilder::Options&
+                        opts) {
+  static const string kOpName = "SquaredDifference";
+  return BinaryOp(kOpName, x, y, opts);
 }
 
 Node* Sub(NodeOut x, NodeOut y, const GraphDefBuilder::Options& opts) {

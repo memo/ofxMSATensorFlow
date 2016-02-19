@@ -88,7 +88,9 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fallocation_5fdescription_2
     "ionDescription\022\027\n\017requested_bytes\030\001 \001(\003\022"
     "\027\n\017allocated_bytes\030\002 \001(\003\022\026\n\016allocator_na"
     "me\030\003 \001(\t\022\025\n\rallocation_id\030\004 \001(\003\022\034\n\024has_s"
-    "ingle_reference\030\005 \001(\010b\006proto3", 229);
+    "ingle_reference\030\005 \001(\010B9\n\030org.tensorflow."
+    "frameworkB\033AllocationDescriptionProtosP\001"
+    "b\006proto3", 288);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/allocation_description.proto", &protobuf_RegisterTypes);
   AllocationDescription::default_instance_ = new AllocationDescription();

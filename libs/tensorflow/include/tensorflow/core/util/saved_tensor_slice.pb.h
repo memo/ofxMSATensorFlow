@@ -31,6 +31,7 @@
 #include "tensorflow/core/framework/tensor_slice.pb.h"
 #include "tensorflow/core/framework/tensor.pb.h"
 #include "tensorflow/core/framework/types.pb.h"
+#include "tensorflow/core/framework/versions.pb.h"
 // @@protoc_insertion_point(includes)
 
 namespace tensorflow {
@@ -228,12 +229,22 @@ class SavedTensorSliceMeta : public ::google::protobuf::Message {
   const ::google::protobuf::RepeatedPtrField< ::tensorflow::SavedSliceMeta >&
       tensor() const;
 
+  // optional .tensorflow.VersionDef versions = 2;
+  bool has_versions() const;
+  void clear_versions();
+  static const int kVersionsFieldNumber = 2;
+  const ::tensorflow::VersionDef& versions() const;
+  ::tensorflow::VersionDef* mutable_versions();
+  ::tensorflow::VersionDef* release_versions();
+  void set_allocated_versions(::tensorflow::VersionDef* versions);
+
   // @@protoc_insertion_point(class_scope:tensorflow.SavedTensorSliceMeta)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
   ::google::protobuf::RepeatedPtrField< ::tensorflow::SavedSliceMeta > tensor_;
+  ::tensorflow::VersionDef* versions_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_tensorflow_2fcore_2futil_2fsaved_5ftensor_5fslice_2eproto();
   friend void protobuf_AssignDesc_tensorflow_2fcore_2futil_2fsaved_5ftensor_5fslice_2eproto();
@@ -600,6 +611,43 @@ inline const ::google::protobuf::RepeatedPtrField< ::tensorflow::SavedSliceMeta 
 SavedTensorSliceMeta::tensor() const {
   // @@protoc_insertion_point(field_list:tensorflow.SavedTensorSliceMeta.tensor)
   return tensor_;
+}
+
+// optional .tensorflow.VersionDef versions = 2;
+inline bool SavedTensorSliceMeta::has_versions() const {
+  return !_is_default_instance_ && versions_ != NULL;
+}
+inline void SavedTensorSliceMeta::clear_versions() {
+  if (GetArenaNoVirtual() == NULL && versions_ != NULL) delete versions_;
+  versions_ = NULL;
+}
+inline const ::tensorflow::VersionDef& SavedTensorSliceMeta::versions() const {
+  // @@protoc_insertion_point(field_get:tensorflow.SavedTensorSliceMeta.versions)
+  return versions_ != NULL ? *versions_ : *default_instance_->versions_;
+}
+inline ::tensorflow::VersionDef* SavedTensorSliceMeta::mutable_versions() {
+  
+  if (versions_ == NULL) {
+    versions_ = new ::tensorflow::VersionDef;
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.SavedTensorSliceMeta.versions)
+  return versions_;
+}
+inline ::tensorflow::VersionDef* SavedTensorSliceMeta::release_versions() {
+  
+  ::tensorflow::VersionDef* temp = versions_;
+  versions_ = NULL;
+  return temp;
+}
+inline void SavedTensorSliceMeta::set_allocated_versions(::tensorflow::VersionDef* versions) {
+  delete versions_;
+  versions_ = versions;
+  if (versions) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.SavedTensorSliceMeta.versions)
 }
 
 // -------------------------------------------------------------------

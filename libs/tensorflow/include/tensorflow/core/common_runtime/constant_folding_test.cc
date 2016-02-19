@@ -66,20 +66,22 @@ class ConstantFoldingTest : public ::testing::Test {
                        TensorShape shape) {
     EXPECT_TRUE(n->IsConstant());
     const TensorProto* tensor_proto;
-    EXPECT_OK(GetNodeAttr(n->def(), "value", &tensor_proto));
+    TF_EXPECT_OK(GetNodeAttr(n->def(), "value", &tensor_proto));
     DataType dtype;
-    EXPECT_OK(GetNodeAttr(n->def(), "dtype", &dtype));
+    TF_EXPECT_OK(GetNodeAttr(n->def(), "dtype", &dtype));
     Tensor t(dtype);
     EXPECT_TRUE(t.FromProto(*tensor_proto));
     test::ExpectTensorEqual<T>(t, test::AsTensor(values, shape));
   }
 
 // Construct the following graph
-//    s1  s2
-//    |    |
-//    m1   m2
-//    / \ / \
-//   a   b   c
+/*
+      s1  s2
+      |    |
+      m1   m2
+      / \ / \
+     a   b   c
+*/
 #define SIMPLE_GRAPH                                                  \
   Reset();                                                            \
   Graph* g = g_.get();                                                \

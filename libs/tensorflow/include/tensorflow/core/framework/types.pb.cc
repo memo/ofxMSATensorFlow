@@ -75,7 +75,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2ftypes_2eproto() {
     "T_QINT8_REF\020o\022\021\n\rDT_QUINT8_REF\020p\022\021\n\rDT_Q"
     "INT32_REF\020q\022\023\n\017DT_BFLOAT16_REF\020r\022\021\n\rDT_Q"
     "INT16_REF\020s\022\022\n\016DT_QUINT16_REF\020t\022\021\n\rDT_UI"
-    "NT16_REF\020ub\006proto3", 658);
+    "NT16_REF\020uB)\n\030org.tensorflow.frameworkB\013"
+    "TypesProtosP\001b\006proto3", 701);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/types.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_tensorflow_2fcore_2fframework_2ftypes_2eproto);

@@ -40,6 +40,24 @@ Node* ApplyAdam(NodeOut var, NodeOut m, NodeOut v, NodeOut beta1_power, NodeOut
   return opts.FinalizeBuilder(&node_builder);
 }
 
+Node* ApplyFtrl(NodeOut var, NodeOut accum, NodeOut linear, NodeOut grad,
+                NodeOut lr, NodeOut l1, NodeOut l2, NodeOut lr_power, const
+                GraphDefBuilder::Options& opts) {
+  if (opts.HaveError()) return nullptr;
+  static const string kOpName = "ApplyFtrl";
+  NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
+                           opts.op_registry());
+  node_builder.Input(var);
+  node_builder.Input(accum);
+  node_builder.Input(linear);
+  node_builder.Input(grad);
+  node_builder.Input(lr);
+  node_builder.Input(l1);
+  node_builder.Input(l2);
+  node_builder.Input(lr_power);
+  return opts.FinalizeBuilder(&node_builder);
+}
+
 Node* ApplyGradientDescent(NodeOut var, NodeOut alpha, NodeOut delta, const
                            GraphDefBuilder::Options& opts) {
   if (opts.HaveError()) return nullptr;
@@ -96,6 +114,25 @@ Node* SparseApplyAdagrad(NodeOut var, NodeOut accum, NodeOut lr, NodeOut grad,
   node_builder.Input(lr);
   node_builder.Input(grad);
   node_builder.Input(indices);
+  return opts.FinalizeBuilder(&node_builder);
+}
+
+Node* SparseApplyFtrl(NodeOut var, NodeOut accum, NodeOut linear, NodeOut grad,
+                      NodeOut indices, NodeOut lr, NodeOut l1, NodeOut l2,
+                      NodeOut lr_power, const GraphDefBuilder::Options& opts) {
+  if (opts.HaveError()) return nullptr;
+  static const string kOpName = "SparseApplyFtrl";
+  NodeBuilder node_builder(opts.GetNameForOp(kOpName), kOpName,
+                           opts.op_registry());
+  node_builder.Input(var);
+  node_builder.Input(accum);
+  node_builder.Input(linear);
+  node_builder.Input(grad);
+  node_builder.Input(indices);
+  node_builder.Input(lr);
+  node_builder.Input(l1);
+  node_builder.Input(l2);
+  node_builder.Input(lr_power);
   return opts.FinalizeBuilder(&node_builder);
 }
 

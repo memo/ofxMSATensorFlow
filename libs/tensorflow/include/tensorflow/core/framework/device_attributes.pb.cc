@@ -93,8 +93,9 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fdevice_5fattributes_2eprot
     " \001(\0162\030.tensorflow.BusAdjacency\022\023\n\013incarn"
     "ation\030\006 \001(\006\022\034\n\024physical_device_desc\030\007 \001("
     "\t*J\n\014BusAdjacency\022\t\n\005BUS_0\020\000\022\t\n\005BUS_1\020\001\022"
-    "\013\n\007BUS_ANY\020\002\022\027\n\023BUS_NUM_ADJACENCIES\020\003b\006p"
-    "roto3", 325);
+    "\013\n\007BUS_ANY\020\002\022\027\n\023BUS_NUM_ADJACENCIES\020\003B4\n"
+    "\030org.tensorflow.frameworkB\026DeviceAttribu"
+    "tesProtosP\001b\006proto3", 379);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/device_attributes.proto", &protobuf_RegisterTypes);
   DeviceAttributes::default_instance_ = new DeviceAttributes();

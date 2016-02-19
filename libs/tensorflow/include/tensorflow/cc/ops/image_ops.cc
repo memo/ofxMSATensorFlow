@@ -37,6 +37,12 @@ Node* DecodePng(NodeOut contents, const GraphDefBuilder::Options& opts) {
   return UnaryOp(kOpName, contents, opts);
 }
 
+Node* DrawBoundingBoxes(NodeOut images, NodeOut boxes, const
+                        GraphDefBuilder::Options& opts) {
+  static const string kOpName = "DrawBoundingBoxes";
+  return BinaryOp(kOpName, images, boxes, opts);
+}
+
 Node* EncodeJpeg(NodeOut image, const GraphDefBuilder::Options& opts) {
   static const string kOpName = "EncodeJpeg";
   return UnaryOp(kOpName, image, opts);
@@ -97,6 +103,12 @@ Node* ResizeNearestNeighborGrad(NodeOut grads, NodeOut size, const
                                 GraphDefBuilder::Options& opts) {
   static const string kOpName = "ResizeNearestNeighborGrad";
   return BinaryOp(kOpName, grads, size, opts);
+}
+
+Node* SampleDistortedBoundingBox(NodeOut image_size, NodeOut bounding_boxes,
+                                 const GraphDefBuilder::Options& opts) {
+  static const string kOpName = "SampleDistortedBoundingBox";
+  return BinaryOp(kOpName, image_size, bounding_boxes, opts);
 }
 
 }  // namespace ops

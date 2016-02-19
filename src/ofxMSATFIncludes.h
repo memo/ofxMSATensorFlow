@@ -28,5 +28,5 @@
 #include "tensorflow/core/platform/init_main.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/types.h"
-#include "tensorflow/core/public/tensor.h"
+//#include "tensorflow/core/public/tensor.h"
 #include "tensorflow/cc/ops/standard_ops.h"

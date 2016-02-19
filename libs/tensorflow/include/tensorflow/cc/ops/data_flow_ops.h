@@ -521,6 +521,9 @@ Node* StackPush(NodeOut handle, NodeOut elem, const GraphDefBuilder::Options&
 // * size: The size of the array.
 // * dtype: The type of the elements on the tensor_array.
 // * opts:
+//   .WithAttr("dynamic_size", bool): Defaults to false.
+//     A boolean that determines whether writes to the TensorArray
+// are allowed to grow the size.  By default, this is not allowed.
 //   .WithAttr("tensor_array_name", StringPiece): Defaults to "".
 //     Overrides the name used for the temporary tensor_array
 // resource. Default value is the name of the 'TensorArray' op (which
@@ -550,29 +553,54 @@ Node* TensorArray(NodeOut size, DataType dtype, const GraphDefBuilder::Options&
 // Returns a pointer to the created Node.
 Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts);
 
+// Concat the elements from the TensorArray.
+//
+// Takes T elements of shapes (n0 x d0 x d1 x ...), (n1 x d0 x d1 x ...),
+//   ..., (n(T-1) x d0 x d1 x ...)
+// and concatenates them into a Tensor of shape:
+//   (n0 + n1 + ... + n(T-1) x d0 x d1 x ...).
+//
+// All elements must have the same shape (excepting the first dimension).
+//
+// Arguments:
+// * handle: The handle to a TensorArray.
+// * flow_in: A float scalar that enforces proper chaining of operations.
+// * dtype: The type of the elem that is returned.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with outputs:
+// * value: All of the elements in the TensorArray, concatenated along the first
+// axis.
+// * lengths: A vector of the row sizes of the original T elements in the
+// value output.  In the example above, this would be the values:
+// (n1, n2, ..., n(T-1))
+Node* TensorArrayConcat(NodeOut handle, NodeOut flow_in, DataType dtype, const
+                        GraphDefBuilder::Options& opts);
+
 // Creates a TensorArray for storing the gradients of values in the given handle.
 //
 // If the given TensorArray gradient already exists, returns a reference to it.
 //
-// TensorArray gradient calls use an accumulator TensorArray object.  If
-// multiple gradients are calculated and run in the same session, the multiple
-// gradient nodes may accidentally flow throuth the same accumulator TensorArray.
-// This double counts and generally breaks the TensorArray gradient flow.
+// Locks the size of the original TensorArray by disabling its dynamic size flag.
 //
-// The solution is to identify which gradient call this particular
-// TensorArray gradient is being called in.  This is performed by identifying
-// a unique string (e.g. "gradients", "gradients_1", ...) from the input
-// gradient Tensor's name.  This string is used as a suffix when creating
-// the TensorArray gradient object here (the attribute `source`).
+// **A note about the input flow_in:**
 //
-// The attribute `source` is added as a suffix to the forward TensorArray's
-// name when performing the creation / lookup, so that each separate gradient
-// calculation gets its own TensorArray accumulator.
+// The handle flow_in forces the execution of the gradient lookup to occur
+// only after certain other operations have occurred.  For example, when
+// the forward TensorArray is dynamically sized, writes to this TensorArray
+// may resize the object.  The gradient TensorArray is statically sized based
+// on the size of the forward TensorArray when this operation executes.
+// Furthermore, the size of the forward TensorArray is frozen by this call.
+// As a result, the flow is used to ensure that the call to generate the gradient
+// TensorArray only happens after all writes are executed.
+//
+// In terms of e.g. python TensorArray sugar wrappers when using dynamically sized
 //
 // Arguments:
-// * handle: The handle to the forward TensorArray.
-// * source: The gradient source string, used to decide which gradient TensorArray
-// to return.
 // * opts:
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
@@ -580,8 +608,8 @@ Node* TensorArrayClose(NodeOut handle, const GraphDefBuilder::Options& opts);
 //     Add control dependencies on the specified Node(s).
 //
 // Returns a pointer to the created Node.
-Node* TensorArrayGrad(NodeOut handle, StringPiece source, const
-                      GraphDefBuilder::Options& opts);
+Node* TensorArrayGrad(NodeOut handle, NodeOut flow_in, StringPiece source,
+                      const GraphDefBuilder::Options& opts);
 
 // Pack the elements from the TensorArray.
 //
@@ -619,6 +647,52 @@ Node* TensorArrayPack(NodeOut handle, NodeOut flow_in, DataType dtype, const
 // The tensor that is read from the TensorArray.
 Node* TensorArrayRead(NodeOut handle, NodeOut index, NodeOut flow_in, DataType
                       dtype, const GraphDefBuilder::Options& opts);
+
+// Get the current size of the TensorArray.
+//
+// Arguments:
+// * handle: The handle to a TensorArray (output of TensorArray or TensorArrayGrad).
+// * flow_in: A float scalar that enforces proper chaining of operations.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// The current size of the TensorArray.
+Node* TensorArraySize(NodeOut handle, NodeOut flow_in, const
+                      GraphDefBuilder::Options& opts);
+
+// Split the data from the input value into TensorArray elements.
+//
+// Assuming that `lengths` takes on values
+//   (n0, n1, ..., n(T-1))
+// and that `value` has shape
+//   (n0 + n1 + ... + n(T-1) x d0 x d1 x ...),
+// this splits values into a TensorArray with T tensors.
+//
+// TensorArray index t will be the subtensor of values with starting position
+//   (n0 + n1 + ... + n(t-1), 0, 0, ...)
+// and having size
+//   nt x d0 x d1 x ...
+//
+// Arguments:
+// * handle: The handle to a TensorArray.
+// * value: The concatenated tensor to write to the TensorArray.
+// * lengths: The vector of lengths, how to split the rows of value into the
+// TensorArray.
+// * flow_in: A float scalar that enforces proper chaining of operations.
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node, with output:
+// A float scalar that enforces proper chaining of operations.
+Node* TensorArraySplit(NodeOut handle, NodeOut value, NodeOut lengths, NodeOut
+                       flow_in, const GraphDefBuilder::Options& opts);
 
 // Unpack the data from the input value into TensorArray elements.
 //

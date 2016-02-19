@@ -84,7 +84,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fversions_2eproto() {
     "\n(tensorflow/core/framework/versions.pro"
     "to\022\ntensorflow\"K\n\nVersionDef\022\020\n\010producer"
     "\030\001 \001(\005\022\024\n\014min_consumer\030\002 \001(\005\022\025\n\rbad_cons"
-    "umers\030\003 \003(\005b\006proto3", 139);
+    "umers\030\003 \003(\005B,\n\030org.tensorflow.frameworkB"
+    "\016VersionsProtosP\001b\006proto3", 185);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/versions.proto", &protobuf_RegisterTypes);
   VersionDef::default_instance_ = new VersionDef();

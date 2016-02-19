@@ -19,6 +19,29 @@ namespace ops {
 // * a Node* (to pass the first output of that node).
 
 
+// Bitcasts a tensor from one type to another without copying data.
+//
+// Given a tensor `input`, this operation returns a tensor that has the same buffer
+// data as `input` with datatype `type`.
+//
+// If the input datatype `T` is larger than the output datatype `type` then the
+// shape changes from [...] to [..., sizeof(`T`)/sizeof(`type`)].
+//
+// If `T` is smaller than `type`, the operator requires that the rightmost
+// dimension be equal to sizeof(`type`)/sizeof(`T`). The shape then goes from
+// [..., sizeof(`type`)/sizeof(`T`)] to [...].
+//
+// Arguments:
+// * opts:
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* Bitcast(NodeOut input, DataType type, const GraphDefBuilder::Options&
+              opts);
+
 // Return the reduction indices for computing gradients of s0 op s1 with broadcast.
 //
 // This is typically used by gradient computations for a broadcasting operation.
@@ -86,7 +109,7 @@ Node* Concat(NodeOut concat_dim, gtl::ArraySlice<NodeOut> values, const
 //
 // Arguments:
 // * concat_dim: The dimension along which to concatenate.
-// * shape: The `N` int32 vetors representing shape of tensors being concatenated.
+// * shape: The `N` int32 vectors representing shape of tensors being concatenated.
 // * opts:
 //   .WithName(StringPiece): Set the Node's name
 //   .WithDevice(StringPiece): Set the Node's requested device
@@ -1155,7 +1178,7 @@ Node* Unique(NodeOut x, const GraphDefBuilder::Options& opts);
 //
 // ```prettyprint
 // # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
-// y, idx, count = unique(x)
+// y, idx, count = unique_with_counts(x)
 // y ==> [1, 2, 4, 7, 8]
 // idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
 // count ==> [2, 1, 3, 1, 2]

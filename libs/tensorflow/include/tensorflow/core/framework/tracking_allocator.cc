@@ -26,8 +26,10 @@ TrackingAllocator::TrackingAllocator(Allocator* allocator)
       high_watermark_(0),
       total_bytes_(0) {}
 
-void* TrackingAllocator::AllocateRaw(size_t alignment, size_t num_bytes) {
-  void* ptr = allocator_->AllocateRaw(alignment, num_bytes);
+void* TrackingAllocator::AllocateRaw(
+    size_t alignment, size_t num_bytes,
+    const AllocationAttributes& allocation_attr) {
+  void* ptr = allocator_->AllocateRaw(alignment, num_bytes, allocation_attr);
   // If memory is exhausted AllocateRaw returns nullptr, and we should
   // pass this through to the caller
   if (nullptr == ptr) {
@@ -92,6 +94,10 @@ size_t TrackingAllocator::AllocatedSize(void* ptr) {
 
 int64 TrackingAllocator::AllocationId(void* ptr) {
   return allocator_->AllocationId(ptr);
+}
+
+void TrackingAllocator::GetStats(AllocatorStats* stats) {
+  allocator_->GetStats(stats);
 }
 
 std::pair<size_t, size_t> TrackingAllocator::GetSizesAndUnRef() {

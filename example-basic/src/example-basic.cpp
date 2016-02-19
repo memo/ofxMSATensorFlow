@@ -9,8 +9,6 @@
  *
  */
 
-#pragma once
-
 #include "ofMain.h"
 #include "ofxMSATensorFlow.h"
 

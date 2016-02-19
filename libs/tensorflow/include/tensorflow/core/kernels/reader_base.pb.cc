@@ -86,7 +86,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fkernels_2freader_5fbase_2eproto() {
     "oto\022\ntensorflow\"r\n\017ReaderBaseState\022\024\n\014wo"
     "rk_started\030\001 \001(\003\022\025\n\rwork_finished\030\002 \001(\003\022"
     "\034\n\024num_records_produced\030\003 \001(\003\022\024\n\014current"
-    "_work\030\004 \001(\014b\006proto3", 179);
+    "_work\030\004 \001(\014B,\n\026org.tensorflow.kernelsB\020R"
+    "eaderBaseProtosP\001b\006proto3", 225);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/kernels/reader_base.proto", &protobuf_RegisterTypes);
   ReaderBaseState::default_instance_ = new ReaderBaseState();

@@ -258,6 +258,40 @@ Node* SparseSplit(NodeOut split_dim, NodeOut indices, NodeOut values, NodeOut
                   shape, int64 num_split, const GraphDefBuilder::Options&
                   opts);
 
+// Multiply SparseTensor (of rank 2) "A" by dense matrix "B".
+//
+// No validity checking is performed on the indices of A.  However, the following
+// input format is recommended for optimal behavior:
+//
+// if adjoint_a == false:
+//   A should be sorted in lexicographically increasing order.  Use SparseReorder
+//   if you're not sure.
+// if adjoint_a == true:
+//   A should be sorted in order of increasing dimension 1 (i.e., "column major"
+//   order instead of "row major" order).
+//
+// Arguments:
+// * a_indices: 2-D.  The `indices` of the `SparseTensor`, size [nnz x 2] Matrix.
+// * a_values: 1-D.  The `values` of the `SparseTensor`, size [nnz] Vector.
+// * a_shape: 1-D.  The `shape` of the `SparseTensor`, size [2] Vector.
+// * b: 2-D.  A dense Matrix.
+// * opts:
+//   .WithAttr("adjoint_a", bool): Defaults to false.
+//     Use the adjoint of A in the matrix multiply.  If A is complex, this
+// is transpose(conj(A)).  Otherwise it's transpose(A).
+//   .WithAttr("adjoint_b", bool): Defaults to false.
+//     Use the adjoint of B in the matrix multiply.  If B is complex, this
+// is transpose(conj(B)).  Otherwise it's transpose(B).
+//   .WithName(StringPiece): Set the Node's name
+//   .WithDevice(StringPiece): Set the Node's requested device
+//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
+//     Add control dependencies on the specified Node(s).
+//
+// Returns a pointer to the created Node.
+Node* SparseTensorDenseMatMul(NodeOut a_indices, NodeOut a_values, NodeOut
+                              a_shape, NodeOut b, const
+                              GraphDefBuilder::Options& opts);
+
 // Converts a sparse representation into a dense tensor.
 //
 // Builds an array `dense` with shape `output_shape` such that

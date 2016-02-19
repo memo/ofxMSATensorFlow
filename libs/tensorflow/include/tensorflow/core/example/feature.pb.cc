@@ -260,7 +260,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fexample_2ffeature_2eproto() {
     " \003(\0132).tensorflow.FeatureLists.FeatureLi"
     "stEntry\032K\n\020FeatureListEntry\022\013\n\003key\030\001 \001(\t"
     "\022&\n\005value\030\002 \001(\0132\027.tensorflow.FeatureList"
-    ":\0028\001B\032\n\026org.tensorflow.exampleP\001b\006proto3", 680);
+    ":\0028\001B)\n\026org.tensorflow.exampleB\rFeatureP"
+    "rotosP\001b\006proto3", 695);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/example/feature.proto", &protobuf_RegisterTypes);
   BytesList::default_instance_ = new BytesList();

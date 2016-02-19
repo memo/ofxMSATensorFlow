@@ -204,7 +204,8 @@ void protobuf_AddDesc_tensorflow_2fcore_2fframework_2fstep_5fstats_2eproto() {
     "Stats\022\016\n\006device\030\001 \001(\t\022-\n\nnode_stats\030\002 \003("
     "\0132\031.tensorflow.NodeExecStats\";\n\tStepStat"
     "s\022.\n\tdev_stats\030\001 \003(\0132\033.tensorflow.Device"
-    "StepStatsb\006proto3", 857);
+    "StepStatsB-\n\030org.tensorflow.frameworkB\017S"
+    "tepStatsProtosP\001b\006proto3", 904);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "tensorflow/core/framework/step_stats.proto", &protobuf_RegisterTypes);
   AllocatorMemoryUsed::default_instance_ = new AllocatorMemoryUsed();
