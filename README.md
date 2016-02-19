@@ -231,8 +231,8 @@ Instructions in the protobuf README https://github.com/google/protobuf/blob/mast
 Here are some outstanding issues and misc notes.
 
 
-## No image load! - See UPDATE below
-ofImage.load doesn't work for some reason. FreeImage_Load fails. Neither does cvLoadImage (or cv::imread). If I don't use tensorflow, it works. If I use tensorflow, it doesn't. Just fails silently. Needs serious investigation. (So for the inception demo, I had to test it by converting jpgs to raw data in gimp and load them via ofBuffers :/)
+## Jpegs don't load! - See UPDATE below
+ofImage.load doesn't work with jpegs for some reason. FreeImage_Load fails. Neither does cvLoadImage (or cv::imread). If I don't use tensorflow, it works. If I use tensorflow, it doesn't. Just fails silently. Needs serious investigation. PNGs work fine. 
 
 ## No system dialogs - see UPDATE below
 Whatever it is that implements ofSystemDialog, was compiled with protobuf 2.6.1 whereas tensorflow needs protobuf>3.0.0 (not released yet, using dev version). So can't use ofSystemDialogs. Also needs investigation. 
