@@ -27,17 +27,17 @@ echo 'Copying files from '$SRC' to '$DST
 rm -rf $DST
 
 mkdir -p $DST/tensorflow
-cp -R $SRC/tensorflow/core/ $DST/tensorflow
-cp -R $SRC/tensorflow/cc/ $DST/tensorflow
+cp -R $SRC/tensorflow/core $DST/tensorflow
+cp -R $SRC/tensorflow/cc $DST/tensorflow
 
 mkdir -p $DST/third_party
-cp -R $SRC/third_party/eigen3/ $DST/third_party
+cp -R $SRC/third_party/eigen3 $DST/third_party
 
-cp -R $SRC/bazel-genfiles/tensorflow/cc/ $DST/tensorflow
-cp -R $SRC/bazel-genfiles/tensorflow/core/ $DST/tensorflow
+cp -R $SRC/bazel-genfiles/tensorflow/cc $DST/tensorflow
+cp -R $SRC/bazel-genfiles/tensorflow/core $DST/tensorflow
 
 mkdir -p $DST/external/eigen_archive
-cp -R $SRC/bazel-tensorflow/external/eigen_archive/eigen-eigen*/ $DST/external/eigen_archive
+cp -R $SRC/bazel-tensorflow/external/eigen_archive/eigen-eigen* $DST/external/eigen_archive
 
 
 
