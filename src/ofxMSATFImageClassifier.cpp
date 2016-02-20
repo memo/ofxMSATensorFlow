@@ -6,8 +6,14 @@ namespace tf {
 
 
 //--------------------------------------------------------------
+ImageClassifier::~ImageClassifier() {
+    if(session) session->Close();
+}
+
+
+//--------------------------------------------------------------
 bool ImageClassifier::isReady() const {
-    return msa_tf && msa_tf->isReady();
+    return session != nullptr;
 }
 
 
@@ -19,7 +25,10 @@ void ImageClassifier::setUseTexture(bool b) {
 
 
 //--------------------------------------------------------------
-bool ImageClassifier::setup(const ImageClassifier::Settings& settings) {
+bool ImageClassifier::setup(const ImageClassifier::Settings& settings, string device) {
+    // close existing session
+    if(session) session->Close();
+
     this->settings = settings;
 
     // make sure we have rank==3 for image dims (w, h, c)
@@ -43,15 +52,16 @@ bool ImageClassifier::setup(const ImageClassifier::Settings& settings) {
         return false;
     }
 
-    // Initialize tensorflow session, return if error
-    msa_tf = make_shared<ofxMSATensorFlow>();
-    if( !msa_tf->setup() ) return false;
+    // Load graph (i.e. trained model), return if error
+    graph_def = msa::tf::load_graph_def(settings.model_path);
+    if(!graph_def) return false;
 
-    // Load graph (i.e. trained model) add to session, return if error
-    if( !msa_tf->loadGraph(settings.model_path) ) return false;
+    // Initialize tensorflow session with graph, return if error
+    session = msa::tf::create_session_with_graph(graph_def, device);
+    if(!session) return false;
 
     // load text file containing labels (i.e. associating classification index with human readable text)
-    if(!settings.labels_path.empty()) if( !readLabelsFile(ofToDataPath(settings.labels_path), labels) ) return false;
+    if(!settings.labels_path.empty()) if( !read_labels_file(ofToDataPath(settings.labels_path), labels) ) return false;
 
     // initialize input tensor dimensions
     // (not sure what the best way to do this was as there isn't an 'init' method, just a constructor)
@@ -75,12 +85,12 @@ bool ImageClassifier::hack_variables(string substr) {
     // will store names of constant units
     std::vector<string> names;
 
-    int node_count = msa_tf->graph().node_size();
+    int node_count = graph_def->node_size();
     ofLogNotice() << "Classifier::hack_variables - " << node_count << " nodes in graph";
 
     // iterate all nodes
     for(int i=0; i<node_count; i++) {
-        auto n = msa_tf->graph().node(i);
+        auto n = graph_def->node(i);
         ofLogNotice() << i << ":" << n.name();
 
         // if name contains var_hack, add to vector
@@ -89,12 +99,12 @@ bool ImageClassifier::hack_variables(string substr) {
             ofLogNotice() << "......bang";
         }
     }
+
     // run the network inputting the names of the constant variables we want to run
-    if( !msa_tf->run({}, names, {}, &output_tensors) ) {
+    if(!session->Run({}, names, {}, &output_tensors).ok()) {
         ofLogError() << "Error running network for weights and biases variable hack";
         return false;
     }
-
     return true;
 }
 
@@ -103,7 +113,7 @@ bool ImageClassifier::hack_variables(string substr) {
 bool ImageClassifier::classify(const ofPixels &pix)  {
     input_img.setFromPixels(pix);
 
-    if(!msa_tf->isReady()) return false;
+    if(!isReady()) return false;
 
     int iw = settings.image_dims[0];
     int ih = settings.image_dims[1];
@@ -132,7 +142,7 @@ bool ImageClassifier::classify(const ofPixels &pix)  {
     }
 
     // copy data from image into tensorflow's Tensor class
-    msa::tf::imageToTensor(processed_img, image_tensor);
+    msa::tf::image_to_tensor(processed_img, image_tensor);
 
     // Collect inputs into a vector
     // IMPORTANT: the string must match the name of the variable/node in the graph
@@ -148,14 +158,14 @@ bool ImageClassifier::classify(const ofPixels &pix)  {
 
     // feed the data into the network, and request output
     // output_tensors don't need to be initialized or allocated. they will be filled once the network runs
-    if( !msa_tf->run(inputs, { settings.output_layer_name }, {}, &output_tensors) ) {
-        ofLogError() << "Error during running. Check console for details." << endl;
+    if(!session->Run(inputs, { settings.output_layer_name }, {}, &output_tensors).ok()) {
+        ofLogError() << "Error during running. Check console for details.";
         return false;
     }
 
     // copy from tensor to a vector using Mega Super Awesome convenience methods, because it's easy to deal with :)
     // output_tensors[0] contains the main outputs tensor
-    msa::tf::tensorToVector(output_tensors[0], class_probs);
+    msa::tf::tensor_to_vector(output_tensors[0], class_probs);
 }
 
 

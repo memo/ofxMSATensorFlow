@@ -12,11 +12,14 @@
 #include "ofMain.h"
 #include "ofxMSATensorFlow.h"
 
-class ofApp : public ofBaseApp{
+class ofApp : public ofBaseApp {
 public:
 
-    // main interface to everything tensorflow
-    msa::tf::ofxMSATensorFlow    msa_tf;
+    // shared pointer to tensorflow::Session
+    msa::tf::Session_ptr session;
+
+    // shared pointer to tensorflow::GraphDef
+    msa::tf::GraphDef_ptr graph_def;
 
     // input tensors
     tensorflow::Tensor a, b;
@@ -26,16 +29,17 @@ public:
 
 
     //--------------------------------------------------------------
-    void setup(){
+    void setup() {
         ofSetColor(255);
         ofBackground(0);
         ofSetVerticalSync(true);
 
-        // Initialize tensorflow session, return if error
-        if( !msa_tf.setup() ) return;
-
         // Load graph (i.e. trained model) we exported from python, add to session, return if error
-        if( !msa_tf.loadGraph("models/model.pb") ) return;
+        graph_def = msa::tf::load_graph_def("models/model.pb");
+        if(!graph_def) return;
+
+        // initialize session with graph
+        session = msa::tf::create_session_with_graph(graph_def);
 
         // initialize input tensor dimensions
         // (not sure what the best way to do this was as there isn't an 'init' method, just a constructor)
@@ -45,10 +49,10 @@ public:
 
 
     //--------------------------------------------------------------
-    void draw(){
+    void draw() {
         stringstream message;
 
-        if(msa_tf.isReady()) {
+        if(session) {
             // inputs are linked to mouse position, normalized to 0..10
             a.scalar<float>()() = round(ofMap(ofGetMouseX(), 0, ofGetWidth(), 0, 10));
             b.scalar<float>()() = round(ofMap(ofGetMouseY(), 0, ofGetHeight(), 0, 10));
@@ -65,7 +69,7 @@ public:
             vector<string> output_names = { "c" };
 
             // Run the graph, pass in our inputs and desired outputs, evaluate operation and return
-            if( !msa_tf.run(inputs, output_names, {}, &outputs) ) message << "Error during running. Check console for details." << endl;
+            session->Run(inputs, output_names, {}, &outputs);
 
             // outputs is a vector of tensors, we're interested in only the first tensor
             auto &c = outputs[0];
@@ -96,11 +100,7 @@ public:
 };
 
 //========================================================================
-int main( ){
-    ofSetupOpenGL(1024,768,OF_WINDOW);			// <-------- setup the GL context
-
-    // this kicks off the running of my app
-    // can be OF_WINDOW or OF_FULLSCREEN
-    // pass in width and height too:
+int main() {
+    ofSetupOpenGL(1024, 768, OF_WINDOW);
     ofRunApp(new ofApp());
 }

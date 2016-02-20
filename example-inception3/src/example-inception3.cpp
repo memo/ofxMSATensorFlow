@@ -53,11 +53,11 @@ public:
         // classify pixels
         classifier.classify(pix);
 
-        msa::tf::getTopScores(classifier.getOutputTensors()[0], 6, top_label_indices, top_class_probs);
+        msa::tf::get_top_scores(classifier.getOutputTensors()[0], 6, top_label_indices, top_class_probs);
     }
 
     //--------------------------------------------------------------
-    void setup(){
+    void setup() {
         ofLogNotice() << "Initializing... ";
         ofBackground(0);
         ofSetVerticalSync(true);
@@ -170,7 +170,7 @@ public:
 
 
     //--------------------------------------------------------------
-    void keyPressed(int key){
+    void keyPressed(int key) {
         switch(key) {
 
         case 'v':
@@ -188,7 +188,7 @@ public:
     }
 
     //--------------------------------------------------------------
-    void dragEvent(ofDragInfo dragInfo){
+    void dragEvent(ofDragInfo dragInfo) {
         if(dragInfo.files.empty()) return;
 
         string file_path = dragInfo.files[0];
@@ -204,12 +204,7 @@ public:
 
 
 //========================================================================
-int main( ){
-    ofSetupOpenGL(1200, 800, OF_WINDOW);			// <-------- setup the GL context
-
-    // this kicks off the running of my app
-    // can be OF_WINDOW or OF_FULLSCREEN
-    // pass in width and height too:
+int main() {
+    ofSetupOpenGL(1200, 800, OF_WINDOW);
     ofRunApp(new ofApp());
-
 }

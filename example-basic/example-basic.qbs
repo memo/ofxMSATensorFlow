@@ -12,7 +12,7 @@ Project{
         name: { return FileInfo.baseName(path) }
 
         files: [
-            "src/example-basic.cpp",
+            "src/*",
         ]
 
         of.addons: [

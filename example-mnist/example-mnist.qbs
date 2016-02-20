@@ -12,8 +12,7 @@ Project{
         name: { return FileInfo.baseName(path) }
 
         files: [
-            "src/MousePainter.h",
-            "src/example-mnist.cpp",
+            "src/*",
         ]
 
         of.addons: [

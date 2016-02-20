@@ -19,53 +19,57 @@ namespace msa {
 namespace tf {
 
 
-class ofxMSATensorFlow {
-public:
-
-    ~ofxMSATensorFlow();
-
-    // initialize session, return true if successfull
-    bool setup(const tensorflow::SessionOptions & session_options = tensorflow::SessionOptions());
+// Not using this class anymore, taking functional approach. see ofxMSATFUtils
 
 
-    // load a binary graph file and add to sessoin, return true if successfull
-    bool loadGraph(const string path, tensorflow::Env* env = tensorflow::Env::Default());
+//class ofxMSATensorFlow {
+//public:
 
-    // create session with graph
-    // called automatically by loadGraph,
-    // you can also call it manually if you want to create or modify your own graph
-    bool createSessionWithGraph();
+//    ~ofxMSATensorFlow();
 
-    // run the graph with given inputs and outputs, return true if successfull
-    // (more: https://www.tensorflow.org/versions/master/api_docs/cc/ClassSession.html#virtual_Status_tensorflow_Session_Run )
-    bool run(const std::vector<std::pair<string, tensorflow::Tensor> >& inputs,
-             const std::vector<string>& output_tensor_names,
-             const std::vector<string>& target_node_names,
-             std::vector<tensorflow::Tensor>* outputs);
+//    // initialize session, return true if successfull
+//    bool setup(const tensorflow::SessionOptions & session_options = tensorflow::SessionOptions());
 
-    // get status of last action (more: https://www.tensorflow.org/versions/master/api_docs/cc/ClassStatus.html )
-    const tensorflow::Status& status() const { return _status; }
 
-    // get session (more: https://www.tensorflow.org/versions/master/api_docs/cc/ClassSession.html )
-    tensorflow::Session* session() { return _session; }
-    const tensorflow::Session* session() const { return _session; }
+//    // load a binary graph file and add to sessoin, return true if successfull
+//    bool loadGraph(const string path, tensorflow::Env* env = tensorflow::Env::Default(), const string device="/cpu:0");   // use "/gpu:0" for GPU
 
-    // get graph. you can manipulate this, and then call createSessionWithGraph
-    tensorflow::GraphDef& graph() { return _graph_def; }
-    const tensorflow::GraphDef& graph() const { return _graph_def; }
 
-    // get is ready or not (i.e. graph and session have been created successfully)
-    bool isReady() const { return _initialized; }
+//    // create session with graph
+//    // called automatically by loadGraph,
+//    // you can also call it manually if you want to create or modify your own graph
+//    bool createSessionWithGraph(const string device="/cpu:0");    // use "/gpu:0" for GPU
 
-protected:
-    tensorflow::Session* _session = NULL;
-    tensorflow::GraphDef _graph_def;
-    tensorflow::Status _status;
-    bool _initialized = false;
+//    // run the graph with given inputs and outputs, return true if successfull
+//    // (more: https://www.tensorflow.org/versions/master/api_docs/cc/ClassSession.html#virtual_Status_tensorflow_Session_Run )
+//    bool run(const std::vector<std::pair<string, tensorflow::Tensor> >& inputs,
+//             const std::vector<string>& output_tensor_names,
+//             const std::vector<string>& target_node_names,
+//             std::vector<tensorflow::Tensor>* outputs);
 
-    void closeSession();
-    void logError();
-};
+//    // get status of last action (more: https://www.tensorflow.org/versions/master/api_docs/cc/ClassStatus.html )
+//    const tensorflow::Status& status() const { return status_; }
+
+//    // get session (more: https://www.tensorflow.org/versions/master/api_docs/cc/ClassSession.html )
+//    tensorflow::Session* session() { return session_; }
+//    const tensorflow::Session* session() const { return session_; }
+
+//    // get graph. you can manipulate this, and then call createSessionWithGraph
+//    tensorflow::GraphDef& graph() { return graph_def_; }
+//    const tensorflow::GraphDef& graph() const { return graph_def_; }
+
+//    // get is ready or not (i.e. graph and session have been created successfully)
+//    bool isReady() const { return initialized_; }
+
+//protected:
+//    tensorflow::Session* session_ = NULL;
+//    tensorflow::GraphDef graph_def_;
+//    tensorflow::Status status_;
+//    bool initialized_ = false;
+
+//    void closeSession();
+//    void logError();
+//};
 
 }   // namespace tf
 }   // namespace msa

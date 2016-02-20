@@ -15,7 +15,7 @@
 #include "MousePainter.h"
 
 
-class ofApp : public ofBaseApp{
+class ofApp : public ofBaseApp {
 public:
 
     // classifies pixels
@@ -27,7 +27,7 @@ public:
     // deeper networks need more complex visualization ( see http://arxiv.org/abs/1311.2901 )
     msa::tf::LayerVisualizer layer_viz;
 
-    // helper for painting with mouse, used as input image
+    // class for painting with mouse, used as input image
     MousePainter mouse_painter;
 
     // which model to use
@@ -66,7 +66,7 @@ public:
         classifier.setup(settings);
 
         // initialize layer visualizer
-        layer_viz.setup(classifier.getMsatf(), "VIZ_VARHACK");
+        layer_viz.setup(classifier.getSession(), classifier.getGraphDef(), "VIZ_VARHACK");
     }
 
 
@@ -179,12 +179,7 @@ public:
 
 
 //========================================================================
-int main( ) {
-    ofSetupOpenGL(1600, 800, OF_WINDOW);			// <-------- setup the GL context
-
-    // this kicks off the running of my app
-    // can be OF_WINDOW or OF_FULLSCREEN
-    // pass in width and height too:
+int main() {
+    ofSetupOpenGL(1600, 800, OF_WINDOW);
     ofRunApp(new ofApp());
-
 }

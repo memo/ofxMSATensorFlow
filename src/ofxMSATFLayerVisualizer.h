@@ -10,6 +10,7 @@
 #pragma once
 
 #include "ofxMSATFIncludes.h"
+#include "ofxMSATFUtils.h"
 
 namespace msa {
 namespace tf {
@@ -21,7 +22,9 @@ public:
 
     // pass instance of session/graph to visualize
     // visualizes all layers with viz_layer_suffix in the layer name
-    void setup(ofxMSATensorFlow& msa_tf, string viz_layer_suffix);
+    void setup(tensorflow::Session& session, const tensorflow::GraphDef& graph_def, string viz_layer_suffix);
+
+    void setup(Session_ptr session, const GraphDef_ptr graph_def, string viz_layer_suffix) { setup(*session, *graph_def, viz_layer_suffix); }
 
     // draw all layers at (x,y) with total width w, and padding
     // return total height of whatever is drawn

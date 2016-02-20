@@ -5,16 +5,16 @@ namespace msa {
 namespace tf {
 
 
-void LayerVisualizer::setup(ofxMSATensorFlow& msa_tf, string viz_layer_suffix) {
+void LayerVisualizer::setup(tensorflow::Session& session, const tensorflow::GraphDef& graph_def, string viz_layer_suffix) {
     bool do_visualize_nodes = true;
     if(do_visualize_nodes) {
         // first find the layer names that have viz_layer_suffix in them
         std::vector<string> names;
-        int node_count = msa_tf.graph().node_size();
+        int node_count = graph_def.node_size();
 
         // iterate all nodes
         for(int i=0; i<node_count; i++) {
-            auto n = msa_tf.graph().node(i);
+            auto n = graph_def.node(i);
             if(n.name().find(viz_layer_suffix) != std::string::npos) {
                 names.push_back(n.name());
             }
@@ -23,7 +23,7 @@ void LayerVisualizer::setup(ofxMSATensorFlow& msa_tf, string viz_layer_suffix) {
         // lets get the weights from the network to visualize them in images
         // run the network and ask for nodes with the names selected above
         vector<tensorflow::Tensor> output_tensors;
-        if( !msa_tf.run({}, names, {}, &output_tensors)) ofLogError() << "Error running network to get viz layers";
+        if(!session.Run({}, names, {}, &output_tensors).ok()) ofLogError() << "Error running network to get viz layers";
 
         int nlayers = output_tensors.size();    // number of layers in network
 
@@ -35,7 +35,7 @@ void LayerVisualizer::setup(ofxMSATensorFlow& msa_tf, string viz_layer_suffix) {
             // i.e. 10 columns (one per digit) and 784 rows (one for each pixel of the input image)
             // we need to transpose the weights matrix to easily get sections of it out, this is easy as an image
             ofFloatPixels weights_pix_full;  // rows: weights for each digit (10), col: weights for each pixel (784)
-            msa::tf::tensorToPixels(output_tensors[l], weights_pix_full, false, "10");
+            msa::tf::tensor_to_pixels(output_tensors[l], weights_pix_full, false, "10");
             weights_pix_full.rotate90(1);   // now rows: weights for each pixel, cols: weights for each digit
             weights_pix_full.mirror(false, true);
 
@@ -54,7 +54,7 @@ void LayerVisualizer::setup(ofxMSATensorFlow& msa_tf, string viz_layer_suffix) {
 
                 // convert single channel image into rgb (R showing -ve weights, B showing +ve weights)
                 float scaler = nlayers * nunits * 0.1; // arbitrary scaler to work with both shallow and deep model
-                msa::tf::grayToColor(timg, *weight_imgs[l][i], scaler);
+                msa::tf::gray_to_color(timg, *weight_imgs[l][i], scaler);
             }
         }
     }

@@ -177,6 +177,8 @@ On the tensorflow website 'build from sources section' there are instructions to
 	# for debug lib (~330MB)
 	bazel build //tensorflow:libtensorflow_cc.so
 
+Or if you want to build the GPU version (and have followed the CUDA + cuDNN instsallation instructions) add --config=cuda to the bazel build command. 
+
 Once it's finished, grab the file tensorflow/bazel-bin/tensorflow/libtensorflow.so and overwrite the one in ofxMSATensorFlow/libs/lib and anywhere else that you need it (e.g. the LD search path that you decided to put it in above)
 
 ### Copy headers

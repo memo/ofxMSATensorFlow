@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofxMSATFIncludes.h"
+#include "ofxMSATFUtils.h"
 
 namespace msa {
 namespace tf {
@@ -25,11 +26,12 @@ public:
 
     ImageClassifier()                                           {}
     ImageClassifier(const Settings& settings)                   { setup(settings); }
+    ~ImageClassifier();
 
 
-    bool setup(const Settings& settings);
+    bool setup(const Settings& settings, const string device = ""); // device: "/cpu:0", "/gpu:0" etc.
+
     bool isReady() const;
-
 
     // Load pixels into the network, get the results
     bool classify(const ofPixels &pix);
@@ -40,8 +42,11 @@ public:
     //--------------------------------------------------------------
     // GETTERS
 
-    ofxMSATensorFlow& getMsatf()                                { return *msa_tf; }
-    const ofxMSATensorFlow& getMsatf() const                    { return *msa_tf; }
+    Session_ptr& getSession()                                  { return session; }
+    const Session_ptr& getSession() const                      { return session; }
+
+    GraphDef_ptr& getGraphDef()                               { return graph_def; }
+    const GraphDef_ptr& getGraphDef() const                   { return graph_def; }
 
     vector<tensorflow::Tensor>& getOutputTensors()              { return output_tensors; }
     const vector<tensorflow::Tensor>& getOutputTensors() const  { return output_tensors; }
@@ -71,7 +76,9 @@ public:
 
 
 protected:
-    shared_ptr<ofxMSATensorFlow> msa_tf;            // interface to tensorflow
+    msa::tf::Session_ptr session;                   // shared pointer to tensorflow session
+    msa::tf::GraphDef_ptr graph_def;                // shared pointer to tensorflow graph definition
+
     tensorflow::Tensor  image_tensor;               // stores input image as tensor
     vector<tensorflow::Tensor> output_tensors;      // stores all output tensors
 
