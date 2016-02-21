@@ -18,7 +18,7 @@ meta:
 	ADDON_NAME = ofxMSATensorFlow
 	ADDON_DESCRIPTION = Addon to wrap Google's numerical computation / machine learning library TensorFlow
 	ADDON_AUTHOR = Memo Akten
-	ADDON_TAGS = "numerical computarion" "machine learning" "artificial intelligence"
+	ADDON_TAGS = "numerical computation" "machine learning" "artificial intelligence" “deep learning”
 	ADDON_URL = http://github.com/memo/ofxMSATensorFlow
 
 common:
@@ -29,10 +29,13 @@ common:
 	# include search paths, this will be usually parsed from the file system
 	# but if the addon or addon libraries need special search paths they can be
 	# specified here separated by spaces or one per line using +=
-       # ADDON_INCLUDES = src
-       # ADDON_INCLUDES += libs/tensorflow/include
-       # ADDON_INCLUDES += libs/tensorflow/include/third_party/eigen3
-       # ADDON_INCLUDES += libs/tensorflow/include/external/eigen_archive/eigen-eigen-fb2fa0527077
+       ADDON_INCLUDES = src
+       ADDON_INCLUDES += libs/tensorflow/include
+       ADDON_INCLUDES += libs/tensorflow/include/third_party/eigen3
+       ADDON_INCLUDES += libs/tensorflow/include/external/eigen_archive
+       ADDON_INCLUDES += libs/tensorflow/include/external/eigen_archive/eigen-eigen-70505a059011
+	# the last one is different every time the lib is compiled
+	# need to find a fix
 
 
 	# any special flag that should be passed to the compiler when using this
