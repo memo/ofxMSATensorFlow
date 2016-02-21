@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -163,10 +163,21 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // records to an UnknownFieldSet.
   static bool SkipField(io::CodedInputStream* input, uint32 tag);
 
+  // Skips a field value with the given tag.  The input should start
+  // positioned immediately after the tag. Skipped values are recorded to a
+  // CodedOutputStream.
+  static bool SkipField(io::CodedInputStream* input, uint32 tag,
+                        io::CodedOutputStream* output);
+
   // Reads and ignores a message from the input.  Skipped values are simply
   // discarded, not recorded anywhere.  See WireFormat::SkipMessage() for a
   // version that records to an UnknownFieldSet.
   static bool SkipMessage(io::CodedInputStream* input);
+
+  // Reads and ignores a message from the input.  Skipped values are recorded
+  // to a CodedOutputStream.
+  static bool SkipMessage(io::CodedInputStream* input,
+                          io::CodedOutputStream* output);
 
 // This macro does the same thing as WireFormatLite::MakeTag(), but the
 // result is usable as a compile-time constant, which makes it usable
@@ -220,11 +231,7 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static uint32 ZigZagEncode32(int32 n);
   static int32  ZigZagDecode32(uint32 n);
   static uint64 ZigZagEncode64(int64 n);
-  static int64  ZigZagDecode64(uint64 n)
-#ifdef __arm__
-    __attribute__((__optimize__(0)))
-#endif
-  ;
+  static int64  ZigZagDecode64(uint64 n);
 
   // =================================================================
   // Methods for reading/writing individual field.  The implementations
@@ -232,9 +239,9 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // that file to use these.
 
 // Avoid ugly line wrapping
-#define input  io::CodedInputStream*  input
-#define output io::CodedOutputStream* output
-#define field_number int field_number
+#define input  io::CodedInputStream*  input_arg
+#define output io::CodedOutputStream* output_arg
+#define field_number int field_number_arg
 #define INL GOOGLE_ATTRIBUTE_ALWAYS_INLINE
 
   // Read fields, not including tags.  The assumption is that you already
@@ -243,17 +250,17 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // For primitive fields, we just use a templatized routine parameterized by
   // the represented type and the FieldType. These are specialized with the
   // appropriate definition for each declared type.
-  template <typename CType, enum FieldType DeclaredType>
-  static inline bool ReadPrimitive(input, CType* value) INL;
+  template <typename CType, enum FieldType DeclaredType> INL
+  static bool ReadPrimitive(input, CType* value);
 
   // Reads repeated primitive values, with optimizations for repeats.
   // tag_size and tag should both be compile-time constants provided by the
   // protocol compiler.
-  template <typename CType, enum FieldType DeclaredType>
-  static inline bool ReadRepeatedPrimitive(int tag_size,
-                                           uint32 tag,
-                                           input,
-                                           RepeatedField<CType>* value) INL;
+  template <typename CType, enum FieldType DeclaredType> INL
+  static bool ReadRepeatedPrimitive(int tag_size,
+                                    uint32 tag,
+                                    input,
+                                    RepeatedField<CType>* value);
 
   // Identical to ReadRepeatedPrimitive, except will not inline the
   // implementation.
@@ -268,30 +275,56 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   //
   // This is only implemented for the types with fixed wire size, e.g.
   // float, double, and the (s)fixed* types.
-  template <typename CType, enum FieldType DeclaredType>
-  static inline const uint8* ReadPrimitiveFromArray(const uint8* buffer,
-                                                    CType* value) INL;
+  template <typename CType, enum FieldType DeclaredType> INL
+  static const uint8* ReadPrimitiveFromArray(const uint8* buffer, CType* value);
 
   // Reads a primitive packed field.
   //
   // This is only implemented for packable types.
-  template <typename CType, enum FieldType DeclaredType>
-  static inline bool ReadPackedPrimitive(input,
-                                         RepeatedField<CType>* value) INL;
+  template <typename CType, enum FieldType DeclaredType> INL
+  static bool ReadPackedPrimitive(input, RepeatedField<CType>* value);
 
   // Identical to ReadPackedPrimitive, except will not inline the
   // implementation.
   template <typename CType, enum FieldType DeclaredType>
   static bool ReadPackedPrimitiveNoInline(input, RepeatedField<CType>* value);
 
-  // Read a packed enum field. Values for which is_valid() returns false are
-  // dropped.
+  // Read a packed enum field. If the is_valid function is not NULL, values for
+  // which is_valid(value) returns false are silently dropped.
   static bool ReadPackedEnumNoInline(input,
                                      bool (*is_valid)(int),
-                                     RepeatedField<int>* value);
+                                     RepeatedField<int>* values);
 
-  static bool ReadString(input, string* value);
-  static bool ReadBytes (input, string* value);
+  // Read a packed enum field. If the is_valid function is not NULL, values for
+  // which is_valid(value) returns false are appended to unknown_fields_stream.
+  static bool ReadPackedEnumPreserveUnknowns(
+      input,
+      field_number,
+      bool (*is_valid)(int),
+      io::CodedOutputStream* unknown_fields_stream,
+      RepeatedField<int>* values);
+
+  // Read a string.  ReadString(..., string* value) requires an existing string.
+  static inline bool ReadString(input, string* value);
+  // ReadString(..., string** p) is internal-only, and should only be called
+  // from generated code. It starts by setting *p to "new string"
+  // if *p == &GetEmptyStringAlreadyInited().  It then invokes
+  // ReadString(input, *p).  This is useful for reducing code size.
+  static inline bool ReadString(input, string** p);
+  // Analogous to ReadString().
+  static bool ReadBytes(input, string* value);
+  static bool ReadBytes(input, string** p);
+
+
+  enum Operation {
+    PARSE = 0,
+    SERIALIZE = 1,
+  };
+
+  // Returns true if the data is valid UTF-8.
+  static bool VerifyUtf8String(const char* data, int size,
+                               Operation op,
+                               const char* field_name);
 
   static inline bool ReadGroup  (field_number, input, MessageLite* value);
   static inline bool ReadMessage(input, MessageLite* value);
@@ -305,26 +338,37 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   template<typename MessageType>
   static inline bool ReadMessageNoVirtual(input, MessageType* value);
 
+  // The same, but do not modify input's recursion depth.  This is useful
+  // when reading a bunch of groups or messages in a loop, because then the
+  // recursion depth can be incremented before the loop and decremented after.
+  template<typename MessageType>
+  static inline bool ReadGroupNoVirtualNoRecursionDepth(field_number, input,
+                                                        MessageType* value);
+
+  template<typename MessageType>
+  static inline bool ReadMessageNoVirtualNoRecursionDepth(input,
+                                                          MessageType* value);
+
   // Write a tag.  The Write*() functions typically include the tag, so
   // normally there's no need to call this unless using the Write*NoTag()
   // variants.
-  static inline void WriteTag(field_number, WireType type, output) INL;
+  INL static void WriteTag(field_number, WireType type, output);
 
   // Write fields, without tags.
-  static inline void WriteInt32NoTag   (int32 value, output) INL;
-  static inline void WriteInt64NoTag   (int64 value, output) INL;
-  static inline void WriteUInt32NoTag  (uint32 value, output) INL;
-  static inline void WriteUInt64NoTag  (uint64 value, output) INL;
-  static inline void WriteSInt32NoTag  (int32 value, output) INL;
-  static inline void WriteSInt64NoTag  (int64 value, output) INL;
-  static inline void WriteFixed32NoTag (uint32 value, output) INL;
-  static inline void WriteFixed64NoTag (uint64 value, output) INL;
-  static inline void WriteSFixed32NoTag(int32 value, output) INL;
-  static inline void WriteSFixed64NoTag(int64 value, output) INL;
-  static inline void WriteFloatNoTag   (float value, output) INL;
-  static inline void WriteDoubleNoTag  (double value, output) INL;
-  static inline void WriteBoolNoTag    (bool value, output) INL;
-  static inline void WriteEnumNoTag    (int value, output) INL;
+  INL static void WriteInt32NoTag   (int32 value, output);
+  INL static void WriteInt64NoTag   (int64 value, output);
+  INL static void WriteUInt32NoTag  (uint32 value, output);
+  INL static void WriteUInt64NoTag  (uint64 value, output);
+  INL static void WriteSInt32NoTag  (int32 value, output);
+  INL static void WriteSInt64NoTag  (int64 value, output);
+  INL static void WriteFixed32NoTag (uint32 value, output);
+  INL static void WriteFixed64NoTag (uint64 value, output);
+  INL static void WriteSFixed32NoTag(int32 value, output);
+  INL static void WriteSFixed64NoTag(int64 value, output);
+  INL static void WriteFloatNoTag   (float value, output);
+  INL static void WriteDoubleNoTag  (double value, output);
+  INL static void WriteBoolNoTag    (bool value, output);
+  INL static void WriteEnumNoTag    (int value, output);
 
   // Write fields, including tags.
   static void WriteInt32   (field_number,  int32 value, output);
@@ -344,6 +388,10 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 
   static void WriteString(field_number, const string& value, output);
   static void WriteBytes (field_number, const string& value, output);
+  static void WriteStringMaybeAliased(
+      field_number, const string& value, output);
+  static void WriteBytesMaybeAliased(
+      field_number, const string& value, output);
 
   static void WriteGroup(
     field_number, const MessageLite& value, output);
@@ -370,73 +418,59 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 #define output uint8* target
 
   // Like above, but use only *ToArray methods of CodedOutputStream.
-  static inline uint8* WriteTagToArray(field_number, WireType type, output) INL;
+  INL static uint8* WriteTagToArray(field_number, WireType type, output);
 
   // Write fields, without tags.
-  static inline uint8* WriteInt32NoTagToArray   (int32 value, output) INL;
-  static inline uint8* WriteInt64NoTagToArray   (int64 value, output) INL;
-  static inline uint8* WriteUInt32NoTagToArray  (uint32 value, output) INL;
-  static inline uint8* WriteUInt64NoTagToArray  (uint64 value, output) INL;
-  static inline uint8* WriteSInt32NoTagToArray  (int32 value, output) INL;
-  static inline uint8* WriteSInt64NoTagToArray  (int64 value, output) INL;
-  static inline uint8* WriteFixed32NoTagToArray (uint32 value, output) INL;
-  static inline uint8* WriteFixed64NoTagToArray (uint64 value, output) INL;
-  static inline uint8* WriteSFixed32NoTagToArray(int32 value, output) INL;
-  static inline uint8* WriteSFixed64NoTagToArray(int64 value, output) INL;
-  static inline uint8* WriteFloatNoTagToArray   (float value, output) INL;
-  static inline uint8* WriteDoubleNoTagToArray  (double value, output) INL;
-  static inline uint8* WriteBoolNoTagToArray    (bool value, output) INL;
-  static inline uint8* WriteEnumNoTagToArray    (int value, output) INL;
+  INL static uint8* WriteInt32NoTagToArray   (int32 value, output);
+  INL static uint8* WriteInt64NoTagToArray   (int64 value, output);
+  INL static uint8* WriteUInt32NoTagToArray  (uint32 value, output);
+  INL static uint8* WriteUInt64NoTagToArray  (uint64 value, output);
+  INL static uint8* WriteSInt32NoTagToArray  (int32 value, output);
+  INL static uint8* WriteSInt64NoTagToArray  (int64 value, output);
+  INL static uint8* WriteFixed32NoTagToArray (uint32 value, output);
+  INL static uint8* WriteFixed64NoTagToArray (uint64 value, output);
+  INL static uint8* WriteSFixed32NoTagToArray(int32 value, output);
+  INL static uint8* WriteSFixed64NoTagToArray(int64 value, output);
+  INL static uint8* WriteFloatNoTagToArray   (float value, output);
+  INL static uint8* WriteDoubleNoTagToArray  (double value, output);
+  INL static uint8* WriteBoolNoTagToArray    (bool value, output);
+  INL static uint8* WriteEnumNoTagToArray    (int value, output);
 
   // Write fields, including tags.
-  static inline uint8* WriteInt32ToArray(
-    field_number, int32 value, output) INL;
-  static inline uint8* WriteInt64ToArray(
-    field_number, int64 value, output) INL;
-  static inline uint8* WriteUInt32ToArray(
-    field_number, uint32 value, output) INL;
-  static inline uint8* WriteUInt64ToArray(
-    field_number, uint64 value, output) INL;
-  static inline uint8* WriteSInt32ToArray(
-    field_number, int32 value, output) INL;
-  static inline uint8* WriteSInt64ToArray(
-    field_number, int64 value, output) INL;
-  static inline uint8* WriteFixed32ToArray(
-    field_number, uint32 value, output) INL;
-  static inline uint8* WriteFixed64ToArray(
-    field_number, uint64 value, output) INL;
-  static inline uint8* WriteSFixed32ToArray(
-    field_number, int32 value, output) INL;
-  static inline uint8* WriteSFixed64ToArray(
-    field_number, int64 value, output) INL;
-  static inline uint8* WriteFloatToArray(
-    field_number, float value, output) INL;
-  static inline uint8* WriteDoubleToArray(
-    field_number, double value, output) INL;
-  static inline uint8* WriteBoolToArray(
-    field_number, bool value, output) INL;
-  static inline uint8* WriteEnumToArray(
-    field_number, int value, output) INL;
+  INL static uint8* WriteInt32ToArray(field_number, int32 value, output);
+  INL static uint8* WriteInt64ToArray(field_number, int64 value, output);
+  INL static uint8* WriteUInt32ToArray(field_number, uint32 value, output);
+  INL static uint8* WriteUInt64ToArray(field_number, uint64 value, output);
+  INL static uint8* WriteSInt32ToArray(field_number, int32 value, output);
+  INL static uint8* WriteSInt64ToArray(field_number, int64 value, output);
+  INL static uint8* WriteFixed32ToArray(field_number, uint32 value, output);
+  INL static uint8* WriteFixed64ToArray(field_number, uint64 value, output);
+  INL static uint8* WriteSFixed32ToArray(field_number, int32 value, output);
+  INL static uint8* WriteSFixed64ToArray(field_number, int64 value, output);
+  INL static uint8* WriteFloatToArray(field_number, float value, output);
+  INL static uint8* WriteDoubleToArray(field_number, double value, output);
+  INL static uint8* WriteBoolToArray(field_number, bool value, output);
+  INL static uint8* WriteEnumToArray(field_number, int value, output);
 
-  static inline uint8* WriteStringToArray(
-    field_number, const string& value, output) INL;
-  static inline uint8* WriteBytesToArray(
-    field_number, const string& value, output) INL;
+  INL static uint8* WriteStringToArray(
+    field_number, const string& value, output);
+  INL static uint8* WriteBytesToArray(
+    field_number, const string& value, output);
 
-  static inline uint8* WriteGroupToArray(
-      field_number, const MessageLite& value, output) INL;
-  static inline uint8* WriteMessageToArray(
-      field_number, const MessageLite& value, output) INL;
+  INL static uint8* WriteGroupToArray(
+      field_number, const MessageLite& value, output);
+  INL static uint8* WriteMessageToArray(
+      field_number, const MessageLite& value, output);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
   // pointer must point at an instance of MessageType, *not* a subclass (or
   // the subclass must not override SerializeWithCachedSizes()).
   template<typename MessageType>
-  static inline uint8* WriteGroupNoVirtualToArray(
-    field_number, const MessageType& value, output) INL;
+  INL static uint8* WriteGroupNoVirtualToArray(
+    field_number, const MessageType& value, output);
   template<typename MessageType>
-  static inline uint8* WriteMessageNoVirtualToArray(
-    field_number, const MessageType& value, output) INL;
+  INL static uint8* WriteMessageNoVirtualToArray(
+    field_number, const MessageType& value, output);
 
 #undef output
 #undef input
@@ -487,12 +521,17 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   // A helper method for the repeated primitive reader. This method has
   // optimizations for primitive types that have fixed size on the wire, and
   // can be read using potentially faster paths.
-  template <typename CType, enum FieldType DeclaredType>
-  static inline bool ReadRepeatedFixedSizePrimitive(
+  template <typename CType, enum FieldType DeclaredType> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+  static bool ReadRepeatedFixedSizePrimitive(
       int tag_size,
       uint32 tag,
       google::protobuf::io::CodedInputStream* input,
-      RepeatedField<CType>* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+      RepeatedField<CType>* value);
+
+  // Like ReadRepeatedFixedSizePrimitive but for packed primitive fields.
+  template <typename CType, enum FieldType DeclaredType> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+  static bool ReadPackedFixedSizePrimitive(google::protobuf::io::CodedInputStream* input,
+                                           RepeatedField<CType>* value);
 
   static const CppType kFieldTypeToCppTypeMap[];
   static const WireFormatLite::WireType kWireTypeForFieldType[];
@@ -521,6 +560,24 @@ class LIBPROTOBUF_EXPORT FieldSkipper {
   // saves it as an unknown varint.
   virtual void SkipUnknownEnum(int field_number, int value);
 };
+
+// Subclass of FieldSkipper which saves skipped fields to a CodedOutputStream.
+
+class LIBPROTOBUF_EXPORT CodedOutputStreamFieldSkipper : public FieldSkipper {
+ public:
+  explicit CodedOutputStreamFieldSkipper(io::CodedOutputStream* unknown_fields)
+      : unknown_fields_(unknown_fields) {}
+  virtual ~CodedOutputStreamFieldSkipper() {}
+
+  // implements FieldSkipper -----------------------------------------
+  virtual bool SkipField(io::CodedInputStream* input, uint32 tag);
+  virtual bool SkipMessage(io::CodedInputStream* input);
+  virtual void SkipUnknownEnum(int field_number, int value);
+
+ protected:
+  io::CodedOutputStream* unknown_fields_;
+};
+
 
 // inline methods ====================================================
 
@@ -603,7 +660,7 @@ inline double WireFormatLite::DecodeDouble(uint64 value) {
 
 inline uint32 WireFormatLite::ZigZagEncode32(int32 n) {
   // Note:  the right-shift must be arithmetic
-  return (n << 1) ^ (n >> 31);
+  return (static_cast<uint32>(n) << 1) ^ (n >> 31);
 }
 
 inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
@@ -612,11 +669,24 @@ inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
 
 inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
   // Note:  the right-shift must be arithmetic
-  return (n << 1) ^ (n >> 63);
+  return (static_cast<uint64>(n) << 1) ^ (n >> 63);
 }
 
 inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
   return (n >> 1) ^ -static_cast<int64>(n & 1);
+}
+
+// String is for UTF-8 text only, but, even so, ReadString() can simply
+// call ReadBytes().
+
+inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                       string* value) {
+  return ReadBytes(input, value);
+}
+
+inline bool WireFormatLite::ReadString(io::CodedInputStream* input,
+                                       string** p) {
+  return ReadBytes(input, p);
 }
 
 }  // namespace internal

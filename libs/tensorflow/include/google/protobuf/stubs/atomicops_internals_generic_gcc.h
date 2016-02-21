@@ -1,6 +1,4 @@
-// Protocol Buffers - Google's data interchange format
 // Copyright 2013 Red Hat Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -63,8 +61,8 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
 inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
-  __atomic_compare_exchange(ptr, &old_value, &new_value, true,
-                            __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE);
+  __atomic_compare_exchange_n(ptr, &old_value, new_value, true,
+                              __ATOMIC_ACQUIRE, __ATOMIC_ACQUIRE);
   return old_value;
 }
 
@@ -72,7 +70,7 @@ inline Atomic32 Release_CompareAndSwap(volatile Atomic32* ptr,
                                        Atomic32 old_value,
                                        Atomic32 new_value) {
   __atomic_compare_exchange_n(ptr, &old_value, new_value, true,
-                            __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
+                              __ATOMIC_RELEASE, __ATOMIC_ACQUIRE);
   return old_value;
 }
 
@@ -85,7 +83,7 @@ inline void MemoryBarrier() {
 }
 
 inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
-  __atomic_store_n(ptr, value, __ATOMIC_ACQUIRE);
+  __atomic_store_n(ptr, value, __ATOMIC_SEQ_CST);
 }
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
@@ -101,7 +99,7 @@ inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
 }
 
 inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  return __atomic_load_n(ptr, __ATOMIC_RELEASE);
+  return __atomic_load_n(ptr, __ATOMIC_SEQ_CST);
 }
 
 #ifdef __LP64__
@@ -126,7 +124,7 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
                                          Atomic64 old_value,
                                          Atomic64 new_value) {
   __atomic_compare_exchange_n(ptr, &old_value, new_value, true,
-                            __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+                              __ATOMIC_RELAXED, __ATOMIC_RELAXED);
   return old_value;
 }
 

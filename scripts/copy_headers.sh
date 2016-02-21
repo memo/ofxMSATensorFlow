@@ -21,6 +21,12 @@ fi
 SRC=$1  # command line argument is the location of tensorflow repo
 
 
+if [[ $# -eq 2 ]] ; then
+	DO_CLEANUP=$2
+else
+	DO_CLEANUP=false
+fi
+
 echo 'Copying files from '$SRC' to '$DST
 
 # remove existing headers for a clean start
@@ -39,15 +45,19 @@ cp -R $SRC/bazel-genfiles/tensorflow/core $DST/tensorflow
 mkdir -p $DST/external/eigen_archive
 cp -R $SRC/bazel-tensorflow/external/eigen_archive/eigen-eigen* $DST/external/eigen_archive
 
+cp -R $SRC/google/protobuf/src/google/ $DST/google
 
 
-#find $DST -name '*.cpp' -type f -delete
-#find $DST -name '*.c' -type f -delete
-#find $DST -name '*.cc' -type f -delete
-#find $DST -name '*.cxx' -type f -delete
-#find $DST -name '*.cmake' -type f -delete
-#find $DST -name '*.py' -type f -delete
-#find $DST -name '*.txt' -type f -delete
-#find $DST -name '*.dat' -type f -delete
-#find $DST -name '*.' -type f -delete
-#find $DST -name '*.sh' -type f -delete
+if $DO_CLEANUP ; then
+	echo "deleting files src files from "$DST 
+	find $DST -name '*.cpp' -type f -delete
+	find $DST -name '*.c' -type f -delete
+	find $DST -name '*.cc' -type f -delete
+	find $DST -name '*.cxx' -type f -delete
+	find $DST -name '*.cmake' -type f -delete
+	find $DST -name '*.py' -type f -delete
+	find $DST -name '*.txt' -type f -delete
+	find $DST -name '*.dat' -type f -delete
+	find $DST -name '*.sh' -type f -delete
+	find $DST -name '*.proto' -type f -delete
+fi

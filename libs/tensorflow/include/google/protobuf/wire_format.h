@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -79,7 +79,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   static inline WireFormatLite::WireType WireTypeForField(
       const FieldDescriptor* field);
 
-  // Given a FieldSescriptor::Type return its WireType
+  // Given a FieldDescriptor::Type return its WireType
   static inline WireFormatLite::WireType WireTypeForFieldType(
       FieldDescriptor::Type type);
 
@@ -138,6 +138,14 @@ class LIBPROTOBUF_EXPORT WireFormat {
   static bool SkipMessage(io::CodedInputStream* input,
                           UnknownFieldSet* unknown_fields);
 
+  // Read a packed enum field. If the is_valid function is not NULL, values for
+  // which is_valid(value) returns false are appended to unknown_fields_stream.
+  static bool ReadPackedEnumPreserveUnknowns(io::CodedInputStream* input,
+                                             uint32 field_number,
+                                             bool (*is_valid)(int),
+                                             UnknownFieldSet* unknown_fields,
+                                             RepeatedField<int>* values);
+
   // Write the contents of an UnknownFieldSet to the output.
   static void SerializeUnknownFields(const UnknownFieldSet& unknown_fields,
                                      io::CodedOutputStream* output);
@@ -180,7 +188,7 @@ class LIBPROTOBUF_EXPORT WireFormat {
   // of packed repeated fields.
   static uint32 MakeTag(const FieldDescriptor* field);
 
-  // Parse a single field.  The input should start out positioned immidately
+  // Parse a single field.  The input should start out positioned immediately
   // after the tag.
   static bool ParseAndMergeField(
       uint32 tag,
@@ -223,21 +231,32 @@ class LIBPROTOBUF_EXPORT WireFormat {
       const Message& message);
 
   enum Operation {
-    PARSE,
-    SERIALIZE,
+    PARSE = 0,
+    SERIALIZE = 1,
   };
 
   // Verifies that a string field is valid UTF8, logging an error if not.
+  // This function will not be called by newly generated protobuf code
+  // but remains present to support existing code.
   static void VerifyUTF8String(const char* data, int size, Operation op);
+  // The NamedField variant takes a field name in order to produce an
+  // informative error message if verification fails.
+  static void VerifyUTF8StringNamedField(const char* data,
+                                         int size,
+                                         Operation op,
+                                         const char* field_name);
 
  private:
-  // Verifies that a string field is valid UTF8, logging an error if not.
-  static void VerifyUTF8StringFallback(
-      const char* data,
-      int size,
-      Operation op);
+  // Skip a MessageSet field.
+  static bool SkipMessageSetField(io::CodedInputStream* input,
+                                  uint32 field_number,
+                                  UnknownFieldSet* unknown_fields);
 
-
+  // Parse a MessageSet field.
+  static bool ParseAndMergeMessageSetField(uint32 field_number,
+                                           const FieldDescriptor* field,
+                                           Message* message,
+                                           io::CodedInputStream* input);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };
@@ -262,7 +281,7 @@ class LIBPROTOBUF_EXPORT UnknownFieldSetFieldSkipper : public FieldSkipper {
 
 inline WireFormatLite::WireType WireFormat::WireTypeForField(
     const FieldDescriptor* field) {
-  if (field->options().packed()) {
+  if (field->is_packed()) {
     return WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
   } else {
     return WireTypeForFieldType(field->type());
@@ -293,10 +312,20 @@ inline int WireFormat::TagSize(int field_number, FieldDescriptor::Type type) {
 inline void WireFormat::VerifyUTF8String(const char* data, int size,
     WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormat::VerifyUTF8StringFallback(data, size, op);
+  WireFormatLite::VerifyUtf8String(
+      data, size, static_cast<WireFormatLite::Operation>(op), NULL);
 #else
   // Avoid the compiler warning about unsued variables.
   (void)data; (void)size; (void)op;
+#endif
+}
+
+inline void WireFormat::VerifyUTF8StringNamedField(
+    const char* data, int size, WireFormat::Operation op,
+    const char* field_name) {
+#ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+  WireFormatLite::VerifyUtf8String(
+      data, size, static_cast<WireFormatLite::Operation>(op), field_name);
 #endif
 }
 
