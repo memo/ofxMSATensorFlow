@@ -166,6 +166,8 @@ bool ImageClassifier::classify(const ofPixels &pix)  {
     // copy from tensor to a vector using Mega Super Awesome convenience methods, because it's easy to deal with :)
     // output_tensors[0] contains the main outputs tensor
     msa::tf::tensor_to_vector(output_tensors[0], class_probs);
+
+    return true;
 }
 
 
