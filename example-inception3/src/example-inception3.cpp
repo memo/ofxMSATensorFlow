@@ -22,7 +22,7 @@ public:
     msa::tf::ImageClassifier classifier;
 
     // for webcam input
-    shared_ptr<ofVideoGrabber> video_grabber;
+//    shared_ptr<ofVideoGrabber> video_grabber;
 
     // folder of images to classify
     ofDirectory image_dir;
@@ -93,16 +93,16 @@ public:
     //--------------------------------------------------------------
     void update() {
         // if video_grabber active,
-        if(video_grabber) {
-            // grab frame
-            video_grabber->update();
+//        if(video_grabber) {
+//            // grab frame
+//            video_grabber->update();
 
-            if(video_grabber->isFrameNew()) {
-                // send to classification if keypressed
-                if(ofGetKeyPressed(' '))
-                    classify(video_grabber->getPixels());
-            }
-        }
+//            if(video_grabber->isFrameNew()) {
+//                // send to classification if keypressed
+//                if(ofGetKeyPressed(' '))
+//                    classify(video_grabber->getPixels());
+//            }
+//        }
     }
 
 
@@ -112,11 +112,11 @@ public:
             ofSetColor(255);
 
             // if video grabber active, draw in bottom left corner
-            if(video_grabber) {
-                int vy = ofGetHeight() - 240;
-                ofDrawBitmapString("Press SPACE to classify", 10, vy - 10);
-                video_grabber->draw(0, vy, 320, 240);
-            }
+//            if(video_grabber) {
+//                int vy = ofGetHeight() - 240;
+//                ofDrawBitmapString("Press SPACE to classify", 10, vy - 10);
+//                video_grabber->draw(0, vy, 320, 240);
+//            }
 
             float x = 0;
 
@@ -174,11 +174,11 @@ public:
         switch(key) {
 
         case 'v':
-            if(video_grabber) video_grabber = NULL;
-            else {
-                video_grabber = make_shared<ofVideoGrabber>();
-                video_grabber->setup(320, 240);
-            }
+//            if(video_grabber) video_grabber = NULL;
+//            else {
+//                video_grabber = make_shared<ofVideoGrabber>();
+//                video_grabber->setup(320, 240);
+//            }
             break;
 
         case 'l':
