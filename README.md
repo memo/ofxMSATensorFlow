@@ -72,7 +72,7 @@ Download or clone the ofxMSATensorFlow repo into your openframeworks/addons fold
 https://github.com/memo/ofxMSATensorFlow
 
 ## Download binaries
-**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the [Releases](https://github.com/memo/ofxMSATensorFlow/releases) section of this repo. Copy the files to their corresponding folders. e.g. from example-mnist-data.tar.gz / data to ofxMSATensorFlow/example-mnist/data. etc. And make sure to download the lib for your platform (currently only linux64 or OSX). e.g. to ofxMSATensorFlow/libs/tensorflow/lib/linux64/libtensorflow_cc.so. For linux64 there is also a GPU version (see more GPU instructions below)
+**Important**: You need the precompiled library, and data for the examples. I don't include these in the repo as they're huge. You can find them zipped up in the [Releases](https://github.com/memo/ofxMSATensorFlow/releases) section of this repo. Copy the files to their corresponding folders. e.g. from example-mnist-data.tar.gz / data to ofxMSATensorFlow/example-mnist/bin/data. etc. And make sure to download the lib for your platform (currently only linux64 or OSX). e.g. to ofxMSATensorFlow/libs/tensorflow/lib/linux64/libtensorflow_cc.so. For linux64 there is also a GPU version (see more GPU instructions below)
 
 https://github.com/memo/ofxMSATensorFlow/releases
 
