@@ -13,7 +13,7 @@ You could potentially do steps 1-2 in openframeworks as well, but it seems a lot
 
 **Note**: I provide precompiled libraries for **Linux** and **OSX**. For linux there are both **GPU** and **CPU**-only libs, OSX is **CPU**-only (tensorflow supports GPU only on linux for now). The libraries aren't in the repo but can be downloaded from the [releases section](https://github.com/memo/ofxMSATensorFlow/releases) (detailed installation instructions below). Windows might be a pain since Bazel (the build platform) is *nix only - and would involve either porting Bazel, or rebuilding make/cmake files.
 
-The project files for the examples are for **QTCreator**, and work on both OSX and Linux. I've also added **xcode projects**. To use another IDE just add the one library and set the header include paths from *addon_config.mk*.
+The project files for the examples are for **QTCreator**, and work on both OSX and Linux. I've also ~~added~~ tested **xcode projects** (but I don't include them in the repo because I don't have a mac and won't be able to maintain them. The awesome *projectGenerator* bundled with openframeworks can create working xcode projects with the addon. more on this below). To use another IDE just add the one library and set the header include paths from *addon_config.mk*.
 
 Since this is such an early version of the addon, I'll probably break backwards compatibility with new updates. Sorry about that!
 
