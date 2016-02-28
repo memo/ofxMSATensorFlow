@@ -65,7 +65,7 @@ common:
 
 	# when parsing the file system looking for sources exclude this for all or
 	# a specific platform
-	ADDON_SOURCES_EXCLUDE = libs/tensorflow/
+	ADDON_SOURCES_EXCLUDE = libs/tensorflow/%
 	
 	# when parsing the file system looking for libraries exclude this for all or
 	# a specific platform

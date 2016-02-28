@@ -118,7 +118,7 @@ You can open projects from QT Creator by selecting the .qbs file, edit, run etc.
 The addon management in **QT Creator** is awesome (hat's off Arturo and team!), so all you have to do is add "ofxMSATensorFlow" under the addons section and it works. You can even do this while the project is open. This works on both **OSX** and **Linux**. 
 
 ###XCode
-The **project generator** mostly works with the addon for **xcode**, but currently adds **all** of the files in ofxMSATensorFlow/libs/tensorflow/include to the project sources,  whereas **none** of them should be added. The addons_config.mk is correct as far as I can tell (and works in QTCreator) so perhaps this is a bug? So for now if you use the project generator to create xcode projects you'll need to manually remove addons/ofxMSATensorFlow/libs/tensorflow/include from your xcode project. 
+The **project generator** works nicely with the addon for **xcode** (details in addons_config.mk).
 
 ###Other
 You need to include the library libtensorflow_cc.so for your plaatform and the header search folders listed in [addon_config.mk](https://github.com/memo/ofxMSATensorFlow/blob/master/addon_config.mk)
