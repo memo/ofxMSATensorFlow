@@ -139,15 +139,17 @@ The above just installs the python bindings for tensorflow, it has no effect on 
 Follow the 'Installing from sources' instructions at 
 https://www.tensorflow.org/versions/master/get_started/os_setup.html#installing-from-sources
 
-**IMPORTANT**: However,  clone **my repo** for tensorflow. Or clone the original, but merge from mine (I have an updated build file with the C++ stuff). Remember to get the submodules. 
+~~**IMPORTANT**: However,  clone **my repo** for tensorflow. Or clone the original, but merge from mine (I have an updated build file with the C++ stuff). Remember to get the submodules. ~~
+~~	git clone --recurse-submodules http://github.com/memo/tensorflow~~
+~~or ~~
+~~	git clone --recurse-submodules https://github.com/tensorflow/tensorflow~~
+~~	git pull http://github.com/memo/tensorflow~~	
 
-	git clone --recurse-submodules http://github.com/memo/tensorflow
+The above change has been merged upstream, so you can now just clone the official tensorflow repo
 
-or 
+	git clone --recurse-submodules http://github.com/tensorflow/tensorflow
 
-	git clone --recurse-submodules https://github.com/tensorflow/tensorflow
-	git pull http://github.com/memo/tensorflow
-	
+
 **Once you've installed all of the dependencies and other instructions (e.g. if building with GPU), to build the C++ library go to the root of your tensorflow folder and type one of the following:**
 
 	# for optimized (release) lib (~42MB)
