@@ -37,7 +37,8 @@ import os
 
 out_path = '../data/model-deep'
 out_fname = 'mnist-deep'
-train_file ='ckpt-deep/'+out_fname + '.ckpt'
+train_dir = './ckpt-deep/'
+train_file = train_dir + out_fname + '.ckpt'
 
 # Get data
 mnist = input_data.read_data_sets("training_data/", one_hot=True)
@@ -130,8 +131,11 @@ with tf.Session() as sess:
     # Can't loads this in C++ (shame), only useful for contining training
     saver = tf.train.Saver()    
 
-    #comment out this line to start training from the beginning
-    saver.restore(sess, train_file); 
+    if os.path.exists(train_dir):
+        if os.path.exists(train_file):
+            saver.restore(sess, train_file);
+    else:
+        os.makedirs(train_dir);
     
     for i in range(5000):
         batch = mnist.train.next_batch(50)
