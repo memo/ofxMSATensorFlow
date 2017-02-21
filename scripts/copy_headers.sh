@@ -9,7 +9,7 @@ if [[ $# -eq 0 ]] ; then
 	echo 'Missing argument. I need the path to your tensorflow repo'
 	echo
 	echo 'Usage: copy_headers.sh path/to/tensorflow'
-	echo 'e.g.:  copy_headers.sh ~/DEV/tensorflow'
+	echo 'e.g.:  copy_headers.sh ~/dev/tensorflow'
 	echo
 	echo 'Also note, it will copy the headers to '$DST
 	echo 'so make sure you are running this script from ofxMSATensorFlow/scripts'	
@@ -39,17 +39,19 @@ cp -R $SRC/tensorflow/cc $DST/tensorflow
 mkdir -p $DST/third_party
 cp -R $SRC/third_party/eigen3 $DST/third_party
 
+#rm -rf $DST/third_party/eigen3/unsupported
+cp -Rf $SRC/bazel-tensorflow/external/eigen_archive/unsupported $DST
+
 cp -R $SRC/bazel-genfiles/tensorflow/cc $DST/tensorflow
 cp -R $SRC/bazel-genfiles/tensorflow/core $DST/tensorflow
 
-mkdir -p $DST/external/eigen_archive
-cp -R $SRC/bazel-tensorflow/external/eigen_archive/eigen-eigen* $DST/external/eigen_archive
+cp -R $SRC/bazel-tensorflow/external/eigen_archive/Eigen $DST/Eigen
 
-cp -R $SRC/google/protobuf/src/google/ $DST/google
+#cp -R $SRC/google/protobuf/src/google/ $DST/google
 
 
 if $DO_CLEANUP ; then
-	echo "deleting files src files from "$DST 
+	echo "Cleaning up. Deleting src files from "$DST 
 	find $DST -name '*.cpp' -type f -delete
 	find $DST -name '*.c' -type f -delete
 	find $DST -name '*.cc' -type f -delete
