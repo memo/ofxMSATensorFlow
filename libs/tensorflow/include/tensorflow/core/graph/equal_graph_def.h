@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -30,8 +30,10 @@ namespace tensorflow {
 bool EqualGraphDef(const GraphDef& actual, const GraphDef& expected,
                    string* diff);
 
-// Determines if actual and expected are equal, ignoring ordering of
-// attrs and control inputs.  If the NodeDefs are different and
+// Determines if actual and expected are equal, ignoring: ordering of
+// attrs, internal attributes, and control inputs.
+//
+// If the NodeDefs are different and
 // diff != nullptr, *diff is set to an explanation of the difference.
 bool EqualNodeDef(const NodeDef& actual, const NodeDef& expected, string* diff);
 

@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,10 @@ limitations under the License.
 #include "tensorflow/core/lib/strings/numbers.h"
 #include "tensorflow/core/platform/macros.h"
 #include "tensorflow/core/platform/types.h"
+
+namespace Eigen {
+struct half;
+}
 
 // The AlphaNum type was designed to be used as the parameter type for StrCat().
 // Any routine accepting either a string or a number may accept it.
@@ -118,6 +122,7 @@ class AlphaNum {
   AlphaNum(double f)  // NOLINT(runtime/explicit)
       : piece_(digits_, strlen(DoubleToBuffer(f, digits_))) {}
 
+  AlphaNum(const Eigen::half &f);  // NOLINT(runtime/explicit)
   AlphaNum(Hex hex);  // NOLINT(runtime/explicit)
 
   AlphaNum(const char *c_str) : piece_(c_str) {}   // NOLINT(runtime/explicit)
@@ -172,9 +177,6 @@ string StrCat(const AlphaNum &a, const AlphaNum &b,
 string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
               const AlphaNum &d) TF_MUST_USE_RESULT;
 
-// inline definitions must be duplicated due to TF_MUST_USE_RESULT
-inline string StrCat(const AlphaNum &a) { return string(a.data(), a.size()); }
-
 namespace internal {
 
 // Do not call directly - this is not part of the public API.
@@ -190,8 +192,8 @@ string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
               const AV &... args) TF_MUST_USE_RESULT;
 
 template <typename... AV>
-inline string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
-                     const AlphaNum &d, const AlphaNum &e, const AV &... args) {
+string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
+              const AlphaNum &d, const AlphaNum &e, const AV &... args) {
   return internal::CatPieces({a.Piece(), b.Piece(), c.Piece(), d.Piece(),
                               e.Piece(),
                               static_cast<const AlphaNum &>(args).Piece()...});

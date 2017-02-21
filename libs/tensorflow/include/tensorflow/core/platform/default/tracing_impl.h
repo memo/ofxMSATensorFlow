@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -51,8 +51,7 @@ inline void Tracing::RecordEvent(EventCategory category, uint64 arg) {
 }
 
 inline Tracing::ScopedActivity::ScopedActivity(EventCategory category,
-                                               uint64 arg)
-    : enabled_(false), region_id_(category_id_[category]) {}
+                                               uint64 arg) {}
 
 inline Tracing::ScopedActivity::~ScopedActivity() {}
 

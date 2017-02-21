@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,10 +25,14 @@ limitations under the License.
 #include "tensorflow/core/lib/core/errors.h"
 #include "tensorflow/core/lib/core/refcount.h"
 #include "tensorflow/core/lib/core/status.h"
+#include "tensorflow/core/lib/core/stringpiece.h"
 #include "tensorflow/core/platform/logging.h"
 
 namespace Eigen {
 struct ThreadPoolDevice;
+#ifdef TENSORFLOW_USE_SYCL
+struct SyclDevice;
+#endif
 }  // end namespace Eigen
 
 namespace perftools {
@@ -42,6 +46,7 @@ namespace tensorflow {
 class Device;
 class Env;
 class EventMgr;
+class OpKernelContext;
 class ResourceMgr;
 
 namespace thread {
@@ -79,13 +84,14 @@ class DeviceContext : public core::RefCounted {
   // device_tensor into "cpu_tensor".  "cpu_tensor" must be allocated
   // to be of the same size as "device_tensor".
   virtual void CopyDeviceTensorToCPU(const Tensor* device_tensor,
-                                     const string& tensor_name, Device* device,
+                                     StringPiece tensor_name, Device* device,
                                      Tensor* cpu_tensor, StatusCallback done) {
     done(errors::Internal("Unrecognized device type in device-to-CPU Copy"));
   }
 };
 
-typedef std::unordered_map<int, DeviceContext*> DeviceContextMap;
+// map[i] is the DeviceContext* for the node with id i, if i < map.size().
+typedef std::vector<DeviceContext*> DeviceContextMap;
 
 class DeviceBase {
  public:
@@ -142,10 +148,15 @@ class DeviceBase {
     eigen_cpu_device_ = d;
   }
 
+#ifdef TENSORFLOW_USE_SYCL
+  void set_eigen_sycl_device(Eigen::SyclDevice* d) { eigen_sycl_device_ = d; }
+#endif
+
   // Return the Allocator implementation to use based on the allocator
   // attributes requested.  See allocator.h for more details.
   virtual Allocator* GetAllocator(AllocatorAttributes /*attr*/) {
     LOG(FATAL) << "GetAllocator() is not implemented.";
+    return nullptr;
   }
 
   // Return the Allocator implementation to use based on the allocator
@@ -163,6 +174,13 @@ class DeviceBase {
     return eigen_cpu_device_;
   }
 
+#ifdef TENSORFLOW_USE_SYCL
+  const Eigen::SyclDevice* eigen_sycl_device() const {
+    CHECK(eigen_sycl_device_ != nullptr);
+    return eigen_sycl_device_;
+  }
+#endif
+
   // Caller owns the return value. The OpKernelContext calls this even
   // for devices that do not implement an eigen_gpu_device. Overridden
   // by GPU devices to return a derived type.
@@ -170,12 +188,15 @@ class DeviceBase {
 
   // This is overridden by GPU devices to reinitialize the derived
   // type returned by MakeGpuDevice.
-  virtual void ReinitializeGpuDevice(PerOpGpuDevice* /*device*/,
+  virtual void ReinitializeGpuDevice(OpKernelContext* /*context*/,
+                                     PerOpGpuDevice* /*device*/,
                                      DeviceContext* /*dc*/,
                                      Allocator* /*allocator*/) {}
 
   virtual const DeviceAttributes& attributes() const {
     LOG(FATAL) << "Device does not implement attributes()";
+    static DeviceAttributes dummy;
+    return dummy;
   }
 
   // Materializes the given TensorProto into 'tensor' stored in Device
@@ -196,6 +217,9 @@ class DeviceBase {
   CpuWorkerThreads* cpu_worker_threads_ = nullptr;
   GpuDeviceInfo* gpu_device_info_ = nullptr;
   Eigen::ThreadPoolDevice* eigen_cpu_device_ = nullptr;
+#ifdef TENSORFLOW_USE_SYCL
+  Eigen::SyclDevice* eigen_sycl_device_ = nullptr;
+#endif
 };
 
 }  // namespace tensorflow

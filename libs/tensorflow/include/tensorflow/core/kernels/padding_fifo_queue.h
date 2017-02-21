@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ class PaddingFIFOQueue : public FIFOQueue {
   // Implementations of QueueInterface methods --------------------------------
 
   void TryDequeueMany(int num_elements, OpKernelContext* ctx,
+                      bool allow_small_batch,
                       CallbackWithTuple callback) override;
   Status MatchesNodeDef(const NodeDef& node_def) override;
 

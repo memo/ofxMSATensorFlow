@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,10 +31,7 @@ namespace tensorflow {
 class TensorReference {
  public:
   // Take the reference of the root buffer so the size will be more accurate
-  explicit TensorReference(const Tensor& tensor)
-      : buf_(tensor.buf_ ? tensor.buf_->root_buffer() : nullptr) {
-    if (buf_) buf_->Ref();
-  }
+  explicit TensorReference(const Tensor& tensor);
 
   ~TensorReference() {}
 

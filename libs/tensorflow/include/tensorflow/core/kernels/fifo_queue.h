@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ class FIFOQueue : public TypedQueue<std::deque<PersistentTensor> > {
                       DoneCallback callback) override;
   void TryDequeue(OpKernelContext* ctx, CallbackWithTuple callback) override;
   void TryDequeueMany(int num_elements, OpKernelContext* ctx,
+                      bool allow_small_batch,
                       CallbackWithTuple callback) override;
   Status MatchesNodeDef(const NodeDef& node_def) override;
 
@@ -59,7 +60,7 @@ class FIFOQueue : public TypedQueue<std::deque<PersistentTensor> > {
   void DequeueLocked(OpKernelContext* ctx, Tuple* tuple)
       EXCLUSIVE_LOCKS_REQUIRED(mu_);
 
-  static Status GetElementComponentFromBatch(const Tuple& tuple, int index,
+  static Status GetElementComponentFromBatch(const Tuple& tuple, int64 index,
                                              int component,
                                              OpKernelContext* ctx,
                                              PersistentTensor* out_element);

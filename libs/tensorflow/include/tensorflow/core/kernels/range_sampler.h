@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ class Env;
 // [0, range)
 class RangeSampler {
  public:
-  explicit RangeSampler(int range) : range_(range) { CHECK_GT(range_, 0); }
+  explicit RangeSampler(int64 range) : range_(range) { CHECK_GT(range_, 0); }
   virtual ~RangeSampler();
 
   // Sample a single value
@@ -115,10 +115,12 @@ class AllSampler : public RangeSampler {
 
   int64 Sample(random::SimplePhilox* rnd) const override {
     LOG(FATAL) << "Should not be called";
+    return 0;
   }
 
   float Probability(int64 value) const override {
     LOG(FATAL) << "Should not be called";
+    return 0;
   }
 
   void SampleBatchGetExpectedCountAvoid(
@@ -128,9 +130,6 @@ class AllSampler : public RangeSampler {
       gtl::ArraySlice<int64> extras,
       gtl::MutableArraySlice<float> extras_expected_count,
       gtl::ArraySlice<int64> avoided_values) const override;
-
- private:
-  const float inv_range_;
 };
 
 class UniformSampler : public RangeSampler {

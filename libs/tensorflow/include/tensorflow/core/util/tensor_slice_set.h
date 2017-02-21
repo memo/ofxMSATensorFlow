@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,15 +69,21 @@ class TensorSliceSet {
       const TensorSlice& slice,
       std::vector<std::pair<tensorflow::TensorSlice, string>>* results) const;
 
- private:
-  const TensorShape shape_;
-  const DataType type_;
   struct SliceInfo {
     TensorSlice slice;
     const string tag;
     const float* data;
     int64 num_floats;
   };
+
+  // Returns the map from slice string to SliceInfo.
+  const std::unordered_map<string, SliceInfo>& Slices() const {
+    return slices_;
+  }
+
+ private:
+  const TensorShape shape_;
+  const DataType type_;
   // We maintain a mapping from the slice string to the slice information.
   std::unordered_map<string, SliceInfo> slices_;
 
@@ -85,6 +91,15 @@ class TensorSliceSet {
   // overlap check when slices are being added consequently.
   TensorSlice slices_hull_;
 };
+
+// Registers "slice" in the TensorSliceSet stored in "tensor_slices", under key
+// "name".  Other arguments are used for validations.  Does not modify the map
+// or its values on non-OK.
+// REQUIRES: tensor_slices != nullptr
+Status RegisterTensorSlice(
+    const string& name, const TensorShape& shape, DataType type,
+    const string& tag, const TensorSlice& slice,
+    std::unordered_map<string, TensorSliceSet*>* tensor_slices);
 
 }  // namespace checkpoint
 

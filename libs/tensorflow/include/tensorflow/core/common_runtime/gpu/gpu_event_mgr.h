@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ limitations under the License.
 
 #include <deque>
 #include <vector>
+#include "tensorflow/core/framework/log_memory.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_reference.h"
 #include "tensorflow/core/lib/core/notification.h"
@@ -58,6 +59,10 @@ class EventMgr {
   struct BufRec {
     Allocator* alloc;
     void* buf;
+    // operation and step_id are only populated when
+    // LogMemory::IsEnabled() is true.
+    string operation;
+    int64 step_id;
   };
 
   // Takes ownership of *bufrec.buf and calls bufrec.alloc->DeallocateRaw()
@@ -78,7 +83,7 @@ class EventMgr {
     ToFreeVector to_free;
     {
       mutex_lock l(mu_);
-      QueueFunc(stream, func);
+      QueueFunc(stream, std::move(func));
       PollEvents(false, &to_free);
     }
     FreeMemory(to_free);
@@ -110,7 +115,14 @@ class EventMgr {
         }
         delete iu.mem;
       }
-      if (iu.bufrec.buf) iu.bufrec.alloc->DeallocateRaw(iu.bufrec.buf);
+      if (iu.bufrec.buf) {
+        if (LogMemory::IsEnabled()) {
+          LogMemory::RecordRawDeallocation(iu.bufrec.operation,
+                                           iu.bufrec.step_id, iu.bufrec.buf,
+                                           iu.bufrec.alloc, false);
+        }
+        iu.bufrec.alloc->DeallocateRaw(iu.bufrec.buf);
+      }
       // The function must be called in another thread.
       if (iu.func != nullptr) threadpool_.Schedule(iu.func);
     }
@@ -135,7 +147,7 @@ class EventMgr {
 
   void QueueFunc(perftools::gputools::Stream* stream,
                  std::function<void()> func) EXCLUSIVE_LOCKS_REQUIRED(mu_) {
-    QueueInUse(stream, {nullptr, nullptr, BufRec(), func});
+    QueueInUse(stream, {nullptr, nullptr, BufRec(), std::move(func)});
   }
 
   // This function should be called at roughly the same tempo as

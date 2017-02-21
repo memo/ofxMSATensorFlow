@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ limitations under the License.
 #include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/thread_annotations.h"
 #include "tensorflow/core/platform/types.h"
+#include "tensorflow/core/protobuf/config.pb.h"
 
 namespace tensorflow {
 
@@ -88,10 +89,10 @@ class ProcessState {
   //
   // REQUIRES: gpu_id must be a valid ordinal for a GPU available in the
   // current system environment.  Otherwise returns nullptr.
-  Allocator* GetGPUAllocator(int gpu_id, size_t total_bytes,
-                             const string& allocator_type);
+  virtual Allocator* GetGPUAllocator(const GPUOptions& options, int gpu_id,
+                                     size_t total_bytes);
 
-  Allocator* GetCUDAHostAllocator(int numa_node);
+  virtual Allocator* GetCUDAHostAllocator(int numa_node);
 
   // Registers a function to be called once on every new Region
   // allocated by every GPURegionAllocator proximate to the specified
@@ -104,7 +105,7 @@ class ProcessState {
   // the index of one of the PCIe buses.  If the bus_id is invalid,
   // results are undefined.
   typedef std::function<void(void*, size_t)> AllocVisitor;
-  void AddGPUAllocVisitor(int bus_id, AllocVisitor visitor);
+  virtual void AddGPUAllocVisitor(int bus_id, AllocVisitor visitor);
 
   typedef std::unordered_map<const void*, MemDesc> MDMap;
 
@@ -116,10 +117,10 @@ class ProcessState {
 
   mutex mu_;
 
-  std::vector<PoolAllocator*> cpu_allocators_ GUARDED_BY(mu_);
+  std::vector<Allocator*> cpu_allocators_ GUARDED_BY(mu_);
   std::vector<VisitableAllocator*> gpu_allocators_ GUARDED_BY(mu_);
   std::vector<std::vector<AllocVisitor>> gpu_visitors_ GUARDED_BY(mu_);
-  std::vector<PoolAllocator*> cuda_host_allocators_ GUARDED_BY(mu_);
+  std::vector<Allocator*> cuda_host_allocators_ GUARDED_BY(mu_);
 
   virtual ~ProcessState();
 

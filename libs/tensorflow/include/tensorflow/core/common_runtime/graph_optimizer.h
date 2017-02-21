@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -16,10 +16,11 @@ limitations under the License.
 #ifndef THIRD_PARTY_TENSORFLOW_CORE_COMMON_RUNTIME_GRAPH_OPTIMIZER_H_
 #define THIRD_PARTY_TENSORFLOW_CORE_COMMON_RUNTIME_GRAPH_OPTIMIZER_H_
 
-#include "tensorflow/core/framework/config.pb.h"
 #include "tensorflow/core/framework/function.h"
 #include "tensorflow/core/graph/graph.h"
 #include "tensorflow/core/lib/core/status.h"
+#include "tensorflow/core/platform/env.h"
+#include "tensorflow/core/protobuf/config.pb.h"
 
 namespace tensorflow {
 
@@ -30,7 +31,11 @@ class GraphOptimizer {
 
   // Applies optimization passes specified in 'opts' to 'graph'.
   // Maybe replace *graph with a new graph object.
-  void Optimize(FunctionLibraryRuntime* runtime, Graph** graph);
+  // 'device' is device on which the 'graph' will execute. It's passed to the
+  // optimizers so that they can respect constraints if any, that should be
+  // respected.
+  void Optimize(FunctionLibraryRuntime* runtime, Env* env, Device* device,
+                std::unique_ptr<Graph>* graph);
 
  private:
   OptimizerOptions opts_;

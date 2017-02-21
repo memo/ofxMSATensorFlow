@@ -3,376 +3,544 @@
 #ifndef TENSORFLOW_CC_OPS_LINALG_OPS_H_
 #define TENSORFLOW_CC_OPS_LINALG_OPS_H_
 
+// This file is MACHINE GENERATED! Do not edit.
+
+#include "tensorflow/cc/framework/ops.h"
+#include "tensorflow/cc/framework/scope.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
-#include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
 
 namespace tensorflow {
 namespace ops {
 
-// These add a node to the graph from opts.
-//
-// Note for "NodeOut" inputs, you will typically either pass
-// * a {Node*, int index} (to pass the index-th output of that node), or
-// * a Node* (to pass the first output of that node).
+/// @defgroup linalg_ops Linalg Ops
+/// @{
 
+/// Computes the Cholesky decomposition of one or more square matrices.
+///
+/// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
+/// form square matrices, with the same constraints as the single matrix Cholesky
+/// decomposition above. The output is a tensor of the same shape as the input
+/// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: Shape is `[..., M, M]`.
+///
+/// Returns:
+/// * `Output`: Shape is `[..., M, M]`.
+class Cholesky {
+ public:
+  Cholesky(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
 
-// Calculates the Cholesky decomposition of a batch of square matrices.
-//
-// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-// form square matrices, with the same constraints as the single matrix Cholesky
-// decomposition above. The output is a tensor of the same shape as the input
-// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
-//
-// Arguments:
-// * input: Shape is `[..., M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[..., M, M]`.
-Node* BatchCholesky(NodeOut input, const GraphDefBuilder::Options& opts);
+  ::tensorflow::Output output;
+};
 
-// Calculates the determinants for a batch of square matrices.
-//
-// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-// form square matrices. The output is a 1-D tensor containing the determinants
-// for all input submatrices `[..., :, :]`.
-//
-// Arguments:
-// * input: Shape is `[..., M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[...]`.
-Node* BatchMatrixDeterminant(NodeOut input, const GraphDefBuilder::Options&
-                             opts);
+/// Computes the reverse mode backpropagated gradient of the Cholesky algorithm.
+///
+/// For an explanation see "Differentiation of the Cholesky algorithm" by
+/// Iain Murray http://arxiv.org/abs/1602.07527.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * l: Output of batch Cholesky algorithm l = cholesky(A). Shape is `[..., M, M]`.
+/// Algorithm depends only on lower triangular part of the innermost matrices of
+/// this tensor.
+/// * grad: df/dl where f is some scalar function. Shape is `[..., M, M]`.
+/// Algorithm depends only on lower triangular part of the innermost matrices of
+/// this tensor.
+///
+/// Returns:
+/// * `Output`: Symmetrized version of df/dA . Shape is `[..., M, M]`
+class CholeskyGrad {
+ public:
+  CholeskyGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input l,
+             ::tensorflow::Input grad);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
 
-// Calculates the inverse of square invertible matrices.
-//
-// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-// form square matrices. The output is a tensor of the same shape as the input
-// containing the inverse for all input submatrices `[..., :, :]`.
-//
-// The op uses the Cholesky decomposition if the matrices are symmetric positive
-// definite and LU decomposition with partial pivoting otherwise.
-//
-// If a matrix is not invertible there is no guarantee what the op does. It
-// may detect the condition and raise an exception or it may simply return a
-// garbage result.
-//
-// Arguments:
-// * input: Shape is `[..., M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[..., M, M]`.
-Node* BatchMatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
+  ::tensorflow::Output output;
+};
 
-// Solves systems of linear equations. Checks for invertibility.
-//
-// Matrix is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-// form square matrices. Rhs is a tensor of shape
-// `[..., M, K]`. The output is a tensor shape `[..., M, K]` where each output
-// matrix satisfies matrix[..., :, :] * output[..., :, :] = rhs[..., :, :].
-//
-// Arguments:
-// * matrix: Shape is `[..., M, M]`.
-// * rhs: Shape is `[..., M, K]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[..., M, K]`.
-Node* BatchMatrixSolve(NodeOut matrix, NodeOut rhs, const
-                       GraphDefBuilder::Options& opts);
+/// Computes the determinant of one ore more square matrices.
+///
+/// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
+/// form square matrices. The output is a tensor containing the determinants
+/// for all input submatrices `[..., :, :]`.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: Shape is `[..., M, M]`.
+///
+/// Returns:
+/// * `Output`: Shape is `[...]`.
+class MatrixDeterminant {
+ public:
+  MatrixDeterminant(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
 
-// Solves multiple linear least-squares problems.
-//
-// `matrix` is a tensor of shape `[..., M, N]` whose inner-most 2 dimensions
-// form square matrices. Rhs is a tensor of shape `[..., M, K]`. The output
-// is a tensor shape `[..., N, K]` where each output matrix solves each of
-// the equations matrix[..., :, :] * output[..., :, :] = rhs[..., :, :] in the
-// least squares sense.
-//
-// Below we will use the following notation for each pair of
-// matrix and right-hand sides in the batch:
-//
-// `matrix`=\\(A \in \Re^{m \times n}\\),
-// `rhs`=\\(B  \in \Re^{m \times k}\\),
-// `output`=\\(X  \in \Re^{n \times k}\\),
-// `l2_regularizer`=\\(\lambda\\).
-//
-// If `fast` is `True`, then the solution is computed by solving the normal
-// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
-// \\(X = (A^T A + \lambda I)^{-1} A^T B\\), which solves the least-squares
-// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||A Z - B||_F^2 +
-// \lambda ||Z||_F^2\\). If \\(m \lt n\\) then `output` is computed as
-// \\(X = A^T (A A^T + \lambda I)^{-1} B\\), which (for \\(\lambda = 0\\)) is the
-// minimum-norm solution to the under-determined linear system, i.e.
-// \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||Z||_F^2 \\), subject to
-// \\(A Z = B\\). Notice that the fast path is only numerically stable when
-// \\(A\\) is numerically full rank and has a condition number
-// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach}}}\\) or\\(\lambda\\) is
-// sufficiently large.
-//
-// If `fast` is `False` an algorithm based on the numerically robust complete
-// orthogonal decomposition is used. This computes the minimum-norm
-// least-squares solution, even when \\(A\\) is rank deficient. This path is
-// typically 6-7 times slower than the fast path. If `fast` is `False` then
-// `l2_regularizer` is ignored.
-//
-// Arguments:
-// * matrix: Shape is `[..., M, N]`.
-// * rhs: Shape is `[..., M, K]`.
-// * opts:
-//   .WithAttr("fast", bool): Defaults to true.
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[..., N, K]`.
-Node* BatchMatrixSolveLs(NodeOut matrix, NodeOut rhs, NodeOut l2_regularizer,
-                         const GraphDefBuilder::Options& opts);
+  ::tensorflow::Output output;
+};
 
-// Solves systems of linear equations with upper or lower triangular matrices by
-//
-// backsubstitution.
-//
-// `matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions form
-// square matrices. If `lower` is `True` then the strictly upper triangular part
-// of each inner-most matrix is ignored. If `lower` is False then the strictly
-// lower triangular part of each inner-most matrix is ignored. `rhs` is a tensor
-// of shape [..., M, K]`.
-//
-// The output is a tensor of shape `[..., M, K]`. If `lower` is `True` then the
-// output satisfies
-// \\(\sum_{k=0}^{i}\\) matrix[..., i, k] * output[..., k, j] = rhs[..., i, j].
-// If `lower` is false then the strictly then the output satisfies
-// \\(sum_{k=i}^{K-1}\\) matrix[..., i, k] * output[..., k, j] = rhs[..., i, j].
-//
-// Arguments:
-// * matrix: Shape is `[..., M, M]`.
-// * rhs: Shape is `[..., M, K]`.
-// * opts:
-//   .WithAttr("lower", bool): Defaults to true.
-//     Boolean indicating whether matrix is lower or upper triangular.
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[..., M, K]`.
-Node* BatchMatrixTriangularSolve(NodeOut matrix, NodeOut rhs, const
-                                 GraphDefBuilder::Options& opts);
+/// Computes the inverse of one or more square invertible matrices or their
+///
+/// adjoints (conjugate transposes).
+///
+/// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
+/// form square matrices. The output is a tensor of the same shape as the input
+/// containing the inverse for all input submatrices `[..., :, :]`.
+///
+/// The op uses LU decomposition with partial pivoting to compute the inverses.
+///
+/// If a matrix is not invertible there is no guarantee what the op does. It
+/// may detect the condition and raise an exception or it may simply return a
+/// garbage result.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: Shape is `[..., M, M]`.
+///
+/// Returns:
+/// * `Output`: Shape is `[..., M, M]`.
+///
+/// @compatibility(numpy)
+/// Equivalent to np.linalg.inv
+/// @end_compatibility
+class MatrixInverse {
+ public:
+  /// Optional attribute setters for MatrixInverse
+  struct Attrs {
+    /// Defaults to false
+    Attrs Adjoint(bool x) {
+      Attrs ret = *this;
+      ret.adjoint_ = x;
+      return ret;
+    }
 
-// Calculates the Eigen Decomposition of a batch of square self-adjoint matrices.
-//
-// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-// form square matrices, with the same constraints as the single matrix
-// SelfAdjointEig.
-//
-// The result is a '[..., M+1, M] matrix with [..., 0,:] containing the
-// eigenvalues, and subsequent [...,1:, :] containing the eigenvectors.
-//
-// Arguments:
-// * input: Shape is `[..., M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[..., M+1, M]`.
-Node* BatchSelfAdjointEig(NodeOut input, const GraphDefBuilder::Options& opts);
+    bool adjoint_ = false;
+  };
+  MatrixInverse(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  MatrixInverse(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
+              const MatrixInverse::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
 
-// Calculates the Cholesky decomposition of a square matrix.
-//
-// The input has to be symmetric and positive definite. Only the lower-triangular
-// part of the input will be used for this operation. The upper-triangular part
-// will not be read.
-//
-// The result is the lower-triangular matrix of the Cholesky decomposition of the
-// input.
-//
-// Arguments:
-// * input: Shape is `[M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[M, M]`.
-Node* Cholesky(NodeOut input, const GraphDefBuilder::Options& opts);
+  static Attrs Adjoint(bool x) {
+    return Attrs().Adjoint(x);
+  }
 
-// Calculates the determinant of a square matrix.
-//
-// Arguments:
-// * input: A tensor of shape `[M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// A scalar, equal to the determinant of the input.
-Node* MatrixDeterminant(NodeOut input, const GraphDefBuilder::Options& opts);
+  ::tensorflow::Output output;
+};
 
-// Calculates the inverse of a square invertible matrix.
-//
-// The op uses the Cholesky decomposition if the matrix is symmetric positive
-// definite and LU decomposition with partial pivoting otherwise.
-//
-// If the matrix is not invertible there is no guarantee what the op does. It
-// may detect the condition and raise an exception or it may simply return a
-// garbage result.
-//
-// Arguments:
-// * input: Shape is `[M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[M, M]` containing the matrix inverse of the input.
-Node* MatrixInverse(NodeOut input, const GraphDefBuilder::Options& opts);
+/// Solves systems of linear equations.
+///
+/// `Matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
+/// form square matrices. `Rhs` is a tensor of shape `[..., M, K]`. The `output` is
+/// a tensor shape `[..., M, K]`.  If `adjoint` is `False` then each output matrix
+/// satisfies `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
+/// If `adjoint` is `True` then each output matrix satisfies
+/// `adjoint(matrix[..., :, :]) * output[..., :, :] = rhs[..., :, :]`.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * matrix: Shape is `[..., M, M]`.
+/// * rhs: Shape is `[..., M, K]`.
+///
+/// Optional attributes (see `Attrs`):
+/// * adjoint: Boolean indicating whether to solve with `matrix` or its (block-wise)
+/// adjoint.
+///
+/// Returns:
+/// * `Output`: Shape is `[..., M, K]`.
+class MatrixSolve {
+ public:
+  /// Optional attribute setters for MatrixSolve
+  struct Attrs {
+    /// Boolean indicating whether to solve with `matrix` or its (block-wise)
+    /// adjoint.
+    ///
+    /// Defaults to false
+    Attrs Adjoint(bool x) {
+      Attrs ret = *this;
+      ret.adjoint_ = x;
+      return ret;
+    }
 
-// Solves a system of linear equations. Checks for invertibility.
-//
-// Arguments:
-// * matrix: Shape is `[M, M]`.
-// * rhs: Shape is `[M, K]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[M, K]` containing the tensor that solves
-// matrix * output = rhs.
-Node* MatrixSolve(NodeOut matrix, NodeOut rhs, const GraphDefBuilder::Options&
-                  opts);
+    bool adjoint_ = false;
+  };
+  MatrixSolve(const ::tensorflow::Scope& scope, ::tensorflow::Input matrix,
+            ::tensorflow::Input rhs);
+  MatrixSolve(const ::tensorflow::Scope& scope, ::tensorflow::Input matrix,
+            ::tensorflow::Input rhs, const MatrixSolve::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
 
-// Solves a linear least-squares problem.
-//
-// Below we will use the following notation
-// `matrix`=\\(A \in \Re^{m \times n}\\),
-// `rhs`=\\(B  \in \Re^{m \times k}\\),
-// `output`=\\(X  \in \Re^{n \times k}\\),
-// `l2_regularizer`=\\(\lambda\\).
-//
-// If `fast` is `True`, then the solution is computed by solving the normal
-// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
-// \\(X = (A^T A + \lambda I)^{-1} A^T B\\), which solves the least-squares
-// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||A Z - B||_F^2 +
-// \lambda ||Z||_F^2\\). If \\(m \lt n\\) then `output` is computed as
-// \\(X = A^T (A A^T + \lambda I)^{-1} B\\),
-// which (for \\(\lambda = 0\\)) is the minimum-norm solution to the
-// under-determined linear system, i.e.
-// \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k}} ||Z||_F^2 \\),
-// subject to \\(A Z = B\\).
-// Notice that the fast path is only numerically stable when \\(A\\) is
-// numerically full rank and has a condition number
-// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach}}}\\)
-// or \\(\lambda\\) is sufficiently large.
-//
-// If `fast` is `False` an algorithm based on the numerically robust complete
-// orthogonal decomposition is used. This computes the minimum-norm
-// least-squares solution, even when \\(A\\) is rank deficient. This path is
-// typically 6-7 times slower than the fast path. If `fast` is `False` then
-// `l2_regularizer` is ignored.
-//
-// Arguments:
-// * matrix: Shape is `[M, N]`.
-// * rhs: Shape is `[M, K]`.
-// * opts:
-//   .WithAttr("fast", bool): Defaults to true.
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[N, K]` containing the tensor that solves
-// `matrix * output = rhs` in the least-squares sense.
-Node* MatrixSolveLs(NodeOut matrix, NodeOut rhs, NodeOut l2_regularizer, const
-                    GraphDefBuilder::Options& opts);
+  static Attrs Adjoint(bool x) {
+    return Attrs().Adjoint(x);
+  }
 
-// Solves a system of linear equations with an upper or lower triangular matrix by
-//
-// backsubstitution.
-//
-// `matrix` is a matrix of shape `[M, M]`. If `lower` is `True` then the strictly
-// upper triangular part of `matrix` is ignored. If `lower` is False then the
-// strictly lower triangular part of `matrix` is ignored. `rhs` is a matrix of
-// shape [M, K]`.
-//
-// The output is a matrix of shape `[M, K]`. If `lower` is `True` then the output
-// satisfies \\(\sum_{k=0}^{i}\\) matrix[i, k] * output[k, j] = rhs[i, j].
-// If `lower` is false then output satisfies
-// \\(\sum_{k=i}^{K-1}\\) matrix[i, k] * output[k, j] = rhs[i, j].
-//
-// Arguments:
-// * matrix: Shape is `[M, M]`.
-// * rhs: Shape is `[M, K]`.
-// * opts:
-//   .WithAttr("lower", bool): Defaults to true.
-//     Boolean indicating whether matrix is lower or upper triangular.
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[M, K]`.
-Node* MatrixTriangularSolve(NodeOut matrix, NodeOut rhs, const
-                            GraphDefBuilder::Options& opts);
+  ::tensorflow::Output output;
+};
 
-// Calculates the Eigen Decomposition of a square Self-Adjoint matrix.
-//
-// Only the lower-triangular part of the input will be used in this case. The
-// upper-triangular part will not be read.
-//
-// The result is a M+1 x M matrix whose first row is the eigenvalues, and
-// subsequent rows are eigenvectors.
-//
-// Arguments:
-// * input: Shape is `[M, M]`.
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node, with output:
-// Shape is `[M+1, M]`.
-Node* SelfAdjointEig(NodeOut input, const GraphDefBuilder::Options& opts);
+/// Solves one or more linear least-squares problems.
+///
+/// `matrix` is a tensor of shape `[..., M, N]` whose inner-most 2 dimensions
+/// form matrices of size `[M, N]`. Rhs is a tensor of shape `[..., M, K]`.
+/// The output is a tensor shape `[..., N, K]` where each output matrix solves
+/// each of the equations matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]
+/// in the least squares sense.
+///
+/// matrix and right-hand sides in the batch:
+///
+/// `matrix`=\\(A \in \Re^{m \times n}\\),
+/// `rhs`=\\(B  \in \Re^{m \times k}\\),
+/// `output`=\\(X  \in \Re^{n \times k}\\),
+/// `l2_regularizer`=\\(\lambda\\).
+///
+/// If `fast` is `True`, then the solution is computed by solving the normal
+/// equations using Cholesky decomposition. Specifically, if \\(m \ge n\\) then
+/// \\(X = (A^T A + \lambda I)^{-1} A^T B\\), which solves the least-squares
+/// problem \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k} } ||A Z - B||_F^2 +
+/// \lambda ||Z||_F^2\\). If \\(m \lt n\\) then `output` is computed as
+/// \\(X = A^T (A A^T + \lambda I)^{-1} B\\), which (for \\(\lambda = 0\\)) is the
+/// minimum-norm solution to the under-determined linear system, i.e.
+/// \\(X = \mathrm{argmin}_{Z \in \Re^{n \times k} } ||Z||_F^2 \\), subject to
+/// \\(A Z = B\\). Notice that the fast path is only numerically stable when
+/// \\(A\\) is numerically full rank and has a condition number
+/// \\(\mathrm{cond}(A) \lt \frac{1}{\sqrt{\epsilon_{mach} } }\\) or\\(\lambda\\) is
+/// sufficiently large.
+///
+/// If `fast` is `False` an algorithm based on the numerically robust complete
+/// orthogonal decomposition is used. This computes the minimum-norm
+/// least-squares solution, even when \\(A\\) is rank deficient. This path is
+/// typically 6-7 times slower than the fast path. If `fast` is `False` then
+/// `l2_regularizer` is ignored.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * matrix: Shape is `[..., M, N]`.
+/// * rhs: Shape is `[..., M, K]`.
+/// * l2_regularizer: Scalar tensor.
+///
+/// @compatibility(numpy)
+/// Equivalent to np.linalg.lstsq
+/// @end_compatibility
+///
+/// Returns:
+/// * `Output`: Shape is `[..., N, K]`.
+class MatrixSolveLs {
+ public:
+  /// Optional attribute setters for MatrixSolveLs
+  struct Attrs {
+    /// Defaults to true
+    Attrs Fast(bool x) {
+      Attrs ret = *this;
+      ret.fast_ = x;
+      return ret;
+    }
+
+    bool fast_ = true;
+  };
+  MatrixSolveLs(const ::tensorflow::Scope& scope, ::tensorflow::Input matrix,
+              ::tensorflow::Input rhs, ::tensorflow::Input l2_regularizer);
+  MatrixSolveLs(const ::tensorflow::Scope& scope, ::tensorflow::Input matrix,
+              ::tensorflow::Input rhs, ::tensorflow::Input l2_regularizer,
+              const MatrixSolveLs::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs Fast(bool x) {
+    return Attrs().Fast(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Solves systems of linear equations with upper or lower triangular matrices by
+///
+/// backsubstitution.
+///
+/// `matrix` is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions form
+/// square matrices. If `lower` is `True` then the strictly upper triangular part
+/// of each inner-most matrix is assumed to be zero and not accessed.
+/// If `lower` is False then the strictly lower triangular part of each inner-most
+/// matrix is assumed to be zero and not accessed.
+/// `rhs` is a tensor of shape `[..., M, K]`.
+///
+/// The output is a tensor of shape `[..., M, K]`. If `adjoint` is
+/// `True` then the innermost matrices in output` satisfy matrix equations
+/// `matrix[..., :, :] * output[..., :, :] = rhs[..., :, :]`.
+/// If `adjoint` is `False` then the strictly then the  innermost matrices in
+/// `output` satisfy matrix equations
+/// `adjoint(matrix[..., i, k]) * output[..., k, j] = rhs[..., i, j]`.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * matrix: Shape is `[..., M, M]`.
+/// * rhs: Shape is `[..., M, K]`.
+///
+/// Optional attributes (see `Attrs`):
+/// * lower: Boolean indicating whether the innermost matrices in `matrix` are
+/// lower or upper triangular.
+/// * adjoint: Boolean indicating whether to solve with `matrix` or its (block-wise)
+///          adjoint.
+///
+/// @compatibility(numpy)
+/// Equivalent to np.linalg.triangular_solve
+/// @end_compatibility
+///
+/// Returns:
+/// * `Output`: Shape is `[..., M, K]`.
+class MatrixTriangularSolve {
+ public:
+  /// Optional attribute setters for MatrixTriangularSolve
+  struct Attrs {
+    /// Boolean indicating whether the innermost matrices in `matrix` are
+    /// lower or upper triangular.
+    ///
+    /// Defaults to true
+    Attrs Lower(bool x) {
+      Attrs ret = *this;
+      ret.lower_ = x;
+      return ret;
+    }
+
+    /// Boolean indicating whether to solve with `matrix` or its (block-wise)
+    ///          adjoint.
+    ///
+    /// @compatibility(numpy)
+    /// Equivalent to np.linalg.triangular_solve
+    /// @end_compatibility
+    ///
+    /// Defaults to false
+    Attrs Adjoint(bool x) {
+      Attrs ret = *this;
+      ret.adjoint_ = x;
+      return ret;
+    }
+
+    bool lower_ = true;
+    bool adjoint_ = false;
+  };
+  MatrixTriangularSolve(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      matrix, ::tensorflow::Input rhs);
+  MatrixTriangularSolve(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      matrix, ::tensorflow::Input rhs, const
+                      MatrixTriangularSolve::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs Lower(bool x) {
+    return Attrs().Lower(x);
+  }
+  static Attrs Adjoint(bool x) {
+    return Attrs().Adjoint(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Computes the QR decompositions of one or more matrices.
+///
+/// Computes the QR decomposition of each inner matrix in `tensor` such that
+/// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
+///
+/// ```prettyprint
+/// # a is a tensor.
+/// # q is a tensor of orthonormal matrices.
+/// # r is a tensor of upper triangular matrices.
+/// q, r = qr(a)
+/// q_full, r_full = qr(a, full_matrices=True)
+/// ```
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: A tensor of shape `[..., M, N]` whose inner-most 2 dimensions
+/// form matrices of size `[M, N]`. Let `P` be the minimum of `M` and `N`.
+///
+/// Optional attributes (see `Attrs`):
+/// * full_matrices: If true, compute full-sized `q` and `r`. If false
+/// (the default), compute only the leading `P` columns of `q`.
+///
+/// Returns:
+/// * `Output` q: Orthonormal basis for range of `a`. If `full_matrices` is `False` then
+/// shape is `[..., M, P]`; if `full_matrices` is `True` then shape is
+/// `[..., M, M]`.
+/// * `Output` r: Triangular factor. If `full_matrices` is `False` then shape is
+/// `[..., P, N]`. If `full_matrices` is `True` then shape is `[..., M, N]`.
+class Qr {
+ public:
+  /// Optional attribute setters for Qr
+  struct Attrs {
+    /// If true, compute full-sized `q` and `r`. If false
+    /// (the default), compute only the leading `P` columns of `q`.
+    ///
+    /// Defaults to false
+    Attrs FullMatrices(bool x) {
+      Attrs ret = *this;
+      ret.full_matrices_ = x;
+      return ret;
+    }
+
+    bool full_matrices_ = false;
+  };
+  Qr(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  Qr(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
+   Qr::Attrs& attrs);
+
+  static Attrs FullMatrices(bool x) {
+    return Attrs().FullMatrices(x);
+  }
+
+  ::tensorflow::Output q;
+  ::tensorflow::Output r;
+};
+
+/// Computes the eigen decomposition of one or more square self-adjoint matrices.
+///
+/// Computes the eigenvalues and (optionally) eigenvectors of each inner matrix in
+/// `input` such that `input[..., :, :] = v[..., :, :] * diag(e[..., :])`.
+///
+/// ```prettyprint
+/// # a is a tensor.
+/// # e is a tensor of eigenvalues.
+/// # v is a tensor of eigenvectors.
+/// e, v = self_adjoint_eig(a)
+/// e = self_adjoint_eig(a, compute_v=False)
+/// ```
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: `Tensor` input of shape `[N, N]`.
+///
+/// Optional attributes (see `Attrs`):
+/// * compute_v: If `True` then eigenvectors will be computed and returned in `v`.
+/// Otherwise, only the eigenvalues will be computed.
+///
+/// Returns:
+/// * `Output` e: Eigenvalues. Shape is `[N]`.
+/// * `Output` v: Eigenvectors. Shape is `[N, N]`.
+class SelfAdjointEig {
+ public:
+  /// Optional attribute setters for SelfAdjointEig
+  struct Attrs {
+    /// If `True` then eigenvectors will be computed and returned in `v`.
+    /// Otherwise, only the eigenvalues will be computed.
+    ///
+    /// Defaults to true
+    Attrs ComputeV(bool x) {
+      Attrs ret = *this;
+      ret.compute_v_ = x;
+      return ret;
+    }
+
+    bool compute_v_ = true;
+  };
+  SelfAdjointEig(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  SelfAdjointEig(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
+               const SelfAdjointEig::Attrs& attrs);
+
+  static Attrs ComputeV(bool x) {
+    return Attrs().ComputeV(x);
+  }
+
+  ::tensorflow::Output e;
+  ::tensorflow::Output v;
+};
+
+/// Computes the singular value decompositions of one or more matrices.
+///
+/// Computes the SVD of each inner matrix in `input` such that
+/// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
+///
+/// ```prettyprint
+/// # a is a tensor containing a batch of matrices.
+/// # s is a tensor of singular values for each matrix.
+/// # u is the tensor containing of left singular vectors for each matrix.
+/// # v is the tensor containing of right singular vectors for each matrix.
+/// s, u, v = svd(a)
+/// s, _, _ = svd(a, compute_uv=False)
+/// ```
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: A tensor of shape `[..., M, N]` whose inner-most 2 dimensions
+/// form matrices of size `[M, N]`. Let `P` be the minimum of `M` and `N`.
+///
+/// Optional attributes (see `Attrs`):
+/// * compute_uv: If true, left and right singular vectors will be
+/// computed and returned in `u` and `v`, respectively.
+/// If false, `u` and `v` are not set and should never referenced.
+/// * full_matrices: If true, compute full-sized `u` and `v`. If false
+/// (the default), compute only the leading `P` singular vectors.
+/// Ignored if `compute_uv` is `False`.
+///
+/// Returns:
+/// * `Output` s: Singular values. Shape is `[..., P]`.
+/// * `Output` u: Left singular vectors. If `full_matrices` is `False` then shape is
+/// `[..., M, P]`; if `full_matrices` is `True` then shape is
+/// `[..., M, M]`. Undefined if `compute_uv` is `False`.
+/// * `Output` v: Left singular vectors. If `full_matrices` is `False` then shape is
+/// `[..., N, P]`. If `full_matrices` is `True` then shape is `[..., N, N]`.
+/// Undefined if `compute_uv` is false.
+class Svd {
+ public:
+  /// Optional attribute setters for Svd
+  struct Attrs {
+    /// If true, left and right singular vectors will be
+    /// computed and returned in `u` and `v`, respectively.
+    /// If false, `u` and `v` are not set and should never referenced.
+    ///
+    /// Defaults to true
+    Attrs ComputeUv(bool x) {
+      Attrs ret = *this;
+      ret.compute_uv_ = x;
+      return ret;
+    }
+
+    /// If true, compute full-sized `u` and `v`. If false
+    /// (the default), compute only the leading `P` singular vectors.
+    /// Ignored if `compute_uv` is `False`.
+    ///
+    /// Defaults to false
+    Attrs FullMatrices(bool x) {
+      Attrs ret = *this;
+      ret.full_matrices_ = x;
+      return ret;
+    }
+
+    bool compute_uv_ = true;
+    bool full_matrices_ = false;
+  };
+  Svd(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  Svd(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
+    Svd::Attrs& attrs);
+
+  static Attrs ComputeUv(bool x) {
+    return Attrs().ComputeUv(x);
+  }
+  static Attrs FullMatrices(bool x) {
+    return Attrs().FullMatrices(x);
+  }
+
+  ::tensorflow::Output s;
+  ::tensorflow::Output u;
+  ::tensorflow::Output v;
+};
+
+/// @}
 
 }  // namespace ops
 }  // namespace tensorflow

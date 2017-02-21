@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ limitations under the License.
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/types.h"
 #include "tensorflow/core/kernels/reduction_ops.h"
-#include "tensorflow/core/kernels/transpose_op_functor.h"
+#include "tensorflow/core/kernels/transpose_functor.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/gtl/inlined_vector.h"
 #include "tensorflow/core/platform/logging.h"
@@ -40,6 +40,9 @@ namespace tensorflow {
 
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
+#ifdef TENSORFLOW_USE_SYCL
+typedef Eigen::SyclDevice SYCLDevice;
+#endif // TENSORFLOW_USE_SYCL
 
 template <typename Device>
 struct Constants {
@@ -60,103 +63,22 @@ struct Constants {
 };
 
 #if defined(EIGEN_HAS_INDEX_LIST)
-template <>
-struct Constants<CPUDevice> {
+struct ConstantsBase {
   const Eigen::IndexList<Eigen::type2index<0>> kZero;
   const Eigen::IndexList<Eigen::type2index<1>> kOne;
   const Eigen::IndexList<Eigen::type2index<0>, Eigen::type2index<2>> kZeroTwo;
 };
-#endif
-
-namespace {
+template<> struct Constants<CPUDevice> : ConstantsBase{};
+#ifdef TENSORFLOW_USE_SYCL
+template<> struct Constants<SYCLDevice> : ConstantsBase{};
+#endif // TENSORFLOW_USE_SYCL
+#endif // EIGEN_HAS_INDEX_LIST
 
 class ReductionHelper {
  public:
   ReductionHelper() : reduce_first_axis_(false) {}
 
-  Status Simplify(const Tensor& data, const Tensor& axis,
-                  const bool keep_dims) {
-    // bitmap[i] indicates whether to reduce data along i-th axis.
-    gtl::InlinedVector<bool, 4> bitmap(data.dims(), false);
-    auto axis_vec = axis.flat<int32>();
-    for (int64 i = 0; i < axis.NumElements(); ++i) {
-      const int32 index = axis_vec(i);
-      if (index < 0 || index >= data.dims()) {
-        return errors::OutOfRange("Invalid reduction dimension (", index,
-                                  " for input with ", data.dims(),
-                                  " dimension(s)");
-      }
-      bitmap[index] = true;
-    }
-
-    // Output tensor's dim sizes.
-    out_shape_.clear();
-    for (int i = 0; i < data.dims(); ++i) {
-      if (!bitmap[i]) {
-        // If we are not reducing along dimension i.
-        out_shape_.push_back(data.dim_size(i));
-      } else if (keep_dims) {
-        // We are reducing along dimension i, but we want to keep the
-        // same number of dimensions, so we set the dimension of i to
-        // '1'.
-        out_shape_.push_back(1);
-      }
-    }
-
-    // Depending on bitmap[i] and bitmap[i-1], we can collapse axis of
-    // the input data before doing the reduction on the resulting
-    // tensor.  The shape of the reduction is a reshape of the final
-    // output.
-
-    // We'll skip the leading 1s.
-    int dim_index = 0;
-    for (; dim_index < data.dims(); ++dim_index) {
-      if (data.dim_size(dim_index) != 1) break;
-    }
-    if (dim_index >= data.dims()) {
-      // Special case. The input is essentially a scalar.
-      reduce_first_axis_ = true;
-    } else {
-      // Starting from the (dim_index)-th dimension, dimensions
-      // alternates between runs that need to be reduced and runs that
-      // don't.
-      //
-      // NOTE: If a dimension has size 1, we group it as the current
-      // run so that we can minimize the number of runs.
-      //
-      // E.g., when we want to reduce a tensor of shape [2, 1, 3, 1,
-      // 5] by axes = [1, 4], we should treat the tensor as a [6, 5]
-      // and reduce by axes = [1] (i.e., the output is shape [6]).
-      reduce_first_axis_ = bitmap[dim_index];
-      data_reshape_.push_back(data.dim_size(dim_index));
-      ++dim_index;
-      for (; dim_index < data.dims(); ++dim_index) {
-        const auto size = data.dim_size(dim_index);
-        if (size == 1) {
-          bitmap[dim_index] = bitmap[dim_index - 1];
-        }
-        if (bitmap[dim_index - 1] != bitmap[dim_index]) {
-          // Starts a new run of reduce or !reduce.
-          data_reshape_.push_back(size);
-        } else {
-          // Continue a run of reduce or !reduce.
-          data_reshape_.back() *= size;
-        }
-      }
-      // If reduce_first_axis_ is true (input's dimension 0, 2, 4, etc
-      // are reduced), data_reshape_[1, 3, 5, ...]  is out_reshape_,
-      // otherwise, data_reshape_[0, 2, 4, ...] is.
-      for (size_t i = reduce_first_axis_ ? 1 : 0; i < data_reshape_.size();
-           i += 2) {
-        out_reshape_.push_back(data_reshape_[i]);
-      }
-    }
-
-    VLOG(1) << "data reshape: " << str_util::Join(data_reshape_, ",");
-    VLOG(1) << "out  reshape: " << str_util::Join(out_reshape_, ",");
-    VLOG(1) << "out    shape: " << str_util::Join(out_shape_, ",");
-    return Status::OK();
-  }
+  Status Simplify(const Tensor& data, const Tensor& axis, const bool keep_dims);
 
   // We need to do roughly:
   //   tmp_out = allocate(out_reshape())
@@ -164,18 +86,10 @@ class ReductionHelper {
   //   out = tmp_out.reshape(out_shape)
 
   // The reduction result must be allocated with this shape.
-  TensorShape out_reshape() const {
-    TensorShape shape;
-    for (auto size : out_reshape_) shape.AddDim(size);
-    return shape;
-  }
+  TensorShape out_reshape() const;
 
   // The final output shape must be allocated with this shape.
-  TensorShape out_shape() const {
-    TensorShape shape;
-    for (auto size : out_shape_) shape.AddDim(size);
-    return shape;
-  }
+  TensorShape out_shape() const;
 
   // The reduction is on a reshaped tensor of this rank.
   int ndims() const { return data_reshape_.size(); }
@@ -203,31 +117,10 @@ class ReductionHelper {
   }
 
   // Shape with all reduction dimensions at the end
-  TensorShape shuffled_shape() {
-    const int dims = data_reshape_.size();
-    TensorShape shape;
-    for (int i = reduce_first_axis_; i < dims; i += 2) {
-      shape.AddDim(data_reshape_[i]);
-    }
-    for (int i = !reduce_first_axis_; i < dims; i += 2) {
-      shape.AddDim(data_reshape_[i]);
-    }
-    return shape;
-  }
+  TensorShape shuffled_shape();
 
   // Permutation of reduced dims needed to put reduction dimensions at the end
-  gtl::InlinedVector<int32, 8> permutation() {
-    const int dims = data_reshape_.size();
-    const int unreduced_dims = (dims + !reduce_first_axis_) / 2;
-    gtl::InlinedVector<int32, 8> perm(dims);
-    for (int i = 0; i < unreduced_dims; i++) {
-      perm[i] = 2 * i + reduce_first_axis_;
-    }
-    for (int i = unreduced_dims; i < dims; i++) {
-      perm[i] = 2 * (i - unreduced_dims) + !reduce_first_axis_;
-    }
-    return perm;
-  }
+  gtl::InlinedVector<int32, 8> permutation();
 
  private:
   bool reduce_first_axis_;  // True if need to reduce the 0-th dimension.
@@ -235,8 +128,6 @@ class ReductionHelper {
   gtl::InlinedVector<int64, 4> out_shape_;     // The final output shape.
   gtl::InlinedVector<int64, 4> out_reshape_;   // Reshape output for reduction.
 };
-
-}  // end namespace
 
 // For operations where the output is a reduction function along some
 // dimensions of the input.
@@ -286,15 +177,20 @@ class ReductionOp : public OpKernel {
     OP_REQUIRES_OK(ctx, ctx->allocate_temp(out->dtype(), helper.out_reshape(),
                                            &tmp_out, alloc_attr));
 
-    typedef functor::ReduceFunctor<Device> Functor;
+    typedef functor::ReduceFunctor<Device, Reducer> Functor;
     Constants<Device> constants;
     const Device& d = ctx->eigen_device<Device>();
     Reducer reducer;
 
     if (tmp_out.NumElements() == 0) {
       // Nothing to do, fall through to final reshaping.
-    }
-    if ((helper.ndims() == 1) && helper.reduce_first_axis()) {
+    } else if (data.NumElements() == 0) {
+      // Degenerate reduction where the input is empty but the output is
+      // nonempty (thus tmp_out.NumElements() > 0), and we must fill the output
+      // with identity elements.  Example: tf.reduce_sum(tf.zeros((0, 3)), [0]).
+      // Eigen sometimes crashes in this case, so we do it manually.
+      Functor::FillIdentity(d, tmp_out.flat<T>(), reducer);
+    } else if ((helper.ndims() == 1) && helper.reduce_first_axis()) {
       // Reduce to a scalar.
       Functor::Reduce(d, helper.out<T, 0>(&tmp_out), helper.in<T, 1>(data),
                       constants.kZero, reducer);
@@ -349,16 +245,30 @@ class ReductionOp : public OpKernel {
 
 namespace functor {
 
-template <>
-struct ReduceFunctor<CPUDevice> {
-  template <typename OUT_T, typename IN_T, typename ReductionAxes,
-            typename Reducer>
-  static void Reduce(const CPUDevice& d, OUT_T out, IN_T in,
+template <typename Device, typename Reducer>
+struct ReduceFunctorBase {
+  template <typename OUT_T, typename IN_T, typename ReductionAxes>
+  static void Reduce(const Device& d, OUT_T out, IN_T in,
                      const ReductionAxes& reduction_axes,
                      const Reducer& reducer) {
     ReduceEigenImpl(d, out, in, reduction_axes, reducer);
   }
+
+  template <typename OUT_T>
+  static void FillIdentity(const Device& d, OUT_T out,
+                           const Reducer& reducer) {
+    FillIdentityEigenImpl(d, out, reducer);
+  }
 };
+
+template <typename Reducer>
+struct ReduceFunctor<CPUDevice, Reducer>
+        : ReduceFunctorBase<CPUDevice, Reducer>{};
+#if TENSORFLOW_USE_SYCL
+template <typename Reducer>
+struct ReduceFunctor<SYCLDevice, Reducer>
+        : ReduceFunctorBase<SYCLDevice, Reducer>{};
+#endif // TENSORFLOW_USE_SYCL
 
 }  // namespace functor
 }  // namespace tensorflow

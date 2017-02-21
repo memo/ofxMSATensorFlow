@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ limitations under the License.
 #define TENSORFLOW_FRAMEWORK_ALLOCATOR_H_
 
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <limits>
 
 #include "tensorflow/core/framework/numeric_types.h"
+#include "tensorflow/core/framework/resource_handle.pb.h"
 #include "tensorflow/core/framework/type_traits.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/platform/types.h"
@@ -36,6 +36,12 @@ struct AllocationAttributes {
   // An example use case is optional scratch spaces where a failure
   // has only performance impact.
   bool no_retry_on_failure = false;
+  // If a Tensor is allocated without the following set to true, then
+  // it is logged as an unknown allocation. During execution Tensors
+  // should be allocated through the OpKernelContext which records
+  // which Op is performing the allocation, and sets this flag to
+  // true.
+  bool allocation_will_be_logged = false;
 };
 
 // Runtime statistics collected by an allocator.
@@ -44,6 +50,11 @@ struct AllocatorStats {
   int64 bytes_in_use;      // Number of bytes in use.
   int64 max_bytes_in_use;  // The maximum bytes in use.
   int64 max_alloc_size;    // The max single allocation seen.
+
+  // The upper limit what the allocator can allocate, if such a limit
+  // is known. Certain allocator may return 0 to indicate the limit is
+  // unknown.
+  int64 bytes_limit;
 
   AllocatorStats() { Clear(); }
 
@@ -55,6 +66,14 @@ struct AllocatorStats {
 // device memory.
 class Allocator {
  public:
+#ifdef EIGEN_VECTORIZE_AVX512
+  // Align to 64 byte boundary.
+  static constexpr size_t kAllocatorAlignment = 64;
+#else
+  // Align to 32 byte boundary.
+  static constexpr size_t kAllocatorAlignment = 32;
+#endif
+
   virtual ~Allocator();
 
   // Return a string identifying this allocator
@@ -101,8 +120,8 @@ class Allocator {
       return NULL;
     }
 
-    void* p = AllocateRaw(32 /* align to 32 byte boundary */,
-                          sizeof(T) * num_elements, allocation_attr);
+    void* p = AllocateRaw(kAllocatorAlignment, sizeof(T) * num_elements,
+                          allocation_attr);
     T* typed_p = reinterpret_cast<T*>(p);
     if (typed_p) RunCtor<T>(typed_p, num_elements);
     return typed_p;
@@ -138,6 +157,7 @@ class Allocator {
   // allocated by this allocator.
   virtual size_t RequestedSize(void* ptr) {
     CHECK(false) << "allocator doesn't track sizes";
+    return size_t(0);
   }
 
   // Returns the allocated size of the buffer at 'ptr' if known,
@@ -161,17 +181,18 @@ class Allocator {
   // allocated by this allocator.
   virtual int64 AllocationId(void* ptr) { return 0; }
 
-  // is_simple<T>::value if T[] can be safely constructed and destructed
-  // without running T() and ~T().  We do not use std::is_trivial<T>
-  // directly because std::complex<float> is not trival but its array
-  // can be constructed and destructed without running its default ctor
-  // and dtor.
-  template <typename T>
-  struct is_simple {
-    static const bool value = std::is_trivial<T>::value ||
-                              std::is_same<T, complex64>::value ||
-                              is_quantized<T>::value;
-  };
+  // Returns the allocated size of the buffer at 'ptr' if known,
+  // otherwise returns 0. This method can be called when
+  // TracksAllocationSizes() is false, but can be extremely slow.
+  //
+  // REQUIRES: 'ptr!=nullptr' and points to a buffer previously
+  // allocated by this allocator.
+  virtual size_t AllocatedSizeSlow(void* ptr) {
+    if (TracksAllocationSizes()) {
+      return AllocatedSize(ptr);
+    }
+    return 0;
+  }
 
   // Fills in 'stats' with statistics collected by this allocator.
   virtual void GetStats(AllocatorStats* stats) { stats->Clear(); }
@@ -180,7 +201,7 @@ class Allocator {
   // No constructors or destructors are run for simple types
   template <typename T>
   void RunCtor(T* p, size_t n) {
-    static_assert(is_simple<T>::value, "T is not a simple type.");
+    static_assert(is_simple_type<T>::value, "T is not a simple type.");
   }
 
   template <typename T>
@@ -199,14 +220,18 @@ class Allocator {
     for (size_t i = 0; i < n; ++p, ++i) p->~string();
   }
 
+  virtual void RunResourceCtor(ResourceHandle* p, size_t n) {
+    for (size_t i = 0; i < n; ++p, ++i) new (p) ResourceHandle();
+  }
+
+  // Runs string's default destructor for  p[0], p[1], ..., p[n-1].
+  virtual void RunResourceDtor(ResourceHandle* p, size_t n) {
+    for (size_t i = 0; i < n; ++p, ++i) p->~ResourceHandle();
+  }
+
   // TODO(jeff): Maybe provide some interface to give info about
   // current allocation state (total number of bytes available for
   // allocation, number of bytes free on device, etc.)
-};
-
-template <>
-struct Allocator::is_simple<bfloat16> {
-  static const bool value = true;
 };
 
 // Allocator-specific constructors and destructors are used for
@@ -219,6 +244,16 @@ inline void Allocator::RunCtor(string* p, size_t n) {
 template <>
 inline void Allocator::RunDtor(string* p, size_t n) {
   RunStringDtor(p, n);
+}
+
+template <>
+inline void Allocator::RunCtor(ResourceHandle* p, size_t n) {
+  RunResourceCtor(p, n);
+}
+
+template <>
+inline void Allocator::RunDtor(ResourceHandle* p, size_t n) {
+  RunResourceDtor(p, n);
 }
 
 // A tensorflow Op may need access to different kinds of memory that
@@ -248,7 +283,8 @@ struct AllocatorAttributes {
   bool nic_compatible() const { return value & (0x1 << 1); }
   void set_gpu_compatible(bool v) { value |= (static_cast<int>(v) << 2); }
   bool gpu_compatible() const { return value & (0x1 << 2); }
-
+  void set_track_sizes(bool v) { value |= (static_cast<int>(v) << 3); }
+  bool track_sizes() const { return value & (0x1 << 3); }
   void Merge(AllocatorAttributes other) { value |= other.value; }
 
   // NOTE: The upper 8 bits of the value are reserved for
@@ -265,6 +301,19 @@ Allocator* cpu_allocator();
 // If 'enable' is true, the process-wide cpu allocator collects
 // AllocatorStats. By default, it's disabled.
 void EnableCPUAllocatorStats(bool enable);
+
+// If 'enable' is true, the process-wide cpu allocator collects full
+// statistics. By default, it's disabled.
+void EnableCPUAllocatorFullStats(bool enable);
+
+// Abstract interface of an object that does the underlying suballoc/free of
+// memory for a higher-level allocator.
+class SubAllocator {
+ public:
+  virtual ~SubAllocator() {}
+  virtual void* Alloc(size_t alignment, size_t num_bytes) = 0;
+  virtual void Free(void* ptr, size_t num_bytes) = 0;
+};
 
 }  // namespace tensorflow
 

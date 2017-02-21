@@ -3,33 +3,37 @@
 #ifndef TENSORFLOW_CC_OPS_NO_OP_H_
 #define TENSORFLOW_CC_OPS_NO_OP_H_
 
+// This file is MACHINE GENERATED! Do not edit.
+
+#include "tensorflow/cc/framework/ops.h"
+#include "tensorflow/cc/framework/scope.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
-#include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
 
 namespace tensorflow {
 namespace ops {
 
-// These add a node to the graph from opts.
-//
-// Note for "NodeOut" inputs, you will typically either pass
-// * a {Node*, int index} (to pass the index-th output of that node), or
-// * a Node* (to pass the first output of that node).
+/// @defgroup no_op No Op
+/// @{
 
+/// Does nothing. Only useful as a placeholder for control edges.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * the created `Operation`
+class NoOp {
+ public:
+  NoOp(const ::tensorflow::Scope& scope);
+  operator ::tensorflow::Operation() const { return operation; }
 
-// Does nothing. Only useful as a placeholder for control edges.
-//
-// Arguments:
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node.
-Node* NoOp(const GraphDefBuilder::Options& opts);
+  Operation operation;
+};
+
+/// @}
 
 }  // namespace ops
 }  // namespace tensorflow

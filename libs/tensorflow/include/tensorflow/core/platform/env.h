@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,19 +17,22 @@ limitations under the License.
 #define TENSORFLOW_CORE_PLATFORM_ENV_H_
 
 #include <stdint.h>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
+#include "tensorflow/core/lib/core/errors.h"
 #include "tensorflow/core/lib/core/status.h"
 #include "tensorflow/core/lib/core/stringpiece.h"
+#include "tensorflow/core/platform/file_system.h"
 #include "tensorflow/core/platform/macros.h"
+#include "tensorflow/core/platform/mutex.h"
 #include "tensorflow/core/platform/protobuf.h"
 #include "tensorflow/core/platform/types.h"
 
 namespace tensorflow {
 
-class RandomAccessFile;
 class Thread;
-class WritableFile;
 struct ThreadOptions;
 
 /// \brief An interface used by the tensorflow implementation to
@@ -42,8 +45,8 @@ struct ThreadOptions;
 /// multiple threads without any external synchronization.
 class Env {
  public:
-  Env() {}
-  virtual ~Env();
+  Env();
+  virtual ~Env() = default;
 
   /// \brief Returns a default environment suitable for the current operating
   /// system.
@@ -54,6 +57,20 @@ class Env {
   /// The result of Default() belongs to this library and must never be deleted.
   static Env* Default();
 
+  /// \brief Returns the FileSystem object to handle operations on the file
+  /// specified by 'fname'. The FileSystem object is used as the implementation
+  /// for the file system related (non-virtual) functions that follow.
+  /// Returned FileSystem object is still owned by the Env object and will
+  // (might) be destroyed when the environment is destroyed.
+  virtual Status GetFileSystemForFile(const string& fname, FileSystem** result);
+
+  /// \brief Returns the file system schemes registered for this Env.
+  virtual Status GetRegisteredFileSystemSchemes(std::vector<string>* schemes);
+
+  // \brief Register a file system for a scheme.
+  virtual Status RegisterFileSystem(const string& scheme,
+                                    FileSystemRegistry::Factory factory);
+
   /// \brief Creates a brand new random access read-only file with the
   /// specified name.
 
@@ -63,8 +80,12 @@ class Env {
   /// status.
   ///
   /// The returned file may be concurrently accessed by multiple threads.
-  virtual Status NewRandomAccessFile(const string& fname,
-                                     RandomAccessFile** result) = 0;
+  ///
+  /// The ownership of the returned RandomAccessFile is passed to the caller
+  /// and the object should be deleted when is not used. The file object
+  /// shouldn't live longer than the Env object.
+  Status NewRandomAccessFile(const string& fname,
+                             std::unique_ptr<RandomAccessFile>* result);
 
   /// \brief Creates an object that writes to a new file with the specified
   /// name.
@@ -75,8 +96,12 @@ class Env {
   /// returns non-OK.
   ///
   /// The returned file will only be accessed by one thread at a time.
-  virtual Status NewWritableFile(const string& fname,
-                                 WritableFile** result) = 0;
+  ///
+  /// The ownership of the returned WritableFile is passed to the caller
+  /// and the object should be deleted when is not used. The file object
+  /// shouldn't live longer than the Env object.
+  Status NewWritableFile(const string& fname,
+                         std::unique_ptr<WritableFile>* result);
 
   /// \brief Creates an object that either appends to an existing file, or
   /// writes to a new file (if the file does not exist to begin with).
@@ -86,45 +111,115 @@ class Env {
   /// non-OK.
   ///
   /// The returned file will only be accessed by one thread at a time.
-  virtual Status NewAppendableFile(const string& fname,
-                                   WritableFile** result) = 0;
+  ///
+  /// The ownership of the returned WritableFile is passed to the caller
+  /// and the object should be deleted when is not used. The file object
+  /// shouldn't live longer than the Env object.
+  Status NewAppendableFile(const string& fname,
+                           std::unique_ptr<WritableFile>* result);
 
-  /// Returns true iff the named file exists.
-  virtual bool FileExists(const string& fname) = 0;
+  /// \brief Creates a readonly region of memory with the file context.
+  ///
+  /// On success, it returns a pointer to read-only memory region
+  /// from the content of file fname. The ownership of the region is passed to
+  /// the caller. On failure stores nullptr in *result and returns non-OK.
+  ///
+  /// The returned memory region can be accessed from many threads in parallel.
+  ///
+  /// The ownership of the returned ReadOnlyMemoryRegion is passed to the caller
+  /// and the object should be deleted when is not used. The memory region
+  /// object shouldn't live longer than the Env object.
+  Status NewReadOnlyMemoryRegionFromFile(
+      const string& fname, std::unique_ptr<ReadOnlyMemoryRegion>* result);
+
+  /// Returns OK if the named path exists and NOT_FOUND otherwise.
+  Status FileExists(const string& fname);
 
   /// \brief Stores in *result the names of the children of the specified
   /// directory. The names are relative to "dir".
   ///
   /// Original contents of *results are dropped.
-  virtual Status GetChildren(const string& dir,
-                             std::vector<string>* result) = 0;
+  Status GetChildren(const string& dir, std::vector<string>* result);
+
+  /// \brief Returns true if the path matches the given pattern. The wildcards
+  /// allowed in pattern are described in FileSystem::GetMatchingPaths.
+  virtual bool MatchPath(const string& path, const string& pattern) = 0;
+
+  /// \brief Given a pattern, stores in *results the set of paths that matches
+  /// that pattern. *results is cleared.
+  ///
+  /// More details about `pattern` in FileSystem::GetMatchingPaths.
+  virtual Status GetMatchingPaths(const string& pattern,
+                                  std::vector<string>* results);
 
   /// Deletes the named file.
-  virtual Status DeleteFile(const string& fname) = 0;
+  Status DeleteFile(const string& fname);
 
-  /// Creates the specified directory.
-  virtual Status CreateDir(const string& dirname) = 0;
+  /// \brief Deletes the specified directory and all subdirectories and files
+  /// underneath it. undeleted_files and undeleted_dirs stores the number of
+  /// files and directories that weren't deleted (unspecified if the return
+  /// status is not OK).
+  /// REQUIRES: undeleted_files, undeleted_dirs to be not null.
+  /// Typical return codes
+  ///  * OK - dirname exists and we were able to delete everything underneath.
+  ///  * NOT_FOUND - dirname doesn't exist
+  ///  * PERMISSION_DENIED - dirname or some descendant is not writable
+  ///  * UNIMPLEMENTED - Some underlying functions (like Delete) are not
+  ///                    implemented
+  Status DeleteRecursively(const string& dirname, int64* undeleted_files,
+                           int64* undeleted_dirs);
+
+  /// \brief Creates the specified directory and all the necessary
+  /// subdirectories. Typical return codes.
+  ///  * OK - successfully created the directory and sub directories, even if
+  ///         they were already created.
+  ///  * PERMISSION_DENIED - dirname or some subdirectory is not writable.
+  Status RecursivelyCreateDir(const string& dirname);
+
+  /// \brief Creates the specified directory. Typical return codes
+  ///  * OK - successfully created the directory.
+  ///  * ALREADY_EXISTS - directory already exists.
+  ///  * PERMISSION_DENIED - dirname is not writable.
+  Status CreateDir(const string& dirname);
 
   /// Deletes the specified directory.
-  virtual Status DeleteDir(const string& dirname) = 0;
+  Status DeleteDir(const string& dirname);
+
+  /// Obtains statistics for the given path.
+  Status Stat(const string& fname, FileStatistics* stat);
+
+  /// \brief Returns whether the given path is a directory or not.
+  /// Typical return codes (not guaranteed exhaustive):
+  ///  * OK - The path exists and is a directory.
+  ///  * FAILED_PRECONDITION - The path exists and is not a directory.
+  ///  * NOT_FOUND - The path entry does not exist.
+  ///  * PERMISSION_DENIED - Insufficient permissions.
+  ///  * UNIMPLEMENTED - The file factory doesn't support directories.
+  Status IsDirectory(const string& fname);
 
   /// Stores the size of `fname` in `*file_size`.
-  virtual Status GetFileSize(const string& fname, uint64* file_size) = 0;
+  Status GetFileSize(const string& fname, uint64* file_size);
 
   /// \brief Renames file src to target. If target already exists, it will be
   /// replaced.
-  virtual Status RenameFile(const string& src, const string& target) = 0;
+  Status RenameFile(const string& src, const string& target);
+
+  /// \brief Returns the absolute path of the current executable. It resolves
+  /// symlinks if there is any.
+  string GetExecutablePath();
 
   // TODO(jeff,sanjay): Add back thread/thread-pool support if needed.
   // TODO(jeff,sanjay): if needed, tighten spec so relative to epoch, or
   // provide a routine to get the absolute time.
 
-  /// \brief Returns the number of micro-seconds since some fixed point in
-  /// time. Only useful for computing deltas of time.
+  /// \brief Returns the number of micro-seconds since the Unix epoch.
   virtual uint64 NowMicros() = 0;
 
+  /// \brief Returns the number of seconds since the Unix epoch.
+  virtual uint64 NowSeconds() { return NowMicros() / 1000000L; }
+
   /// Sleeps/delays the thread for the prescribed number of micro-seconds.
-  virtual void SleepForMicroseconds(int micros) = 0;
+  virtual void SleepForMicroseconds(int64 micros) = 0;
 
   /// \brief Returns a new thread that is running fn() and is identified
   /// (for debugging/performance-analysis) by "name".
@@ -137,14 +232,15 @@ class Env {
 
   // \brief Schedules the given closure on a thread-pool.
   //
-  // NOTE(mrry): This closure must not block.
+  // NOTE(mrry): This closure may block.
   virtual void SchedClosure(std::function<void()> closure) = 0;
 
   // \brief Schedules the given closure on a thread-pool after the given number
   // of microseconds.
   //
   // NOTE(mrry): This closure must not block.
-  virtual void SchedClosureAfter(int micros, std::function<void()> closure) = 0;
+  virtual void SchedClosureAfter(int64 micros,
+                                 std::function<void()> closure) = 0;
 
   // \brief Load a dynamic library.
   //
@@ -167,60 +263,17 @@ class Env {
   virtual Status GetSymbolFromLibrary(void* handle, const char* symbol_name,
                                       void** symbol) = 0;
 
- private:
-  /// No copying allowed
-  Env(const Env&);
-  void operator=(const Env&);
-};
-
-/// A file abstraction for randomly reading the contents of a file.
-class RandomAccessFile {
- public:
-  RandomAccessFile() {}
-  virtual ~RandomAccessFile();
-
-  /// \brief Reads up to `n` bytes from the file starting at `offset`.
-  ///
-  /// `scratch[0..n-1]` may be written by this routine.  Sets `*result`
-  /// to the data that was read (including if fewer than `n` bytes were
-  /// successfully read).  May set `*result` to point at data in
-  /// `scratch[0..n-1]`, so `scratch[0..n-1]` must be live when
-  /// `*result` is used.
-  ///
-  /// On OK returned status: `n` bytes have been stored in `*result`.
-  /// On non-OK returned status: `[0..n]` bytes have been stored in `*result`.
-  ///
-  /// Returns `OUT_OF_RANGE` if fewer than n bytes were stored in `*result`
-  /// because of EOF.
-  ///
-  /// Safe for concurrent use by multiple threads.
-  virtual Status Read(uint64 offset, size_t n, StringPiece* result,
-                      char* scratch) const = 0;
+  // \brief build the name of dynamic library.
+  //
+  // "name" should be name of the library.
+  // "version" should be the version of the library or NULL
+  // returns the name that LoadLibrary() can use
+  virtual string FormatLibraryFileName(const string& name,
+      const string& version) = 0;
 
  private:
-  /// No copying allowed
-  RandomAccessFile(const RandomAccessFile&);
-  void operator=(const RandomAccessFile&);
-};
-
-/// \brief A file abstraction for sequential writing.
-///
-/// The implementation must provide buffering since callers may append
-/// small fragments at a time to the file.
-class WritableFile {
- public:
-  WritableFile() {}
-  virtual ~WritableFile();
-
-  virtual Status Append(const StringPiece& data) = 0;
-  virtual Status Close() = 0;
-  virtual Status Flush() = 0;
-  virtual Status Sync() = 0;
-
- private:
-  /// No copying allowed
-  WritableFile(const WritableFile&);
-  void operator=(const WritableFile&);
+  std::unique_ptr<FileSystemRegistry> file_system_registry_;
+  TF_DISALLOW_COPY_AND_ASSIGN(Env);
 };
 
 /// \brief An implementation of Env that forwards all calls to another Env.
@@ -236,31 +289,26 @@ class EnvWrapper : public Env {
   /// Returns the target to which this Env forwards all calls
   Env* target() const { return target_; }
 
-  // The following text is boilerplate that forwards all methods to target()
-  Status NewRandomAccessFile(const string& f, RandomAccessFile** r) override {
-    return target_->NewRandomAccessFile(f, r);
+  Status GetFileSystemForFile(const string& fname,
+                              FileSystem** result) override {
+    return target_->GetFileSystemForFile(fname, result);
   }
-  Status NewWritableFile(const string& f, WritableFile** r) override {
-    return target_->NewWritableFile(f, r);
+
+  Status GetRegisteredFileSystemSchemes(std::vector<string>* schemes) override {
+    return target_->GetRegisteredFileSystemSchemes(schemes);
   }
-  Status NewAppendableFile(const string& f, WritableFile** r) override {
-    return target_->NewAppendableFile(f, r);
+
+  Status RegisterFileSystem(const string& scheme,
+                            FileSystemRegistry::Factory factory) override {
+    return target_->RegisterFileSystem(scheme, factory);
   }
-  bool FileExists(const string& f) override { return target_->FileExists(f); }
-  Status GetChildren(const string& dir, std::vector<string>* r) override {
-    return target_->GetChildren(dir, r);
+
+  bool MatchPath(const string& path, const string& pattern) override {
+    return target_->MatchPath(path, pattern);
   }
-  Status DeleteFile(const string& f) override { return target_->DeleteFile(f); }
-  Status CreateDir(const string& d) override { return target_->CreateDir(d); }
-  Status DeleteDir(const string& d) override { return target_->DeleteDir(d); }
-  Status GetFileSize(const string& f, uint64* s) override {
-    return target_->GetFileSize(f, s);
-  }
-  Status RenameFile(const string& s, const string& t) override {
-    return target_->RenameFile(s, t);
-  }
+
   uint64 NowMicros() override { return target_->NowMicros(); }
-  void SleepForMicroseconds(int micros) override {
+  void SleepForMicroseconds(int64 micros) override {
     target_->SleepForMicroseconds(micros);
   }
   Thread* StartThread(const ThreadOptions& thread_options, const string& name,
@@ -270,7 +318,7 @@ class EnvWrapper : public Env {
   void SchedClosure(std::function<void()> closure) override {
     target_->SchedClosure(closure);
   }
-  void SchedClosureAfter(int micros, std::function<void()> closure) override {
+  void SchedClosureAfter(int64 micros, std::function<void()> closure) override {
     target_->SchedClosureAfter(micros, closure);
   }
   Status LoadLibrary(const char* library_filename, void** handle) override {
@@ -280,11 +328,15 @@ class EnvWrapper : public Env {
                               void** symbol) override {
     return target_->GetSymbolFromLibrary(handle, symbol_name, symbol);
   }
-
+  string FormatLibraryFileName(const string& name,
+                               const string& version) override {
+    return target_->FormatLibraryFileName(name, version);
+  }
  private:
   Env* target_;
 };
 
+/// Represents a thread used to run a Tensorflow function.
 class Thread {
  public:
   Thread() {}
@@ -293,9 +345,7 @@ class Thread {
   virtual ~Thread();
 
  private:
-  /// No copying allowed
-  Thread(const Thread&);
-  void operator=(const Thread&);
+  TF_DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
 /// \brief Options to configure a Thread.
@@ -317,11 +367,54 @@ Status ReadFileToString(Env* env, const string& fname, string* data);
 Status WriteStringToFile(Env* env, const string& fname,
                          const StringPiece& data);
 
+/// Write binary representation of "proto" to the named file.
+Status WriteBinaryProto(Env* env, const string& fname,
+                        const ::tensorflow::protobuf::MessageLite& proto);
+
 /// Reads contents of named file and parse as binary encoded proto data
 /// and store into `*proto`.
 Status ReadBinaryProto(Env* env, const string& fname,
                        ::tensorflow::protobuf::MessageLite* proto);
 
+/// Write the text representation of "proto" to the named file.
+Status WriteTextProto(Env* env, const string& fname,
+                      const ::tensorflow::protobuf::Message& proto);
+
+/// Read contents of named file and parse as text encoded proto data
+/// and store into `*proto`.
+Status ReadTextProto(Env* env, const string& fname,
+                     ::tensorflow::protobuf::Message* proto);
+
+// START_SKIP_DOXYGEN
+
+namespace register_file_system {
+
+template <typename Factory>
+struct Register {
+  Register(Env* env, const string& scheme) {
+    env->RegisterFileSystem(scheme,
+                            []() -> FileSystem* { return new Factory; });
+  }
+};
+
+}  // namespace register_file_system
+
+// END_SKIP_DOXYGEN
+
 }  // namespace tensorflow
+
+// Register a FileSystem implementation for a scheme. Files with names that have
+// "scheme://" prefixes are routed to use this implementation.
+#define REGISTER_FILE_SYSTEM_ENV(env, scheme, factory) \
+  REGISTER_FILE_SYSTEM_UNIQ_HELPER(__COUNTER__, env, scheme, factory)
+#define REGISTER_FILE_SYSTEM_UNIQ_HELPER(ctr, env, scheme, factory) \
+  REGISTER_FILE_SYSTEM_UNIQ(ctr, env, scheme, factory)
+#define REGISTER_FILE_SYSTEM_UNIQ(ctr, env, scheme, factory)   \
+  static ::tensorflow::register_file_system::Register<factory> \
+      register_ff##ctr TF_ATTRIBUTE_UNUSED =                   \
+          ::tensorflow::register_file_system::Register<factory>(env, scheme)
+
+#define REGISTER_FILE_SYSTEM(scheme, factory) \
+  REGISTER_FILE_SYSTEM_ENV(Env::Default(), scheme, factory);
 
 #endif  // TENSORFLOW_CORE_PLATFORM_ENV_H_

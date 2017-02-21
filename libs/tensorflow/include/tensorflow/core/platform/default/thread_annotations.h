@@ -1,4 +1,4 @@
-/* Copyright 2015 Google Inc. All Rights Reserved.
+/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -156,11 +156,6 @@ limitations under the License.
 // C++ syntax, but which are present for documentation purposes.  These
 // annotations will be ignored by the analysis.
 #define TS_UNCHECKED(x) ""
-
-// Disables warnings for a single read operation.  This can be used to do racy
-// reads of guarded data members, in cases where the race is benign.
-#define TS_UNCHECKED_READ(x) \
-  ::tensorflow::thread_safety_analysis::ts_unchecked_read(x)
 
 namespace tensorflow {
 namespace thread_safety_analysis {

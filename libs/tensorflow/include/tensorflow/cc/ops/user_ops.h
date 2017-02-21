@@ -3,33 +3,39 @@
 #ifndef TENSORFLOW_CC_OPS_USER_OPS_H_
 #define TENSORFLOW_CC_OPS_USER_OPS_H_
 
+// This file is MACHINE GENERATED! Do not edit.
+
+#include "tensorflow/cc/framework/ops.h"
+#include "tensorflow/cc/framework/scope.h"
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_shape.h"
 #include "tensorflow/core/framework/types.h"
-#include "tensorflow/core/graph/graph_def_builder.h"
 #include "tensorflow/core/lib/gtl/array_slice.h"
 
 namespace tensorflow {
 namespace ops {
 
-// These add a node to the graph from opts.
-//
-// Note for "NodeOut" inputs, you will typically either pass
-// * a {Node*, int index} (to pass the index-th output of that node), or
-// * a Node* (to pass the first output of that node).
+/// @defgroup user_ops User Ops
+/// @{
 
+/// Output a fact about factorials.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The fact tensor.
+class Fact {
+ public:
+  Fact(const ::tensorflow::Scope& scope);
+  operator ::tensorflow::Output() const { return fact; }
+  operator ::tensorflow::Input() const { return fact; }
+  ::tensorflow::Node* node() const { return fact.node(); }
 
-// Output a fact about factorials.
-//
-// Arguments:
-// * opts:
-//   .WithName(StringPiece): Set the Node's name
-//   .WithDevice(StringPiece): Set the Node's requested device
-//   .WithControlInput(Node*) / .WithControlInputs({Node*, ...}):
-//     Add control dependencies on the specified Node(s).
-//
-// Returns a pointer to the created Node.
-Node* Fact(const GraphDefBuilder::Options& opts);
+  ::tensorflow::Output fact;
+};
+
+/// @}
 
 }  // namespace ops
 }  // namespace tensorflow
