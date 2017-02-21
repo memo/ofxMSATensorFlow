@@ -16,9 +16,9 @@
 
 meta:
 	ADDON_NAME = ofxMSATensorFlow
-	ADDON_DESCRIPTION = Addon to wrap Google's numerical computation / machine learning library TensorFlow
+	ADDON_DESCRIPTION = Addon for Tensorflow. Machine learning, deep learning and numerical computation library by Google
 	ADDON_AUTHOR = Memo Akten
-	ADDON_TAGS = "numerical computation" "machine learning" "artificial intelligence" “deep learning”
+	ADDON_TAGS = "numerical computation" "machine learning" "artificial intelligence" "deep learning"
 	ADDON_URL = http://github.com/memo/ofxMSATensorFlow
 
 common:
