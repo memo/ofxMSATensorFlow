@@ -29,11 +29,10 @@ common:
 	# include search paths, this will be usually parsed from the file system
 	# but if the addon or addon libraries need special search paths they can be
 	# specified here separated by spaces or one per line using +=
-       ADDON_INCLUDES = src
-       ADDON_INCLUDES += libs/tensorflow/include
-       ADDON_INCLUDES += libs/tensorflow/include/third_party/eigen3
-       ADDON_INCLUDES += libs/tensorflow/include/external/eigen_archive
-       ADDON_INCLUDES += libs/tensorflow/include/external/eigen_archive/eigen-eigen-70505a059011
+       #ADDON_INCLUDES = src
+       #ADDON_INCLUDES += libs/tensorflow/include
+       #ADDON_INCLUDES += libs/google/include
+
 	# the last one is different every time the lib is compiled
 	# need to find a fix
 
@@ -65,7 +64,7 @@ common:
 
 	# when parsing the file system looking for sources exclude this for all or
 	# a specific platform
-	ADDON_SOURCES_EXCLUDE = libs/tensorflow/%
+	ADDON_SOURCES_EXCLUDE = libs/%
 	
 	# when parsing the file system looking for libraries exclude this for all or
 	# a specific platform
