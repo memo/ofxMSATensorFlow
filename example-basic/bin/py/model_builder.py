@@ -35,7 +35,6 @@ with tf.Session() as sess:
     if os.path.exists(out_path):
         shutil.rmtree(out_path) 
     
-    # Write flow graph to disk
-    # NB. this won't save value of variables (yet?), see MNIST example
+    # Write graph to disk
     tf.train.write_graph(sess.graph_def, out_path, out_fname, as_text=False)
 
