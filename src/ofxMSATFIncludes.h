@@ -4,22 +4,28 @@
 #include "ofMain.h"
 
 #ifdef Success
-#undef Success  // /usr/include/X11/X.h is defining this as int making compile fail
+#undef Success  // /usr/include/X11/X.h is defining this making compile fail
 #endif
 
 #ifdef Status
-#undef Status   // /usr/include/X11/Xlib.h is defining this as int making compile fail
+#undef Status   // /usr/include/X11/X.h is defining this making compile fail
 #endif
 
 #ifdef None
-#undef None   // /usr/include/X11/X.h is defining this as 0 making compile fail
+#undef None     // /usr/include/X11/X.h is defining this making compile fail
 #endif
 
 #ifdef Complex
-#undef Complex   // /usr/include/X11/X.h is defining this as 0 making compile fail
+#undef Complex  // /usr/include/X11/X.h is defining this making compile fail
+#endif
+
+#ifdef BadColor
+#undef BadColor // /usr/include/X11/X.h is defining this making compile fail
 #endif
 
 
+
+#include "tensorflow/cc/client/client_session.h"
 #include "tensorflow/cc/ops/standard_ops.h"
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/framework/tensor.h"
