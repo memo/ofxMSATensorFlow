@@ -40,7 +40,7 @@ public:
         std::vector<tensorflow::Tensor> outputs;
         TF_CHECK_OK(session.Run({v}, &outputs));
 
-        ofLogVerbose() << outputs[0].matrix<float>();
+        ofLogVerbose() << "Result" << outputs[0].matrix<float>();
     }
 
     //--------------------------------------------------------------

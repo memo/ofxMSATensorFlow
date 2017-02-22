@@ -3,7 +3,7 @@
  * based on https://www.tensorflow.org/versions/master/api_docs/cc/ClassSession.html
  * and https://medium.com/jim-fleming/loading-a-tensorflow-graph-with-the-c-api-4caaff88463f#.9nywhxemo
  *
- * Python script constructs tensor flow graph which simply multiplies two numbers, exports binary model (see bin/py)
+ * Python script constructs tensor flow graph which simply multiplies two numbers and exports binary model (see bin/py)
  *
  * openFrameworks code loads and processes pre-trained model (i.e. makes calculations/predictions)
  *
