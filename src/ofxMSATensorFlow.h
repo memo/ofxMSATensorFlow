@@ -12,6 +12,7 @@
 
 #include "ofxMSATFIncludes.h"
 #include "ofxMSATFUtils.h"
+#include "ofxMSATFVizUtils.h"
 #include "ofxMSATFImageClassifier.h"
 #include "ofxMSATFLayerVisualizer.h"
 
