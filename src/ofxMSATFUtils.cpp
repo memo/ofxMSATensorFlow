@@ -30,6 +30,7 @@ Session_ptr create_session_with_graph(
     Session_ptr session(NewSession(session_options));
     if( !session) { ofLogError() << "Error creating session"; return nullptr; }
 
+    // TODO make work with r1.0
     if(!device.empty())
         tensorflow::graph::SetDefaultDevice(device, &graph_def);
 
@@ -83,26 +84,41 @@ ofVec3f tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
 
 
 //--------------------------------------------------------------
-void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name) {
-    tensorflow::GraphDefBuilder b;
-    tensorflow::ops::TopKV2(tensorflow::ops::Const(scores_tensor, b.opts()), tensorflow::ops::Const(topk_count, b.opts()), b.opts().WithName(output_name));
+//void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name) {
+    //    tensorflow::GraphDefBuilder b;
+    //    tensorflow::ops::TopKV2(tensorflow::ops::Const(scores_tensor, b.opts()), tensorflow::ops::Const(topk_count, b.opts()), b.opts().WithName(output_name));
 
-    // This runs the GraphDef network definition that we've just constructed, and
-    // returns the results in the output tensors.
-    tensorflow::GraphDef graph;
-    b.ToGraphDef(&graph);
+    //    // This runs the GraphDef network definition that we've just constructed, and
+    //    // returns the results in the output tensors.
+    //    tensorflow::GraphDef graph;
+    //    b.ToGraphDef(&graph);
 
-    std::unique_ptr<tensorflow::Session> session(tensorflow::NewSession(tensorflow::SessionOptions()));
-    session->Create(graph);
+    //    std::unique_ptr<tensorflow::Session> session(tensorflow::NewSession(tensorflow::SessionOptions()));
+    //    session->Create(graph);
 
-    // The TopK node returns two outputs, the scores and their original indices,
-    // so we have to append :0 and :1 to specify them both.
-    std::vector<tensorflow::Tensor> output_tensors;
-    session->Run({}, {output_name + ":0", output_name + ":1"},{}, &output_tensors);
-    tensor_to_vector(output_tensors[0], out_scores);
-    tensor_to_vector(output_tensors[1], out_indices);
+    //    // The TopK node returns two outputs, the scores and their original indices,
+    //    // so we have to append :0 and :1 to specify them both.
+    //    std::vector<tensorflow::Tensor> output_tensors;
+    //    session->Run({}, {output_name + ":0", output_name + ":1"},{}, &output_tensors);
+    //    tensor_to_vector(output_tensors[0], out_scores);
+    //    tensor_to_vector(output_tensors[1], out_indices);
+//}
+
+void get_topk(const vector<float> probs, vector<int> &out_indices, vector<float> &out_values, int k) {
+    // http://stackoverflow.com/questions/14902876/indices-of-the-k-largest-elements-in-an-unsorted-length-n-array
+    out_indices.resize(k);
+    out_values.resize(k);
+    std::priority_queue<std::pair<float, int>> q;
+    for (int i = 0; i < probs.size(); ++i) {
+        q.push(std::pair<float, int>(probs[i], i));
+    }
+    for (int i = 0; i < k; ++i) {
+        int ki = q.top().second;
+        out_indices[i] = ki;
+        out_values[i] = probs[ki];
+        q.pop();
+    }
 }
-
 
 //--------------------------------------------------------------
 bool read_labels_file(string file_name, vector<string>& result) {

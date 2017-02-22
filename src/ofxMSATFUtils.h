@@ -16,6 +16,7 @@ typedef shared_ptr<tensorflow::GraphDef> GraphDef_ptr;
 
 
 // COMMON LOW LEVEL FUNCTIONAL STUFF (i.e. stateless).
+// TODO update these to r1.0, Using tensorflow::Scope
 
 
 // check status for error and log if error found. return status as is
@@ -41,9 +42,11 @@ Session_ptr create_session_with_graph(
 
 
 
-// pass in tensor (usually containing scores or probabilities of labels) and number of top items desired
-// function returns top_k scores and corresponding indices
-void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name = "top_k");
+// pass in tensor (e.g. of probabilities) and number of top items desired, returns top k values and corresponding indices
+//void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name = "top_k");
+
+// pass in vector (e.g. of probabilities) and number of top items desired, returns top k values and corresponding indices
+void get_topk(const vector<float> probs, vector<int> &out_indices, vector<float> &out_values, int k=10);
 
 
 // Takes a file name, and loads a list of labels from it, one per line, and
