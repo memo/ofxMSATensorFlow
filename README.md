@@ -41,7 +41,8 @@ Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/pros
 
 ### example-inception3
 openframeworks implementation for image recognition using Google's 'Inception-v3' architecture network, pre-trained on ImageNet. Background info at https://www.tensorflow.org/versions/0.6.0/tutorials/image_recognition/index.html
-![](https://cloud.githubusercontent.com/assets/144230/12665278/8caf4e8a-c62e-11e5-962a-8cd97af173ff.png)
+![](https://cloud.githubusercontent.com/assets/144230/23235025/e88d8a40-f94b-11e6-9f3b-c5c65906c1a4.png)
+
 
 
 ### example-build-graph
