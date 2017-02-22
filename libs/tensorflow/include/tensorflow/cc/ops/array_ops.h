@@ -78,7 +78,7 @@ namespace ops {
 /// (3) For the following input of shape `[4, 2, 2, 1]` and block_size of 2:
 ///
 /// ```prettyprint
-/// x = [[[[1], [3]], [[5], [7]]],
+/// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
 ///      [[[6], [8]], [[14], [16]]]]
@@ -209,7 +209,7 @@ class BatchToSpace {
 ///     `crops = [[0, 0], [0, 0]]`:
 ///
 /// ```prettyprint
-/// x = [[[[1], [3]], [[5], [7]]],
+/// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
 ///      [[[6], [8]], [[14], [16]]]]
@@ -1171,10 +1171,9 @@ class FakeQuantWithMinMaxArgsGradient {
   ::tensorflow::Output backprops;
 };
 
-/// Fake-quantize the 'inputs' tensor of type float and shape `[b, h, w, d]` via
+/// Fake-quantize the 'inputs' tensor of type float via global float scalars `min`
 ///
-/// global float scalars `min` and `max` to 'outputs' tensor of same shape as
-/// `inputs`.
+/// and `max` to 'outputs' tensor of same shape as `inputs`.
 ///
 /// [min; max] is the clamping range for the 'inputs' data.  Op divides this range
 /// into 255 steps (total of 256 values), then replaces each 'inputs' value with the
@@ -2243,15 +2242,40 @@ class PlaceholderWithDefault {
 ///
 /// Arguments:
 /// * scope: A Scope object
+/// * input: any tensor.
+///
+/// Optional attributes (see `Attrs`):
+/// * message: Will be printed in the error when anyone tries to differentiate
+/// this operation.
 ///
 /// Returns:
-/// * `Output`: The output tensor.
+/// * `Output`: the same input tensor.
 class PreventGradient {
  public:
+  /// Optional attribute setters for PreventGradient
+  struct Attrs {
+    /// Will be printed in the error when anyone tries to differentiate
+    /// this operation.
+    ///
+    /// Defaults to ""
+    Attrs Message(StringPiece x) {
+      Attrs ret = *this;
+      ret.message_ = x;
+      return ret;
+    }
+
+    StringPiece message_ = "";
+  };
   PreventGradient(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
+  PreventGradient(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
+                const PreventGradient::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs Message(StringPiece x) {
+    return Attrs().Message(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -2273,7 +2297,7 @@ class PreventGradient {
 /// we use is always centered on 0, so we find m such that
 ///
 /// 1. m = max(abs(input_min), abs(input_max)) if range_given is true,
-/// 2. m = max(max(abs(min_elem(input)), abs(max_elem(input))) otherwise.
+/// 2. m = max(abs(min_elem(input)), abs(max_elem(input))) otherwise.
 ///
 /// Our input tensor range is then [-m, m].
 ///
@@ -2311,19 +2335,21 @@ class PreventGradient {
 /// Arguments:
 /// * scope: A Scope object
 /// * input: Tensor to quantize and then dequantize.
+/// * input_min: If range_given, this is the min of the range, otherwise this input
+/// will be ignored.
+/// * input_max: If range_given, this is the max of the range, otherwise this input
+/// will be ignored.
 ///
 /// Optional attributes (see `Attrs`):
 /// * signed_input: If the quantization is signed or unsigned.
 /// * num_bits: The bitwidth of the quantization.
 /// * range_given: If the range is given or should be computed from the tensor.
-/// * input_min: If range is given, this is the min of the range.
-/// * input_max: If range is given, this is the max of the range.
 ///
 /// Returns:
 /// * `Output`: The output tensor.
-class QuantizeAndDequantize {
+class QuantizeAndDequantizeV2 {
  public:
-  /// Optional attribute setters for QuantizeAndDequantize
+  /// Optional attribute setters for QuantizeAndDequantizeV2
   struct Attrs {
     /// If the quantization is signed or unsigned.
     ///
@@ -2352,34 +2378,17 @@ class QuantizeAndDequantize {
       return ret;
     }
 
-    /// If range is given, this is the min of the range.
-    ///
-    /// Defaults to 0
-    Attrs InputMin(float x) {
-      Attrs ret = *this;
-      ret.input_min_ = x;
-      return ret;
-    }
-
-    /// If range is given, this is the max of the range.
-    ///
-    /// Defaults to 0
-    Attrs InputMax(float x) {
-      Attrs ret = *this;
-      ret.input_max_ = x;
-      return ret;
-    }
-
     bool signed_input_ = true;
     int64 num_bits_ = 8;
     bool range_given_ = false;
-    float input_min_ = 0.0f;
-    float input_max_ = 0.0f;
   };
-  QuantizeAndDequantize(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                      input);
-  QuantizeAndDequantize(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                      input, const QuantizeAndDequantize::Attrs& attrs);
+  QuantizeAndDequantizeV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        input, ::tensorflow::Input input_min,
+                        ::tensorflow::Input input_max);
+  QuantizeAndDequantizeV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        input, ::tensorflow::Input input_min,
+                        ::tensorflow::Input input_max, const
+                        QuantizeAndDequantizeV2::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
@@ -2392,12 +2401,6 @@ class QuantizeAndDequantize {
   }
   static Attrs RangeGiven(bool x) {
     return Attrs().RangeGiven(x);
-  }
-  static Attrs InputMin(float x) {
-    return Attrs().InputMin(x);
-  }
-  static Attrs InputMax(float x) {
-    return Attrs().InputMax(x);
   }
 
   ::tensorflow::Output output;
@@ -2765,7 +2768,7 @@ class Reshape {
 /// slice `i`, reverses the first `seq_lengths[i]` elements along
 /// the dimension `seq_dim`.
 ///
-/// The elements of `seq_lengths` must obey `seq_lengths[i] < input.dims[seq_dim]`,
+/// The elements of `seq_lengths` must obey `seq_lengths[i] <= input.dims[seq_dim]`,
 /// and `seq_lengths` must be a vector of length `input.dims[batch_dim]`.
 ///
 /// The output slice `i` along dimension `batch_dim` is then given by input
@@ -2820,7 +2823,7 @@ class Reshape {
 /// * scope: A Scope object
 /// * input: The input to reverse.
 /// * seq_lengths: 1-D with length `input.dims(batch_dim)` and
-/// `max(seq_lengths) < input.dims(seq_dim)`
+/// `max(seq_lengths) <= input.dims(seq_dim)`
 /// * seq_dim: The dimension which is partially reversed.
 ///
 /// Optional attributes (see `Attrs`):
@@ -3248,7 +3251,7 @@ class Slice {
 /// The output tensor has shape `[4, 2, 2, 1]` and value:
 ///
 /// ```prettyprint
-/// x = [[[[1], [3]], [[5], [7]]],
+/// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
 ///      [[[6], [8]], [[14], [16]]]]
@@ -3383,7 +3386,7 @@ class SpaceToBatch {
 /// The output tensor has shape `[4, 2, 2, 1]` and value:
 ///
 /// ```prettyprint
-/// x = [[[[1], [3]], [[5], [7]]],
+/// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
 ///      [[[6], [8]], [[14], [16]]]]

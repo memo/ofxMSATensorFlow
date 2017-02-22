@@ -221,6 +221,81 @@ class RandomGamma {
   ::tensorflow::Output output;
 };
 
+/// Outputs random values from the Poisson distribution(s) described by rate.
+///
+/// This op uses two algorithms, depending on rate. If rate >= 10, then
+/// the algorithm by Hormann is used to acquire samples via
+/// transformation-rejection.
+/// See http://www.sciencedirect.com/science/article/pii/0167668793909974.
+///
+/// Otherwise, Knuth's algorithm is used to acquire samples via multiplying uniform
+/// random variables.
+/// See Donald E. Knuth (1969). Seminumerical Algorithms. The Art of Computer
+/// Programming, Volume 2. Addison Wesley
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * shape: 1-D integer tensor. Shape of independent samples to draw from each
+/// distribution described by the shape parameters given in rate.
+/// * rate: A tensor in which each scalar is a "rate" parameter describing the
+/// associated poisson distribution.
+///
+/// Optional attributes (see `Attrs`):
+/// * seed: If either `seed` or `seed2` are set to be non-zero, the random number
+/// generator is seeded by the given seed.  Otherwise, it is seeded by a
+/// random seed.
+/// * seed2: A second seed to avoid seed collision.
+///
+/// Returns:
+/// * `Output`: A tensor with shape `shape + shape(rate)`. Each slice
+/// `[:, ..., :, i0, i1, ...iN]` contains the samples drawn for
+/// `rate[i0, i1, ...iN]`. The dtype of the output matches the dtype of
+/// rate.
+class RandomPoisson {
+ public:
+  /// Optional attribute setters for RandomPoisson
+  struct Attrs {
+    /// If either `seed` or `seed2` are set to be non-zero, the random number
+    /// generator is seeded by the given seed.  Otherwise, it is seeded by a
+    /// random seed.
+    ///
+    /// Defaults to 0
+    Attrs Seed(int64 x) {
+      Attrs ret = *this;
+      ret.seed_ = x;
+      return ret;
+    }
+
+    /// A second seed to avoid seed collision.
+    ///
+    /// Defaults to 0
+    Attrs Seed2(int64 x) {
+      Attrs ret = *this;
+      ret.seed2_ = x;
+      return ret;
+    }
+
+    int64 seed_ = 0;
+    int64 seed2_ = 0;
+  };
+  RandomPoisson(const ::tensorflow::Scope& scope, ::tensorflow::Input shape,
+              ::tensorflow::Input rate);
+  RandomPoisson(const ::tensorflow::Scope& scope, ::tensorflow::Input shape,
+              ::tensorflow::Input rate, const RandomPoisson::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs Seed(int64 x) {
+    return Attrs().Seed(x);
+  }
+  static Attrs Seed2(int64 x) {
+    return Attrs().Seed2(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
 /// Randomly shuffles a tensor along its first dimension.
 ///
 ///   The tensor is shuffled along dimension 0, such that each `value[j]` is mapped

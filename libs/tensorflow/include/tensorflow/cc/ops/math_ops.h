@@ -584,7 +584,7 @@ class Cross {
 /// By setting the `exclusive` kwarg to `True`, an exclusive cumprod is
 /// performed instead:
 /// ```prettyprint
-/// tf.cumprod([a, b, c], exclusive=True) ==> [0, a, a * b]
+/// tf.cumprod([a, b, c], exclusive=True) ==> [1, a, a * b]
 /// ```
 ///
 /// By setting the `reverse` kwarg to `True`, the cumprod is performed in the
@@ -596,7 +596,7 @@ class Cross {
 ///
 /// The `reverse` and `exclusive` kwargs can also be combined:
 /// ```prettyprint
-/// tf.cumprod([a, b, c], exclusive=True, reverse=True) ==> [b * c, c, 0]
+/// tf.cumprod([a, b, c], exclusive=True, reverse=True) ==> [b * c, c, 1]
 /// ```
 ///
 /// Arguments:
@@ -2044,6 +2044,53 @@ class QuantizedMatMul {
   ::tensorflow::Output max_out;
 };
 
+/// Returns x * y element-wise, working on quantized buffers.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * min_x: The float value that the lowest quantized `x` value represents.
+/// * max_x: The float value that the highest quantized `x` value represents.
+/// * min_y: The float value that the lowest quantized `y` value represents.
+/// * max_y: The float value that the highest quantized `y` value represents.
+///
+/// Returns:
+/// * `Output` z
+/// * `Output` min_z: The float value that the lowest quantized output value represents.
+/// * `Output` max_z: The float value that the highest quantized output value represents.
+///
+/// *NOTE*: `QuantizedMul` supports limited forms of broadcasting. More about
+/// broadcasting [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+class QuantizedMul {
+ public:
+  /// Optional attribute setters for QuantizedMul
+  struct Attrs {
+    /// Defaults to DT_QINT32
+    Attrs Toutput(DataType x) {
+      Attrs ret = *this;
+      ret.Toutput_ = x;
+      return ret;
+    }
+
+    DataType Toutput_ = DT_QINT32;
+  };
+  QuantizedMul(const ::tensorflow::Scope& scope, ::tensorflow::Input x,
+             ::tensorflow::Input y, ::tensorflow::Input min_x,
+             ::tensorflow::Input max_x, ::tensorflow::Input min_y,
+             ::tensorflow::Input max_y);
+  QuantizedMul(const ::tensorflow::Scope& scope, ::tensorflow::Input x,
+             ::tensorflow::Input y, ::tensorflow::Input min_x,
+             ::tensorflow::Input max_x, ::tensorflow::Input min_y,
+             ::tensorflow::Input max_y, const QuantizedMul::Attrs& attrs);
+
+  static Attrs Toutput(DataType x) {
+    return Attrs().Toutput(x);
+  }
+
+  ::tensorflow::Output z;
+  ::tensorflow::Output min_z;
+  ::tensorflow::Output max_z;
+};
+
 /// Creates a sequence of numbers.
 ///
 /// This operation creates a sequence of numbers that begins at `start` and
@@ -3020,6 +3067,46 @@ class TruncateMod {
   ::tensorflow::Node* node() const { return z.node(); }
 
   ::tensorflow::Output z;
+};
+
+/// Computes the Max along segments of a tensor.
+///
+/// Read [the section on
+/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
+/// of segments.
+///
+/// This operator is similar to the [unsorted segment sum operator](../../api_docs/python/math_ops.md#UnsortedSegmentSum).
+/// Instead of computing the sum over segments, it computes the maximum
+/// such that:
+///
+/// \\(output_i = \max_j data_j\\) where max is over `j` such
+/// that `segment_ids[j] == i`.
+///
+/// If the maximum is empty for a given segment ID `i`, it outputs the smallest possible value for specific numeric type,
+///  `output[i] = numeric_limits<T>::min()`.
+///
+/// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
+/// <img style="width:100%" src="../../images/UnsortedSegmentSum.png" alt>
+/// </div>
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * segment_ids: A 1-D tensor whose rank is equal to the rank of `data`'s
+/// first dimension.
+///
+/// Returns:
+/// * `Output`: Has same shape as data, except for dimension 0 which
+/// has size `num_segments`.
+class UnsortedSegmentMax {
+ public:
+  UnsortedSegmentMax(const ::tensorflow::Scope& scope, ::tensorflow::Input data,
+                   ::tensorflow::Input segment_ids, ::tensorflow::Input
+                   num_segments);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  ::tensorflow::Output output;
 };
 
 /// Computes the sum along segments of a tensor.

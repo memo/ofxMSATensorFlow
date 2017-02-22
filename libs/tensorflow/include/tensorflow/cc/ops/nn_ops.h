@@ -2222,9 +2222,6 @@ class SparseSoftmaxCrossEntropyWithLogits {
 /// Returns:
 /// * `Output` values: The `k` largest elements along each last dimensional slice.
 /// * `Output` indices: The indices of `values` within the last dimension of `input`.
-///
-/// Aliases:
-/// * TopKV2
 class TopK {
  public:
   /// Optional attribute setters for TopK
@@ -2253,7 +2250,6 @@ class TopK {
   ::tensorflow::Output values;
   ::tensorflow::Output indices;
 };
-typedef TopK TopKV2;
 
 /// @}
 

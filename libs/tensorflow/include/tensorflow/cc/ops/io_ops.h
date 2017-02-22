@@ -157,14 +157,14 @@ class IdentityReader {
   ::tensorflow::Output reader_handle;
 };
 
-/// Returns the set of files matching a pattern.
+/// Returns the set of files matching one or more glob patterns.
 ///
 /// Note that this routine only supports wildcard characters in the
 /// basename portion of the pattern, not in the directory portion.
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * pattern: A (scalar) shell wildcard pattern.
+/// * pattern: Shell wildcard pattern(s). Scalar or vector of type string.
 ///
 /// Returns:
 /// * `Output`: A vector of matching filenames.

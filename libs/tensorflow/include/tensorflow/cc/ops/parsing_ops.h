@@ -161,7 +161,11 @@ class DecodeRaw {
 /// when the example's feature_map lacks dense_key[j].  If an empty Tensor is
 /// provided for dense_defaults[j], then the Feature dense_keys[j] is required.
 /// The input type is inferred from dense_defaults[j], even when it's empty.
-/// If dense_defaults[j] is not empty, its shape must match dense_shapes[j].
+/// If dense_defaults[j] is not empty, and dense_shapes[j] is fully defined,
+/// then the shape of dense_defaults[j] must match that of dense_shapes[j].
+/// If dense_shapes[j] has an undefined major dimension (variable strides dense
+/// feature), dense_defaults[j] must contain a single element:
+/// the padding element.
 /// * sparse_types: A list of Nsparse types; the data types of data in each Feature
 /// given in sparse_keys.
 /// Currently the ParseExample supports DT_FLOAT (FloatList),
@@ -173,6 +177,13 @@ class DecodeRaw {
 /// If dense_shapes[j] == (D0, D1, ..., DN) then the shape of output
 /// Tensor dense_values[j] will be (|serialized|, D0, D1, ..., DN):
 /// The dense outputs are just the inputs row-stacked by batch.
+/// This works for dense_shapes[j] = (-1, D1, ..., DN).  In this case
+/// the shape of the output Tensor dense_values[j] will be
+/// (|serialized|, M, D1, .., DN), where M is the maximum number of blocks
+/// of elements of length D1 * .... * DN, across all minibatch entries
+/// in the input.  Any minibatch entry with less than M blocks of elements of
+/// length D1 * ... * DN will be padded with the corresponding default_value
+/// scalar element along the second dimension.
 ///
 /// Returns:
 /// * `OutputList` sparse_indices
