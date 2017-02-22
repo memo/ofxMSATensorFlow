@@ -39,6 +39,10 @@ public:
     // if you disable gltextures of the images, performance can be a little better
     void setUseTexture(bool b);
 
+    // draw probability histogram in target rect with colors lo_color for low probabilities, hi_color for high probabilities
+    void draw_probs(const ofRectangle& rect, const ofColor& lo_color=ofColor::blue, const ofColor& hi_color=ofColor::red);
+
+
     //--------------------------------------------------------------
     // GETTERS
 
@@ -99,6 +103,7 @@ protected:
     // and bang them here to push values to parameters
     // more here: https://stackoverflow.com/questions/34343259/is-there-an-example-on-how-to-generate-protobuf-files-holding-trained-tensorflow/34343517
     // assuming the variables in the model have constants attached to them with a substr in their name
+    // TODO: get rid of this and update examples to use freeze_graph.py
     bool hack_variables(string substr);
 };
 

@@ -75,12 +75,19 @@ bool ImageClassifier::setup(const ImageClassifier::Settings& settings, string de
 
 
 //---------------------------------------------------------
+void ImageClassifier::draw_probs(const ofRectangle& rect, const ofColor& lo_color, const ofColor& hi_color) {
+    msa::tf::draw_probs(class_probs, rect, lo_color, hi_color);
+}
+
+
+//---------------------------------------------------------
 // MEGA UGLY HACK ALERT
 // graphs exported from python don't store values for trained variables (i.e. parameters)
 // so in python we need to add the values back to the graph as 'constants'
 // and bang them here to push values to parameters
 // more here: https://stackoverflow.com/questions/34343259/is-there-an-example-on-how-to-generate-protobuf-files-holding-trained-tensorflow/34343517
 // assuming the variables in the model have constants attached to them with a substr in their name
+// TODO: get rid of this and update examples to use freeze_graph.py
 bool ImageClassifier::hack_variables(string substr) {
     // will store names of constant units
     std::vector<string> names;
