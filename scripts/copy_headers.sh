@@ -1,20 +1,27 @@
 #!/bin/bash
 
-# ./copy_headers.sh ~/DEV/tensorflow
-
 DST='../libs/tensorflow/include'
 
 if [[ $# -eq 0 ]] ; then
 	echo
-	echo 'Missing argument. I need the path to your tensorflow repo'
+	echo 'This script copies files from various tensorflow source locations to '$DST
+	echo '(Check the source of the script to see exactly what it copies)'
 	echo
-	echo 'Usage: copy_headers.sh path/to/tensorflow'
-	echo 'e.g.:  copy_headers.sh ~/dev/tensorflow'
+	echo '** Missing argument. I need the path to your tensorflow repo. **'
 	echo
-	echo 'Also note, it will copy the headers to '$DST
-	echo 'so make sure you are running this script from ofxMSATensorFlow/scripts'	
+	echo 'Usage: copy_headers.sh path/to/tensorflow [cleanup: true or false]'
+	echo 'e.g.'
+	echo '       copy_headers.sh ~/lib/tensorflow'
+	echo '       copy_headers.sh ~/lib/tensorflow true'
 	echo
+	echo 'cleanup option:'
+	echo 'This script will copy ALL files from various folders in path/to/tensorflow to '$DST
+	echo 'Set cleanup to ''true'' to delete unnecessary file types (e.g. cpp, c, cc, cxx, cmake, py etc) from the destination after copying'
+	echo 
+	echo 'Also note, the script copies the files to the relative path '$DST
+	echo 'So make sure you are running this script from ofxMSATensorFlow/scripts'	
 	echo
+
 	exit 1
 fi
 
@@ -33,21 +40,19 @@ echo 'Copying files from '$SRC' to '$DST
 rm -rf $DST
 
 mkdir -p $DST/tensorflow
-cp -R $SRC/tensorflow/core $DST/tensorflow
-cp -R $SRC/tensorflow/cc $DST/tensorflow
+cp -RL $SRC/tensorflow/core $DST/tensorflow
+cp -RL $SRC/tensorflow/cc $DST/tensorflow
 
 mkdir -p $DST/third_party
-cp -R $SRC/third_party/eigen3 $DST/third_party
+cp -RL $SRC/third_party/eigen3 $DST/third_party
 
 #rm -rf $DST/third_party/eigen3/unsupported
-cp -Rf $SRC/bazel-tensorflow/external/eigen_archive/unsupported $DST
+cp -RLf $SRC/bazel-tensorflow/external/eigen_archive/unsupported $DST
 
-cp -R $SRC/bazel-genfiles/tensorflow/cc $DST/tensorflow
-cp -R $SRC/bazel-genfiles/tensorflow/core $DST/tensorflow
+cp -RL $SRC/bazel-genfiles/tensorflow/cc $DST/tensorflow
+cp -RL $SRC/bazel-genfiles/tensorflow/core $DST/tensorflow
 
-cp -R $SRC/bazel-tensorflow/external/eigen_archive/Eigen $DST/Eigen
-
-#cp -R $SRC/google/protobuf/src/google/ $DST/google
+cp -RL $SRC/bazel-tensorflow/external/eigen_archive/Eigen $DST/Eigen
 
 
 if $DO_CLEANUP ; then
