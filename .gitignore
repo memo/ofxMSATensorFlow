@@ -127,7 +127,7 @@ Desktop.ini
 
 .mailmap
 
-# Tensorflow specific
+# ofxMSATensorFlow specific
 build*
 *.so
 */bin/example-*
@@ -136,3 +136,6 @@ build*
 *.pb
 *.data
 checkpoint
+*.qbs.user.*
+*.tar.gz
+
