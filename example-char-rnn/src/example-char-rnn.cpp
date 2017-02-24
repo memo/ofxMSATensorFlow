@@ -1,7 +1,22 @@
 /*
- * Simple example of char-rnn style LSTM trained in python, loaded and manipulated in openFrameworks
- * See github repo and wiki for more info
- *
+Generative character based LSTM RNN demo, ala Karpathy's char-rnn(http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
+and Graves2013(https://arxiv.org/abs/1308.0850).
+
+Models are trained and saved in python with this code (https://github.com/memo/char-rnn-tensorflow) and loaded in openframeworks for prediction.
+
+I'm supplying a bunch of pretrained models (bible, cooking, erotic, linux, love songs, shakespeare, trump),
+and while the text is being generated character by character (at 60fps!) you can switch models in realtime mid-sentence or mid-word.
+(Drop more trained models into the folder and they'll be loaded too).
+
+Typing on the keyboard also primes the system, so it'll try and complete based on what you type.
+
+This is a simplified version of what I explain here (https://vimeo.com/203485851), where models can be mixed as well.
+
+Note, all models are trained really quickly with no hyperparameter search or cross validation,
+using default architecture of 2 layer LSTM of size 128 with no dropout or any other regularisation.
+So they're not great. A bit of hyperparameter tuning would give much better results - but note that would be done in python.
+
+The openframeworks code won't change at all, it'll just load the better model).
  */
 
 #include "ofMain.h"

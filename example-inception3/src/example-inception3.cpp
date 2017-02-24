@@ -184,8 +184,15 @@ public:
         case 'v':
             if(video_grabber) video_grabber = NULL;
             else {
+                // init video grabber
                 video_grabber = make_shared<ofVideoGrabber>();
-                video_grabber->setup(320, 240);
+                auto devices = video_grabber->listDevices();
+                if(devices.size() > 0) {
+                    video_grabber->setDeviceID(devices.back().id);
+                    video_grabber->setup(640, 480);
+                } else {
+                    video_grabber = nullptr;
+                }
             }
             break;
 
