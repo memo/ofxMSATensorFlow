@@ -49,9 +49,17 @@ Session_ptr create_session_with_graph(
 }
 
 
+//--------------------------------------------------------------
+Session_ptr create_session_with_graph(
+        const string graph_def_path,
+        const string device,
+        const tensorflow::SessionOptions& session_options)
+{
+    return create_session_with_graph(load_graph_def(graph_def_path), device, session_options);
+}
 
 //--------------------------------------------------------------
-ofVec3f tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
+vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
     int rank = t.shape().dims();
     vector<int> tensor_dims(rank);
     for(int i=0; i<rank; i++) tensor_dims[i] = t.dim_size(i); // useful for debugging
@@ -74,13 +82,14 @@ ofVec3f tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
         }
     }
 
-    ofVec3f image_dims (
-                (rank > dim_indices[0] ? t.dim_size( dim_indices[0]) : 1),
-        (rank > dim_indices[1] ? t.dim_size( dim_indices[1]) : 1),
-        (rank > dim_indices[2] ? t.dim_size( dim_indices[2]) : 1)
-      );
+    vector<int> image_dims( {
+                (rank > dim_indices[0] ? (int)t.dim_size( dim_indices[0]) : 1),
+        (rank > dim_indices[1] ? (int)t.dim_size( dim_indices[1]) : 1),
+        (rank > dim_indices[2] ? (int)t.dim_size( dim_indices[2]) : 1)
+      });
     return image_dims;
 }
+
 
 
 //--------------------------------------------------------------
