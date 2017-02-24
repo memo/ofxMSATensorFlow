@@ -107,6 +107,8 @@ template<typename T> void image_to_tensor(const ofImage_<T> &src, tensorflow::Te
 // copy array into tensor. tensor must already be allocated and will not be reshaped
 template<typename T> void array_to_tensor(const T *src, tensorflow::Tensor &dst, bool do_memcpy=false);
 
+// copy array into tensor. tensor must already be allocated and will not be reshaped
+template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst);
 
 
 //--------------------------------------------------------------
@@ -230,6 +232,12 @@ template<typename T> void array_to_tensor(const T *in, tensorflow::Tensor &dst, 
 
 
 //--------------------------------------------------------------
+template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst) {
+    dst.scalar<T>()() = src;
+}
+
+
+//--------------------------------------------------------------
 //--------------------------------------------------------------
 template<typename T> std::vector<T> tensor_to_vector(const tensorflow::Tensor &src, bool do_memcpy) {
     std::vector<T> dst;
@@ -282,7 +290,7 @@ template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, 
 //--------------------------------------------------------------
 template<typename T> tensorflow::Tensor scalar_to_tensor(const T src) {
     tensorflow::Tensor dst = tensorflow::Tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape());// = tensorflow::Tensor(tensorflow::DT_FLOAT, {1}).scalar<T>();
-    dst.scalar<T>()() = src;
+    scalar_to_tensor(src, dst);
     return dst;
 }
 

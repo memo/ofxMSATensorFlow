@@ -15,6 +15,7 @@
 #include "ofxMSATFVizUtils.h"
 #include "ofxMSATFImageClassifier.h"
 #include "ofxMSATFLayerVisualizer.h"
+#include "ofxMSAMathUtils.h"
 
 namespace msa {
 namespace tf {
