@@ -26,10 +26,18 @@ The examples are quite basic. They shouldn't be considered *tensorflow* examples
 
 
 ### example-basic
-The hello world (no not MNIST, that comes next). Build a very simple graph in python that multiplies two numbers. Load the graph in openframeworks and hey presto. 100s of lines of code, just to build a simple multiplication function. 
+Simplest example possible. A very simple graph that multiples two numbers is built in python and saved. The openframeworks example loads the graph, and feeds it mouse coordinates. 100s of lines of code, just to build a simple multiplication function. 
+
+### example-build-graph
+Builds a simple graph from scratch directly in openframeworks using the C++ API without any python. Really not very exciting to look at, more of a syntax demo than anything. Based on https://www.tensorflow.org/api_guides/cc/guide
+
+### example-char-rnn
+Generative character based LSTM RNN demo, ala [Karpathy's char-rnn](http://karpathy.github.io/2015/05/21/rnn-effectiveness/) and [Graves2013](https://arxiv.org/abs/1308.0850).
+![](https://cloud.githubusercontent.com/assets/144230/23296346/74d8a194-fa6c-11e6-90c2-fb02084eb82b.png)
+Models are trained and saved in python with [this code](https://github.com/memo/char-rnn-tensorflow) and loaded in openframeworks for prediction. I'm supplying a bunch of models (bible, cooking, erotic, linux, love songs, shakespeare, trump), and while the text is being generated character by character (at 60fps!) you can switch models in realtime mid-sentence or mid-word. (Drop more trained models into the folder and they'll be loaded too). Typing on the keyboard also primes the system, so it'll try and complete based on what you type. This is a simplified version of what I explain [here](https://vimeo.com/203485851), where models can be mixed as well. (Note, all models are trained really quickly with no hyperparameter search or cross validation, using default architecture of 2 layer LSTM of size 128 with no dropout or any other regularisation. So they're not great. A bit of hyperparameter tuning would give much better results - but note that would be done in python. The openframeworks code won't change at all, it'll just load the better model).
 
 ### example-mnist
-MNIST clasffication with two different models - shallow and deep. Both models are built and trained in python (in bin/py folder). Loaded, manipulated and interacted with in openframeworks. Toggle between the two models with the 'm' key.
+MNIST (digit) clasffication with two different models - shallow and deep. Both models are built and trained in python (py src in bin/py folder). Openframeworks loads the trained models, allows you to draw with your mouse, and tries to classify your drawing. Toggle between the two models with the 'm' key.
 ![](https://cloud.githubusercontent.com/assets/144230/12665280/8fa4612a-c62e-11e5-950e-eaec14d4211d.png)
 
 **Single layer softmax regression:** Very simple multinomial logistic regression. Quick'n'easy but not very good. Trains in seconds. Accuracy on test set ~90%. 
@@ -38,16 +46,9 @@ Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/begi
 **Deep(ish) Convolutional Neural Network:** Basic convolutional neural network. Very similar to LeNet. Conv layers, maxpools, RELU's etc. Slower and heavier than above, but much better. Trains in a few minutes (on CPU). Accuracy 99.2%
 Implementation of https://www.tensorflow.org/versions/0.6.0/tutorials/mnist/pros/index.html#build-a-multilayer-convolutional-network
 
-
 ### example-inception3
-openframeworks implementation for image recognition using Google's 'Inception-v3' architecture network, pre-trained on ImageNet. Background info at https://www.tensorflow.org/versions/0.6.0/tutorials/image_recognition/index.html
+Openframeworks implementation for image recognition using Google's 'Inception-v3' architecture network, pre-trained on ImageNet. Background info at https://www.tensorflow.org/versions/0.6.0/tutorials/image_recognition/index.html
 ![](https://cloud.githubusercontent.com/assets/144230/23235025/e88d8a40-f94b-11e6-9f3b-c5c65906c1a4.png)
-
-
-
-### example-build-graph
-Builds a simple flow graph in directly in openframeworks/C++ without using any python. (really not very exciting to look at. more of a syntax demo than anything). Based on https://www.tensorflow.org/api_guides/cc/guide
-
 
 ### example-tests
 Just some unit tests. Very boring for most humans. Possibly exciting for computers (or humans that get excited at the thought of computers going wrong).
