@@ -18,15 +18,6 @@ public:
     // shared pointer to tensorflow::Session
     msa::tf::Session_ptr session;
 
-    // shared pointer to tensorflow::GraphDef
-    msa::tf::GraphDef_ptr graph_def;
-
-    // input tensors
-    tensorflow::Tensor a, b;
-
-    // output tensors
-    vector<tensorflow::Tensor> outputs;
-
 
     //--------------------------------------------------------------
     void setup() {
@@ -34,17 +25,8 @@ public:
         ofBackground(0);
         ofSetVerticalSync(true);
 
-        // Load graph (i.e. trained model) we exported from python, add to session, return if error
-        graph_def = msa::tf::load_graph_def("models/model.pb");
-        if(!graph_def) return;
-
-        // initialize session with graph
-        session = msa::tf::create_session_with_graph(graph_def);
-
-        // initialize input tensor dimensions
-        // (not sure what the best way to do this was as there isn't an 'init' method, just a constructor)
-        a = tensorflow::Tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape());
-        b = tensorflow::Tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape());
+        // Load graph (i.e. trained model) we exported from python, and initialize session
+        session = msa::tf::create_session_with_graph("models/model.pb");
     }
 
 
@@ -54,38 +36,36 @@ public:
 
         if(session) {
             // inputs are linked to mouse position, normalized to 0..10
-            a.scalar<float>()() = round(ofMap(ofGetMouseX(), 0, ofGetWidth(), 0, 10));
-            b.scalar<float>()() = round(ofMap(ofGetMouseY(), 0, ofGetHeight(), 0, 10));
+            float a = round(ofMap(ofGetMouseX(), 0, ofGetWidth(), 0, 10));
+            float b = round(ofMap(ofGetMouseY(), 0, ofGetHeight(), 0, 10));
 
-            // Collect inputs into a vector
-            // IMPORTANT: the string must match the name of the variable/node in the graph
-            vector<pair<string, tensorflow::Tensor>> inputs = {
-                { "a", a },
-                { "b", b },
-            };
+            // convert to tensors
+            auto t_a = msa::tf::scalar_to_tensor(a);
+            auto t_b = msa::tf::scalar_to_tensor(b);
 
-            // desired outputs which we want processed and returned from the graph
-            // IMPORTANT: the string must match the name of the variable/node in the graph
-            vector<string> output_names = { "c" };
+            // output tensors will be stored in this
+            vector<tensorflow::Tensor> outputs;
 
-            // Run the graph, pass in our inputs and desired outputs, evaluate operation and return
-            session->Run(inputs, output_names, {}, &outputs);
+            // Run the graph, pass in
+            // inputs to feed: array of dicts of { node name : tensor } )
+            // outputs to fetch: array of node names
+            // evaluates operation and return tensors in last parameter
+            // The strings must match the name of the variable/node in the graph
+            session->Run({ { "a", t_a }, { "b", t_b } }, { "c" }, {}, &outputs);
 
-            // outputs is a vector of tensors, we're interested in only the first tensor
-            auto &c = outputs[0];
+            // outputs is a vector of tensors, in our case we fetched only one tensor
+            auto t_c = outputs[0];
 
-            // get scalar values of each tensor (since they're 1D and single element it's easy)
-            float val_a = a.scalar<float>()();
-            float val_b = b.scalar<float>()();
-            float val_c = c.scalar<float>()();
+            // get scalar value of tensor
+            float c = msa::tf::tensor_to_scalar<float>(t_c);
 
             // Print the results
             message << "MOVE MOUSE!" << endl << endl;
-            message << val_a << " (" << a.DebugString() << ")" << endl;
+            message << a << " (" << t_a.DebugString() << ")" << endl;
             message << " * " << endl;
-            message << val_b << " (" << b.DebugString() << ")" << endl;
+            message << b << " (" << t_b.DebugString() << ")" << endl;
             message << " = " << endl;
-            message << val_c << " (" << c.DebugString() << ")" << endl;
+            message << c << " (" << t_c.DebugString() << ")" << endl;
             message << endl;
             message << "all this madness, just to calculate a * b" << endl;
 

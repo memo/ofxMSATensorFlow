@@ -13,14 +13,14 @@ using namespace tensorflow;
 
 class ofApp : public ofBaseApp {
 public:
+    ofImage img_orig;
+
     ofFloatImage img[kNumIterations];
 
     //--------------------------------------------------------------
     // check all vector <--> tensor <--> pixel etc methods and combinations
-    void testCopyMethods() {
-        // load image
-        ofImage img_orig;
-        img_orig.load("images/grace_hopper.png");   // jpgs don't work with tensorflow! :(
+    // using methods which take dst as argument, assume dst tensor is allocated
+    void testCopyMethods1() {
 
         int image_width = img_orig.getWidth();
         int image_height = img_orig.getHeight();
@@ -48,7 +48,7 @@ public:
 
         vector<float> v1;
         msa::tf::tensor_to_vector(tensor, v1, do_memcpy);
-        assert(v1.size() == kInputElements);
+        //assert(v1.size() == kInputElements);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ num_bytes }));
         msa::tf::vector_to_tensor(v1, tensor, do_memcpy);
@@ -101,17 +101,21 @@ public:
         msa::tf::tensor_to_image(tensor, img[10], do_memcpy);
     }
 
+
     //--------------------------------------------------------------
     void setup() {
         ofSetColor(255);
         ofBackground(0);
         ofSetVerticalSync(true);
 
-        testCopyMethods();
+        // load image
+        img_orig.load("images/grace_hopper.png");   // jpgs don't work with tensorflow! :(
     }
 
     //--------------------------------------------------------------
     void draw() {
+        testCopyMethods1();
+
         int x=0, y=0;
         for(int i=0; i<kNumIterations; i++) {
             if(x + img[i].getWidth() >= ofGetWidth()) {
@@ -121,6 +125,8 @@ public:
             img[i].draw(x, y);
             x += img[i].getWidth();
         }
+
+        ofDrawBitmapString(ofToString(ofGetFrameRate()), 20, 20);
     }
 };
 
