@@ -83,7 +83,7 @@ public:
         ofDirectory dir;
         dir.listDir(model_root_dir);
         for(int i=0; i<dir.getFiles().size(); i++) model_names.push_back(dir.getName(i));
-
+        sort(model_names.begin(), model_names.end());
         load_model_index(0);
 
         // seed rng
