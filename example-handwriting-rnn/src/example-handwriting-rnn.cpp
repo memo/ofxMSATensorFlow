@@ -27,7 +27,7 @@ which I highly recommend to anyone really interested in understanding generative
 
 //--------------------------------------------------------------
 // sample a point from a bivariate gaussian mixture model
-// from http://www.statisticalengineering.com/bivariate_normal.htm
+// based on http://www.statisticalengineering.com/bivariate_normal.htm
 ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number generator
                            const vector<float>& o_pi,      // vector of mixture weights
                            const vector<float>& o_mu1,     // means 1
@@ -39,31 +39,30 @@ ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number gene
 
     ofVec2f ret;
 
+    // sanity check all vectors have same size
     int k = o_pi.size();
     if(k == 0 || o_mu1.size() != k || o_mu2.size() != k || o_sigma1.size() != k || o_sigma2.size() != k || o_corr.size() != k) {
         ofLogWarning() << " sample_from_bi_gmm vector size mismatch ";
         return ret;
     }
 
+    // two independent zero mean, unit variance gaussian variables
+    std::normal_distribution<double> gaussian(0.0, 1.0);
+    double z1 = gaussian(rng);
+    double z2 = gaussian(rng);
+
     // pick mixture component to sample from
     int i = msa::tf::sample_from_prob(rng, o_pi);
 
-    // sample i'th bivariate gaussian
+    // transform with mu1, mu2, sigma1, sigma2, rho from i'th gaussian
     double mu1 = o_mu1[i];
     double mu2 = o_mu2[i];
     double sigma1 = o_sigma1[i];
     double sigma2 = o_sigma2[i];
     double rho = o_corr[i];
 
-    // two independent zero mean, unit variance gaussian variables
-    std::normal_distribution<double> gaussian(0.0, 1.0);
-
-    double z1 = gaussian(rng);
-    double z2 = gaussian(rng);
-
     ret.x = mu1 + sigma1 * z1;
     ret.y = mu2 + sigma2 * (z1*rho + z2*sqrt(1-rho*rho));
-
     return ret;
 }
 
@@ -79,7 +78,7 @@ void draw_bi_gaussian(float mu1,     // mean 1
                       float rho,     // correlation
                       float scale=1.0 // arbitrary scale
         ) {
-    // Correlation Matrix [[a b], [c d]]
+    // Correlation Matrix capital Sigma [[a b], [c d]]
     double a = sigma1*sigma1;
     double b = rho*sigma1*sigma2;
     double c = b;
@@ -95,7 +94,7 @@ void draw_bi_gaussian(float mu1,     // mean 1
     ofVec2f v1 = ofVec2f(b, l1-a).normalized();
     ofVec2f v2 = ofVec2f(b, l2-a).normalized();
 
-    // create 4x4 transformation matrix for a unit circle
+    // create 4x4 transformation matrix
     // eigenvectors in upper left corner for rotation around z
     // scale diagonal by eigenvalues
     ofMatrix4x4 m44;
@@ -133,12 +132,11 @@ void draw_bi_gmm(const vector<float>& o_pi,      // vector of mixture weights
                  float gaussian_scale=1.0,
                  ofColor color_min=ofColor(255, 0, 0, 20),
                  ofColor color_max=ofColor(255, 0, 0, 70)
-
         ) {
 
     int k = o_pi.size();
     if(k == 0 || o_mu1.size() != k || o_mu2.size() != k || o_sigma1.size() != k || o_sigma2.size() != k || o_corr.size() != k) {
-        ofLogWarning() << " draw_gmm vector size mismatch ";
+        ofLogWarning() << " draw_bi_gmm vector size mismatch ";
         return;
     }
 
@@ -164,12 +162,12 @@ public:
     msa::tf::Session_ptr session;
 
 
-    // data in and out of model
+    // tensors in and out of model
     tensorflow::Tensor t_data_in;   // data in
     tensorflow::Tensor t_state;     // current lstm state
     vector<tensorflow::Tensor> t_out; // returned from session run [data_out_pi, data_out_mu1, data_out_mu2, data_out_sigma1, data_out_sigma2, data_out_corr, data_out_eos, state_out]
 
-    // convert data in t_out (output of model) to more managable types
+    // convert output of model (t_out) to more managable types
     // parameters of bivariate gaussian mixture model, and probability for end of stroke
     struct ProbData {
         vector<float> o_pi;      // contains all mixture weights (e.g. default 20 components)
@@ -186,7 +184,8 @@ public:
     // all points. xy storing relative offset from prev pos, and z storing end of stroke (0: draw, 1: eos)
     vector<ofVec3f> pts;
 
-    // probability parameters for all points (i.e. i'th probability is the probability distribution which the i'th point was sampled from)
+    // probability parameters for each point for visualisation
+    // i'th ProbData contains probability parameters which the i'th point (pts[i]) was sampled from
     vector<ProbData> probs;
 
 
@@ -204,7 +203,7 @@ public:
     int prime_length = 300;
     float draw_scale = 5;
     float gaussian_draw_scale = 2;
-    ofVec2f draw_pos = ofVec2f(100, 50);
+    ofVec2f draw_pos = ofVec2f(100, 30);
 
     bool do_auto_run = true;    // auto run every frame
     bool do_run_once = false;   // only run one frame
@@ -213,8 +212,8 @@ public:
     //--------------------------------------------------------------
     void setup() override {
         ofSetVerticalSync(true);
-        ofSetFrameRate(60);
         ofSetLogLevel(OF_LOG_VERBOSE);
+        ofSetFrameRate(60);
 
         // scan models dir
         ofDirectory dir;
@@ -237,8 +236,7 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load graph (i.e. trained model and exported  from python) by folder index
-    // and initialize session
+    // Load graph (model trained in and exported from python) by folder INDEX, and initialize session
     void load_model_index(int index) {
         cur_model_index = ofClamp(index, 0, model_names.size()-1);
         load_model(model_root_dir + "/" + model_names[cur_model_index]);
@@ -246,16 +244,16 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load graph (i.e. trained model and exported from python) by folder name
-    // and initialize session
+    // Load graph (model trained in and exported from python) by folder NAME, and initialize session
     void load_model(string dir) {
         // init session with graph
         session = msa::tf::create_session_with_graph(dir + "/graph_frz.pb");
 
         // init tensor for input
-        // meeds to be 3 floats (x, y, end of stroke), BUT not a vector, but rank3 tensor with other dims 1.
+        // meeds to be 3 floats (x, y, end of stroke).
+        // HOWEVER input is not a vector, but a rank 3 tensor with shape {1, 1, 3}
         // WHY? because that's how the model was designed to make the internal calculations easier (batch size etc)
-        // tbh the model could be redesigned to accept just a 3 element vector, and then internally shift up to 1x1x3
+        // TBH the model could be redesigned to accept just a 3 element vector, and then internally reshaped, but I'm lazy
         t_data_in = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, 1, 3});
 
         // prime model
@@ -264,39 +262,42 @@ public:
 
 
     //--------------------------------------------------------------
-    // prime model with string
+    // prime model with a sequence of points
+    // this runs the data through the model element by element, so as to update its internal state (stored in t_state)
+    // next time we feed the model an element to make a prediction, it will make the prediction primed on this state (i.e. sequence of elements)
     void prime_model(const vector<ofVec3f>& prime_data, int prime_length) {
         t_state = tensorflow::Tensor(); // reset initial state to use zeros
         for(int i=MAX(0, prime_data.size()-prime_length); i<prime_data.size(); i++) {
             run_model(prime_data[i], t_state);
         }
-
     }
 
 
 
     //--------------------------------------------------------------
-    // run model with one data point
+    // run model on a single point
     void run_model(ofVec3f pt, const tensorflow::Tensor &state_in = tensorflow::Tensor()) {
-        // format input data
+        // copy input data into tensor
         msa::tf::array_to_tensor(pt.getPtr(), t_data_in);
 
         // run graph, feed inputs, fetch output
         vector<string> fetch_tensors = { "data_out_pi", "data_out_mu1", "data_out_mu2", "data_out_sigma1", "data_out_sigma2", "data_out_corr", "data_out_eos", "state_out" };
         tensorflow::Status status;
         if(state_in.NumElements() > 0) {
+            // use state_in if passed in as parameter
             status = session->Run({ { "data_in", t_data_in }, { "state_in", state_in } }, fetch_tensors, {}, &t_out);
         } else {
+            // otherwise model will use internally init state to zeros
             status = session->Run({ { "data_in", t_data_in }}, fetch_tensors, {}, &t_out);
         }
 
         if(status != tensorflow::Status::OK()) {
             ofLogError() << status.error_message();
+            return;
         }
 
+        // convert model output from tensors to more manageable types
         if(t_out.size() > 1) {
-            t_state = t_out.back();
-
             last_model_output.o_pi        = msa::tf::tensor_to_vector<float>(t_out[0]);
             last_model_output.o_mu1       = msa::tf::tensor_to_vector<float>(t_out[1]);
             last_model_output.o_mu2       = msa::tf::tensor_to_vector<float>(t_out[2]);
@@ -304,6 +305,9 @@ public:
             last_model_output.o_sigma2    = msa::tf::tensor_to_vector<float>(t_out[4]);
             last_model_output.o_corr      = msa::tf::tensor_to_vector<float>(t_out[5]);
             last_model_output.o_eos       = msa::tf::tensor_to_scalar<float>(t_out[6]);
+
+            // save lstm state for next run
+            t_state = t_out.back();
         }
     }
 
@@ -354,17 +358,19 @@ public:
             }
         }
 
-        // draw stuff. remember pts stores *relative* offsets and not absolute positions
+
+        // draw stuff
+        // remember pts stores *relative* offsets and not absolute positions
         ofVec2f cur_pos = draw_pos; // start drawing at draw_pos
         ofSetLineWidth(3);
         for(int i=0; i<pts.size(); i++) {
             ofVec2f next_pos = cur_pos + ofVec2f( pts[i] ) * draw_scale;
 
             // draw probabilities
-            // the way I'm doing this is rather inefficient, because every frame the matrices for each of the components for each of the points is reconstructed,
+            // the way I'm doing this is rather inefficient: every frame the matrices for each of the components for each of the points is reconstructed
             // instead, this could be cached to save computation, but i'm trying to keep this a short, simple example
             const ProbData& p = probs[i];
-            ofVec2f prob_pos(next_pos.x, next_pos.y + ofGetHeight()/3);   // draw probability lower in screen
+            ofVec2f prob_pos(next_pos.x, next_pos.y + ofGetHeight()/3);   // draw probabilities offset in y
             draw_bi_gmm(p.o_pi, p.o_mu1, p.o_mu2, p.o_sigma1, p.o_sigma2, p.o_corr, prob_pos, draw_scale, gaussian_draw_scale);
 
             // draw points. xy is position, z is end of stroke
@@ -372,7 +378,7 @@ public:
                 ofSetColor(0);
                 ofDrawLine(cur_pos, next_pos);
             }
-//            ofCircle(next_pos, 2);    // draw pt
+//            ofCircle(next_pos, 2);    // draw pt as a larger circle
 
             cur_pos = next_pos;
         }

@@ -38,11 +38,11 @@ public:
     map<int, char> char_to_int;
 
 
-    // data in and out of model
-    tensorflow::Tensor t_data_in;   // character index in
+    // tensors in and out of model
+    tensorflow::Tensor t_data_in;   // data in
     tensorflow::Tensor t_state;     // current lstm state
     vector<tensorflow::Tensor> t_out; // returned from session run [ data_out (prob), state_out ]
-    vector<float> probs;    // probabilities
+    vector<float> last_model_output;    // probabilities
 
 
     // generated text
@@ -76,8 +76,8 @@ public:
         ofSetColor(255);
         ofBackground(0);
         ofSetVerticalSync(true);
-        ofSetFrameRate(60);
         ofSetLogLevel(OF_LOG_VERBOSE);
+        ofSetFrameRate(20); // generating a character per frame at 60fps is too fast to read in realtime! so reducing this to 20 as ghetto way of limiting the rate
 
 
         // scan models dir
@@ -93,8 +93,7 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load graph (i.e. trained model and exported  from python) by folder index
-    // and initialize session
+    // Load graph (model trained in and exported from python) by folder INDEX, and initialize session
     void load_model_index(int index) {
         cur_model_index = ofClamp(index, 0, model_names.size()-1);
         load_model(model_root_dir + "/" + model_names[cur_model_index]);
@@ -102,8 +101,7 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load graph (i.e. trained model and exported  from python) by folder name
-    // and initialize session
+    // Load graph (model trained in and exported from python) by folder NAME, and initialize session
     void load_model(string dir) {
         // init session with graph
         session = msa::tf::create_session_with_graph(dir + "/graph_frz.pb");
@@ -112,6 +110,10 @@ public:
         load_chars(dir + "/chars.txt");
 
         // init tensor for input
+        // needs to be a single int (index of character)
+        // HOWEVER input is not a scalar or vector, but a rank 2 tensor with shape {1, 1} (i.e. a matrix)
+        // WHY? because that's how the model was designed to make the internal calculations easier (batch size etc)
+        // TBH the model could be redesigned to accept just a rank 1 scalar, and then internally reshaped, but I'm lazy
         t_data_in = tensorflow::Tensor(tensorflow::DT_INT32, {1, 1});
 
         // prime model
@@ -139,29 +141,33 @@ public:
 
 
     //--------------------------------------------------------------
-    // prime model with string
-    void prime_model(string prime_str, int prime_length) {
+    // prime model with a sequence of characters
+    // this runs the data through the model element by element, so as to update its internal state (stored in t_state)
+    // next time we feed the model an element to make a prediction, it will make the prediction primed on this state (i.e. sequence of elements)
+    void prime_model(string prime_data, int prime_length) {
         t_state = tensorflow::Tensor(); // reset initial state to use zeros
-        for(int i=MAX(0, prime_str.size()-prime_length); i<prime_str.size(); i++) {
-            run_model(prime_str[i], t_state);
+        for(int i=MAX(0, prime_data.size()-prime_length); i<prime_data.size(); i++) {
+            run_model(prime_data[i], t_state);
         }
-
     }
 
 
 
     //--------------------------------------------------------------
-    // run model with one character
+    // run model on a single character
     void run_model(char ch, const tensorflow::Tensor &state_in = tensorflow::Tensor()) {
-        // format input data
+        // copy input data into tensor
         msa::tf::scalar_to_tensor(char_to_int[ch], t_data_in);
 
-        tensorflow::Status status;
         // run graph, feed inputs, fetch output
+        vector<string> fetch_tensors = { "data_out", "state_out" };
+        tensorflow::Status status;
         if(state_in.NumElements() > 0) {
-            status = session->Run({ { "data_in", t_data_in }, { "state_in", state_in } }, { "data_out", "state_out" }, {}, &t_out);
+            // use state_in if passed in as parameter
+            status = session->Run({ { "data_in", t_data_in }, { "state_in", state_in } }, fetch_tensors, {}, &t_out);
         } else {
-            status = session->Run({ { "data_in", t_data_in }}, { "data_out", "state_out" }, {}, &t_out);
+            // otherwise model will use internally init state to zeros
+            status = session->Run({ { "data_in", t_data_in }}, fetch_tensors, {}, &t_out);
         }
 
         if(status != tensorflow::Status::OK()) {
@@ -169,15 +175,19 @@ public:
             return;
         }
 
+        // convert model output from tensors to more manageable types
         if(t_out.size() > 1) {
-            probs = msa::tf::tensor_to_vector<float>(t_out[0]);
-            probs = msa::tf::adjust_probs_with_temp(probs, sample_temp);
+            last_model_output = msa::tf::tensor_to_vector<float>(t_out[0]);
+            last_model_output = msa::tf::adjust_probs_with_temp(last_model_output, sample_temp);
+
+            // save lstm state for next run
             t_state = t_out[1];
         }
     }
 
 
     //--------------------------------------------------------------
+    // add character to string, manage ghetto wrapping for display, run model etc.
     void add_char(char ch) {
         // add sampled char to text
         if(ch == '\n') {
@@ -216,9 +226,9 @@ public:
         stringstream str;
         str << ofGetFrameRate() << endl;
         str << endl;
+        str << "ENTER : toggle auto run " << (do_auto_run ? "(X)" : "( )") << endl;
+        str << "RIGHT : sample one char " << endl;
         str << "DEL   : clear text " << endl;
-        str << "TAB   : auto run (" << do_auto_run << ")" << endl;
-        str << "RIGHT : run one char " << endl;
         str << endl;
 
         str << "Press number key to load model: " << endl;
@@ -234,12 +244,11 @@ public:
 
 
         if(session) {
-            // sample character from probability distribution
-            int cur_char_index = msa::tf::sample_from_prob(rng, probs);
+            // sample one character from probability distribution
+            int cur_char_index = msa::tf::sample_from_prob(rng, last_model_output);
             char cur_char = int_to_char[cur_char_index];
 
             str << "Next char : " << cur_char_index << " | " << cur_char << endl;
-
 
             if(do_auto_run || do_run_once) {
                 if(do_run_once) do_run_once = false;
@@ -249,7 +258,7 @@ public:
         }
 
         // display probability histogram
-        msa::tf::draw_probs(probs, ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
+        msa::tf::draw_probs(last_model_output, ofRectangle(0, 0, ofGetWidth(), ofGetHeight()));
 
 
         // draw texts
@@ -280,7 +289,7 @@ public:
             text_lines = { "The" };
             break;
 
-        case OF_KEY_TAB:
+        case OF_KEY_RETURN:
             do_auto_run ^= true;
             break;
 
