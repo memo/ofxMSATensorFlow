@@ -1,5 +1,6 @@
 /*
-Generative character based LSTM RNN demo, ala Karpathy's char-rnn(http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
+Generative character based Long Short-Term Memory (LSTM) Recurrent Neural Network (RNN) demo,
+ala Karpathy's char-rnn(http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
 and Graves2013(https://arxiv.org/abs/1308.0850).
 
 Models are trained and saved in python with this code (https://github.com/memo/char-rnn-tensorflow)
