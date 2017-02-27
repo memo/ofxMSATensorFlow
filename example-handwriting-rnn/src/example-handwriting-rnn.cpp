@@ -27,6 +27,7 @@ which I highly recommend to anyone really interested in understanding generative
 
 //--------------------------------------------------------------
 // sample a point from a bivariate gaussian mixture model
+// from http://www.statisticalengineering.com/bivariate_normal.htm
 ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number generator
                            const vector<float>& o_pi,      // vector of mixture weights
                            const vector<float>& o_mu1,     // means 1
@@ -52,30 +53,69 @@ ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number gene
     double mu2 = o_mu2[i];
     double sigma1 = o_sigma1[i];
     double sigma2 = o_sigma2[i];
-    double corr = o_corr[i];
+    double rho = o_corr[i];
 
     // two independent zero mean, unit variance gaussian variables
     std::normal_distribution<double> gaussian(0.0, 1.0);
 
-    double n1 = gaussian(rng);
-    double n2 = gaussian(rng);
+    double z1 = gaussian(rng);
+    double z2 = gaussian(rng);
 
-    ret.x = mu1 + sigma1 * n1;
-    ret.y = mu2 + sigma2 * (corr * n1 + sqrt(1 - corr*corr) *n2);
+    ret.x = mu1 + sigma1 * z1;
+    ret.y = mu2 + sigma2 * (z1*rho + z2*sqrt(1-rho*rho));
 
     return ret;
 }
 
 
 //--------------------------------------------------------------
-// visualise bivariate gaussian distribution
+// visualise bivariate gaussian distribution as an ellipse
+// rotate unit circle by matrix of normalised eigenvectors and scale by sqrt eigenvalues (tip from @colormotor)
+// based on http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
 void draw_bi_gaussian(float mu1,     // mean 1
                       float mu2,     // mean 2
                       float sigma1,  // sigma 1
                       float sigma2,  // sigma 2
-                      float corr    // correlation
-                      ) {
-    ofDrawEllipse(mu1, mu2, sigma1, sigma2);
+                      float rho,     // correlation
+                      float scale=1.0 // arbitrary scale
+        ) {
+    // Correlation Matrix [[a b], [c d]]
+    double a = sigma1*sigma1;
+    double b = rho*sigma1*sigma2;
+    double c = b;
+    double d = sigma2*sigma2;
+
+    double T = a+d; // trace
+    double D = (a*d)-(b*c); // determinant
+
+    // eigenvalues
+    double l1 = T/2. + T*sqrt( 1./(4.-D) );
+    double l2 = T/2. - T*sqrt( 1./(4.-D) );
+
+    ofVec2f v1 = ofVec2f(b, l1-a).normalized();
+    ofVec2f v2 = ofVec2f(b, l2-a).normalized();
+
+    // create 4x4 transformation matrix for a unit circle
+    // eigenvectors in upper left corner for rotation around z
+    // scale diagonal by eigenvalues
+    ofMatrix4x4 m44;
+    m44.ofMatrix4x4::makeIdentityMatrix();
+    m44.getPtr()[0] = v1.x * sqrtf(fabsf(l1)) * scale;
+    m44.getPtr()[1] = v1.y;
+    m44.getPtr()[4] = v2.x;
+    m44.getPtr()[5] = v2.y * sqrtf(fabsf(l2)) * scale;
+    m44.setTranslation(mu1, mu2, 0);
+
+    ofPushMatrix();
+    ofMultMatrix(m44);
+    ofDrawCircle(0, 0, 1);
+    ofPopMatrix();
+
+    //     trying raw opengl commands instead of ofXXX to make sure column and row order stuff is done as I want :S
+    //        glPushMatrix();
+    //        glMultMatrixf(m44.getPtr());
+    //        ofDrawCircle(0, 0, 1);
+    //        glPopMatrix();
 }
 
 
@@ -89,7 +129,11 @@ void draw_bi_gmm(const vector<float>& o_pi,      // vector of mixture weights
                  const vector<float>& o_sigma2,  // sigmas 2
                  const vector<float>& o_corr,    // correlations
                  const ofVec2f& offset=ofVec2f(0, 0),
-                 float scale=1.0
+                 float draw_scale=1.0,
+                 float gaussian_scale=1.0,
+                 ofColor color_min=ofColor(255, 0, 0, 10),
+                 ofColor color_max=ofColor(255, 0, 0, 50)
+
         ) {
 
     int k = o_pi.size();
@@ -100,11 +144,12 @@ void draw_bi_gmm(const vector<float>& o_pi,      // vector of mixture weights
 
     ofPushMatrix();
     ofTranslate(offset);
-    ofScale(scale, scale);
+    ofScale(draw_scale, draw_scale);
     for(int i=0; i<k; i++) {
-        float alpha = ofLerp(0.2, 1.0, o_pi[i]);
-        ofSetColor(255, 0, 0, 255 * alpha);
-        draw_bi_gaussian(o_mu1[i], o_mu2[i], o_sigma1[i], o_sigma2[i], o_corr[i]);
+        ofColor c(color_min);
+        c.lerp(color_max, o_pi[i]);
+        ofSetColor(c);
+        draw_bi_gaussian(o_mu1[i], o_mu2[i], o_sigma1[i], o_sigma2[i], o_corr[i], gaussian_scale);
     }
     ofPopMatrix();
 }
@@ -124,17 +169,25 @@ public:
     tensorflow::Tensor t_state;     // current lstm state
     vector<tensorflow::Tensor> t_out; // returned from session run [data_out_pi, data_out_mu1, data_out_mu2, data_out_sigma1, data_out_sigma2, data_out_corr, data_out_eos, state_out]
 
-    // convert data in t_out convert to more managable types
-    vector<float> o_pi;     // contains all mixture weights for (bivariate) gaussian mixture model, output by network (e.g. default 20 components)
-    vector<float> o_mu1;    // " means 1
-    vector<float> o_mu2;    // " means 2
-    vector<float> o_sigma1; // " sigmas 1
-    vector<float> o_sigma2; // " sigmas 2
-    vector<float> o_corr;   // " correlations
-    float o_eos;    // end of stroke probability
+    // convert data in t_out (output of model) to more managable types
+    // parameters of bivariate gaussian mixture model, and probability for end of stroke
+    struct ProbData {
+        vector<float> o_pi;      // contains all mixture weights (e.g. default 20 components)
+        vector<float> o_mu1;     // " means 1
+        vector<float> o_mu2;     // " means 2
+        vector<float> o_sigma1;  // " sigmas 1
+        vector<float> o_sigma2;  // " sigmas 2
+        vector<float> o_corr;    // " correlations
+        float o_eos;             // end of stroke probability
+    };
 
-    // stores pts. xy storing relative offset from prev pos, and z storing end of stroke (0: draw, 1: eos)
+    ProbData last_model_output;
+
+    // all points. xy storing relative offset from prev pos, and z storing end of stroke (0: draw, 1: eos)
     vector<ofVec3f> pts;
+
+    // probability parameters for all points (i.e. i'th probability is the probability distribution which the i'th point was sampled from)
+    vector<ProbData> probs;
 
 
     // model file management
@@ -150,6 +203,7 @@ public:
     // other vars
     int prime_length = 300;
     float draw_scale = 5;
+    float gaussian_draw_scale = 1;
     ofVec2f draw_pos = ofVec2f(100, 50);
 
     bool do_auto_run = true;    // auto run every frame
@@ -158,12 +212,9 @@ public:
 
     //--------------------------------------------------------------
     void setup() {
-        //        ofBackground(0);
         ofSetVerticalSync(true);
         ofSetFrameRate(60);
         ofSetLogLevel(OF_LOG_VERBOSE);
-        //        ofBackground(220);
-
 
         // scan models dir
         ofDirectory dir;
@@ -187,7 +238,7 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load graph (i.e. trained model and exported  from python) by folder name
+    // Load graph (i.e. trained model and exported from python) by folder name
     // and initialize session
     void load_model(string dir) {
         // init session with graph
@@ -217,7 +268,7 @@ public:
 
 
     //--------------------------------------------------------------
-    // run model with one character
+    // run model with one data point
     void run_model(ofVec3f pt, const tensorflow::Tensor &state_in = tensorflow::Tensor()) {
         // format input data
         msa::tf::array_to_tensor(pt.getPtr(), t_data_in);
@@ -233,19 +284,18 @@ public:
 
         if(status != tensorflow::Status::OK()) {
             ofLogError() << status.error_message();
-            return;
         }
 
         if(t_out.size() > 1) {
-            o_pi        = msa::tf::tensor_to_vector<float>(t_out[0]);
-            o_mu1       = msa::tf::tensor_to_vector<float>(t_out[1]);
-            o_mu2       = msa::tf::tensor_to_vector<float>(t_out[2]);
-            o_sigma1    = msa::tf::tensor_to_vector<float>(t_out[3]);
-            o_sigma2    = msa::tf::tensor_to_vector<float>(t_out[4]);
-            o_corr      = msa::tf::tensor_to_vector<float>(t_out[5]);
-            o_eos       = msa::tf::tensor_to_scalar<float>(t_out[6]);
-
             t_state = t_out.back();
+
+            last_model_output.o_pi        = msa::tf::tensor_to_vector<float>(t_out[0]);
+            last_model_output.o_mu1       = msa::tf::tensor_to_vector<float>(t_out[1]);
+            last_model_output.o_mu2       = msa::tf::tensor_to_vector<float>(t_out[2]);
+            last_model_output.o_sigma1    = msa::tf::tensor_to_vector<float>(t_out[3]);
+            last_model_output.o_sigma2    = msa::tf::tensor_to_vector<float>(t_out[4]);
+            last_model_output.o_corr      = msa::tf::tensor_to_vector<float>(t_out[5]);
+            last_model_output.o_eos       = msa::tf::tensor_to_scalar<float>(t_out[6]);
         }
     }
 
@@ -257,10 +307,10 @@ public:
         stringstream str;
         str << ofGetFrameRate() << endl;
         str << endl;
-        str << "DEL   : clear drawing " << endl;
-        str << "BKSPE : delete last point " << endl;
         str << "TAB   : auto run (" << do_auto_run << ")" << endl;
         str << "RIGHT : sample one pt " << endl;
+        str << "LEFT  : delete last point " << endl;
+        str << "DEL   : clear drawing " << endl;
         str << endl;
 
         str << "Press number key to load model: " << endl;
@@ -276,11 +326,10 @@ public:
 
         if(session) {
             // sample 2d position from bivariate gaussian mixture model
-            ofVec2f pt_pos = sample_from_bi_gmm(rng, o_pi, o_mu1, o_mu2, o_sigma1, o_sigma2, o_corr);
+            ofVec3f pt = sample_from_bi_gmm(rng, last_model_output.o_pi, last_model_output.o_mu1, last_model_output.o_mu2, last_model_output.o_sigma1, last_model_output.o_sigma2, last_model_output.o_corr);
 
-            ofVec3f pt = pt_pos;
-
-            pt.z = ofRandomuf() < o_eos;
+            // end of stroke probability
+            pt.z = ofRandomuf() < last_model_output.o_eos;
 
             if(do_auto_run || do_run_once) {
                 if(do_run_once) do_run_once = false;
@@ -288,39 +337,41 @@ public:
                 // add sampled pt to drawing
                 pts.push_back(pt);
 
+                // add probabilities to vector
+                probs.push_back(last_model_output);
+
                 // feed sampled pt back into model
                 run_model(pt, t_state);
             }
         }
 
-        // construct pts with absolute positions (not relative), scaled and positioned
-        vector<ofVec3f> pts_real(pts.size()+1);
-        pts_real[0] = ofVec3f(draw_pos);
-        for(int i=0; i<pts.size(); i++) {
-            pts_real[i+1] = pts_real[i] + pts[i] * draw_scale;
-            pts_real[i+1].z = pts[i].z;   // z component is eos state
-        }
-
-        ofVec2f last_pt_real = pts_real.back();
-
-        // display probabilities
-        draw_bi_gmm(o_pi, o_mu1, o_mu2, o_sigma1, o_sigma2, o_corr, last_pt_real, draw_scale);
-
-        // draw points. Treats x,y as position, and z as end of stroke
-        ofSetColor(0);
+        // draw stuff. remember pts stores *relative* offsets and not absolute positions
+        ofVec3f cur_pos = draw_pos; // start drawing at draw_pos
         ofSetLineWidth(3);
-        for(int i=0; i<pts_real.size()-1; i++) {
-            // draw line if not eos
-            if(pts_real[i].z < 0.5) {
-                ofVec2f p0 = pts_real[i];
-                ofVec2f p1 = pts_real[i+1];
-                ofDrawLine(p0, p1);
+        for(int i=0; i<pts.size(); i++) {
+            ofVec2f next_pos = cur_pos + pts[i] * draw_scale;
+
+            // draw probabilities
+            // the way I'm doing this is rather inefficient, because every frame the matrices for each of the components for each of the points is reconstructed,
+            // instead, this could be cached to save computation, but i'm trying to keep this a short, simple example
+            const ProbData& p = probs[i];
+            draw_bi_gmm(p.o_pi, p.o_mu1, p.o_mu2, p.o_sigma1, p.o_sigma2, p.o_corr, next_pos, draw_scale, gaussian_draw_scale);
+
+            // draw points. xy is position, z is end of stroke
+            if(i>0 && pts[i-1].z < 0.5) { //  need to check z of previous stroke to decide whether to draw or not
+                ofSetColor(0);
+                ofDrawLine(cur_pos, next_pos);
             }
+//            ofCircle(next_pos, 2);    // draw pt
+
+            cur_pos = next_pos;
         }
+
 
         // if writing goes off screen, clear drawing
-        if(last_pt_real.x > ofGetWidth() || last_pt_real.y > ofGetHeight() || last_pt_real.y < 0) {
+        if(cur_pos.x < 0 || cur_pos.x > ofGetWidth() || cur_pos.y > ofGetHeight() || cur_pos.y < 0) {
             pts.clear();
+            probs.clear();
         }
 
 
@@ -347,12 +398,7 @@ public:
 
         case OF_KEY_DEL:
             pts.clear();
-            break;
-
-        case OF_KEY_BACKSPACE:
-            pts.pop_back();
-            //            prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
-            do_auto_run = false;
+            probs.clear();
             break;
 
         case OF_KEY_TAB:
@@ -364,6 +410,14 @@ public:
             do_auto_run = false;
             break;
 
+        case OF_KEY_LEFT:
+            pts.pop_back();
+            probs.pop_back();
+            //            prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
+            do_auto_run = false;
+            ofClear(ofGetBackgroundColor());
+            break;
+
         default:
             break;
         }
@@ -373,7 +427,7 @@ public:
     //--------------------------------------------------------------
     void keyReleased(int key) {
         switch(key) {
-        case OF_KEY_BACKSPACE:
+        case OF_KEY_LEFT:
             prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
             break;
         }
