@@ -27,7 +27,7 @@ which I highly recommend to anyone really interested in understanding generative
 
 //--------------------------------------------------------------
 // sample a point from a bivariate gaussian mixture model
-// based on http://www.statisticalengineering.com/bivariate_normal.htm
+// maths based on http://www.statisticalengineering.com/bivariate_normal.htm
 ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number generator
                            const vector<float>& o_pi,      // vector of mixture weights
                            const vector<float>& o_mu1,     // means 1
@@ -70,7 +70,8 @@ ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number gene
 //--------------------------------------------------------------
 // visualise bivariate gaussian distribution as an ellipse
 // rotate unit circle by matrix of normalised eigenvectors and scale by sqrt eigenvalues (tip from @colormotor)
-// based on http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
+// eigen decomposition from on http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
+// also see nice visualisation at http://demonstrations.wolfram.com/TheBivariateNormalDistribution/
 void draw_bi_gaussian(float mu1,     // mean 1
                       float mu2,     // mean 2
                       float sigma1,  // sigma 1
@@ -78,7 +79,7 @@ void draw_bi_gaussian(float mu1,     // mean 1
                       float rho,     // correlation
                       float scale=1.0 // arbitrary scale
         ) {
-    // Correlation Matrix capital Sigma [[a b], [c d]]
+    // Correlation Matrix Sigma [[a b], [c d]]
     double a = sigma1*sigma1;
     double b = rho*sigma1*sigma2;
     double c = b;
