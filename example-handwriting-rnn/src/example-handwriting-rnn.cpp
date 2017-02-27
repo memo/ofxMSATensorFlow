@@ -211,7 +211,7 @@ public:
 
 
     //--------------------------------------------------------------
-    void setup() {
+    void setup() override {
         ofSetVerticalSync(true);
         ofSetFrameRate(60);
         ofSetLogLevel(OF_LOG_VERBOSE);
@@ -301,7 +301,7 @@ public:
 
 
     //--------------------------------------------------------------
-    void draw() {
+    void draw() override {
         draw_pos.y = ofGetHeight()/2;
 
         stringstream str;
@@ -346,10 +346,10 @@ public:
         }
 
         // draw stuff. remember pts stores *relative* offsets and not absolute positions
-        ofVec3f cur_pos = draw_pos; // start drawing at draw_pos
+        ofVec2f cur_pos = draw_pos; // start drawing at draw_pos
         ofSetLineWidth(3);
         for(int i=0; i<pts.size(); i++) {
-            ofVec2f next_pos = cur_pos + pts[i] * draw_scale;
+            ofVec2f next_pos = cur_pos + ofVec2f( pts[i] ) * draw_scale;
 
             // draw probabilities
             // the way I'm doing this is rather inefficient, because every frame the matrices for each of the components for each of the points is reconstructed,
@@ -382,7 +382,7 @@ public:
 
 
     //--------------------------------------------------------------
-    void keyPressed(int key) {
+    void keyPressed(int key) override {
         switch(key) {
         case '1':
         case '2':
@@ -399,6 +399,7 @@ public:
         case OF_KEY_DEL:
             pts.clear();
             probs.clear();
+            t_state = tensorflow::Tensor(); // reset state
             break;
 
         case OF_KEY_TAB:
@@ -425,7 +426,7 @@ public:
 
 
     //--------------------------------------------------------------
-    void keyReleased(int key) {
+    void keyReleased(int key) override {
         switch(key) {
         case OF_KEY_LEFT:
             prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
