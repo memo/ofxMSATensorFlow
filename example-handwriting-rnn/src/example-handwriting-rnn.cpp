@@ -3,7 +3,7 @@ Generative handwriting with a Long Short-Term Memory (LSTM) Recurrent Mixture De
 ala [Graves2013](https://arxiv.org/abs/1308.0850)
 
 Brilliant tutorial on inner workings [here](http://blog.otoro.net/2015/12/12/handwriting-generation-demo-in-tensorflow/),
-which also provides the base for the training code.
+which also provides the base for the training code (Also see javscript port and tutorial [here](http://distill.pub/2016/handwriting/)
 
 Models are trained and saved in python with this code (https://github.com/memo/write-rnn-tensorflow),
 and loaded in openframeworks for prediction.
@@ -131,8 +131,8 @@ void draw_bi_gmm(const vector<float>& o_pi,      // vector of mixture weights
                  const ofVec2f& offset=ofVec2f(0, 0),
                  float draw_scale=1.0,
                  float gaussian_scale=1.0,
-                 ofColor color_min=ofColor(255, 0, 0, 10),
-                 ofColor color_max=ofColor(255, 0, 0, 50)
+                 ofColor color_min=ofColor(255, 0, 0, 20),
+                 ofColor color_max=ofColor(255, 0, 0, 70)
 
         ) {
 
@@ -203,7 +203,7 @@ public:
     // other vars
     int prime_length = 300;
     float draw_scale = 5;
-    float gaussian_draw_scale = 1;
+    float gaussian_draw_scale = 2;
     ofVec2f draw_pos = ofVec2f(100, 50);
 
     bool do_auto_run = true;    // auto run every frame
@@ -225,6 +225,14 @@ public:
 
         // seed rng
         rng.seed(ofGetSystemTimeMicros());
+    }
+
+
+    //--------------------------------------------------------------
+    void reset() {
+        pts.clear();
+        probs.clear();
+        t_state = tensorflow::Tensor(); // reset state
     }
 
 
@@ -302,15 +310,20 @@ public:
 
     //--------------------------------------------------------------
     void draw() override {
-        draw_pos.y = ofGetHeight()/2;
+        draw_pos.y = ofGetHeight()/3;
 
         stringstream str;
         str << ofGetFrameRate() << endl;
         str << endl;
-        str << "TAB   : auto run (" << do_auto_run << ")" << endl;
+        str << "ENTER : prime the model and toggle auto run " << (do_auto_run ? "(X)" : "( )") << endl;
         str << "RIGHT : sample one pt " << endl;
         str << "LEFT  : delete last point " << endl;
         str << "DEL   : clear drawing " << endl;
+        str << endl;
+        str << "Write or draw with mouse and then press ENTER to prime the model and carry on" << endl;
+        str << "e.g. try writing/drawing very spikey vs round shapes, or slanting up vs down" << endl;
+        str << "remember that the IAM model has only been trained on handwriting, so it will only produce handwriting, and not drawings!" << endl;
+        str << "but maybe the handwriting it generates will have stylistic similarities to what you wrote or drew" << endl;
         str << endl;
 
         str << "Press number key to load model: " << endl;
@@ -318,10 +331,6 @@ public:
             auto marker = (i==cur_model_index) ? ">" : " ";
             str << " " << (i+1) << " : " << marker << " " << model_names[i] << endl;
         }
-
-        str << endl;
-        str << "Draw with mouse to prime the model" << endl;
-        str << endl;
 
 
         if(session) {
@@ -355,7 +364,8 @@ public:
             // the way I'm doing this is rather inefficient, because every frame the matrices for each of the components for each of the points is reconstructed,
             // instead, this could be cached to save computation, but i'm trying to keep this a short, simple example
             const ProbData& p = probs[i];
-            draw_bi_gmm(p.o_pi, p.o_mu1, p.o_mu2, p.o_sigma1, p.o_sigma2, p.o_corr, next_pos, draw_scale, gaussian_draw_scale);
+            ofVec2f prob_pos(next_pos.x, next_pos.y + ofGetHeight()/3);   // draw probability lower in screen
+            draw_bi_gmm(p.o_pi, p.o_mu1, p.o_mu2, p.o_sigma1, p.o_sigma2, p.o_corr, prob_pos, draw_scale, gaussian_draw_scale);
 
             // draw points. xy is position, z is end of stroke
             if(i>0 && pts[i-1].z < 0.5) { //  need to check z of previous stroke to decide whether to draw or not
@@ -370,8 +380,7 @@ public:
 
         // if writing goes off screen, clear drawing
         if(cur_pos.x < 0 || cur_pos.x > ofGetWidth() || cur_pos.y > ofGetHeight() || cur_pos.y < 0) {
-            pts.clear();
-            probs.clear();
+            reset();
         }
 
 
@@ -397,13 +406,12 @@ public:
             break;
 
         case OF_KEY_DEL:
-            pts.clear();
-            probs.clear();
-            t_state = tensorflow::Tensor(); // reset state
+            reset();
             break;
 
-        case OF_KEY_TAB:
+        case OF_KEY_RETURN:
             do_auto_run ^= true;
+            if(do_auto_run) prime_model(pts, prime_length);
             break;
 
         case OF_KEY_RIGHT:
@@ -412,11 +420,10 @@ public:
             break;
 
         case OF_KEY_LEFT:
-            pts.pop_back();
-            probs.pop_back();
-            //            prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
+            if(!pts.empty()) pts.pop_back();
+            if(!probs.empty()) probs.pop_back();
             do_auto_run = false;
-            ofClear(ofGetBackgroundColor());
+            //            prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
             break;
 
         default:
@@ -432,13 +439,43 @@ public:
             prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
             break;
         }
-
     }
+
+
+    //--------------------------------------------------------------
+    void mousePressed(int x, int y, int button) override {
+        if(!pts.empty()) pts.back().z = 1;  // last point should be end of stroke
+        mouseDragged(x, y, button);
+    }
+
+
+    //--------------------------------------------------------------
+    void mouseDragged(int x, int y, int button) override {
+        ofVec2f pt(x, y);
+
+        // transform screen pos to relative unscaled pos
+        for(const auto& p : pts) pt -= ofVec2f( p ) * draw_scale;    // subtract relative offsets of previous points
+        pt -= draw_pos;
+        pt /= draw_scale;
+
+        pts.push_back(pt);
+        probs.push_back(ProbData());
+
+        do_auto_run = false;
+        do_run_once = false;
+    }
+
+
+    //--------------------------------------------------------------
+    void mouseReleased(int x, int y, int button) override {
+        if(!pts.empty()) pts.back().z = 1;  // last point should be end of stroke
+    }
+
 
 };
 
 //========================================================================
 int main() {
-    ofSetupOpenGL(1280, 720, OF_WINDOW);
+    ofSetupOpenGL(1600, 800, OF_WINDOW);
     ofRunApp(new ofApp());
 }
