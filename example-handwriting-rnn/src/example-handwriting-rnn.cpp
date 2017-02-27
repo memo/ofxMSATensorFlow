@@ -92,8 +92,8 @@ void draw_bi_gaussian(float mu1,     // mean 1
     double l1 = T/2. + T*sqrt( 1./(4.-D) );
     double l2 = T/2. - T*sqrt( 1./(4.-D) );
 
-    ofVec2f v1 = ofVec2f(b, l1-a).normalized();
-    ofVec2f v2 = ofVec2f(b, l2-a).normalized();
+    ofVec2f v1 ( ofVec2f(b, l1-a).normalized() );
+    ofVec2f v2 ( ofVec2f(b, l2-a).normalized() );
 
     // create 4x4 transformation matrix
     // eigenvectors in upper left corner for rotation around z
@@ -101,8 +101,8 @@ void draw_bi_gaussian(float mu1,     // mean 1
     ofMatrix4x4 m44;
     m44.ofMatrix4x4::makeIdentityMatrix();
     m44.getPtr()[0] = v1.x * sqrtf(fabsf(l1)) * scale;
-    m44.getPtr()[1] = v1.y;
-    m44.getPtr()[4] = v2.x;
+    m44.getPtr()[4] = v1.y;
+    m44.getPtr()[1] = v2.x;
     m44.getPtr()[5] = v2.y * sqrtf(fabsf(l2)) * scale;
     m44.setTranslation(mu1, mu2, 0);
 
@@ -111,11 +111,11 @@ void draw_bi_gaussian(float mu1,     // mean 1
     ofDrawCircle(0, 0, 1);
     ofPopMatrix();
 
-    //     trying raw opengl commands instead of ofXXX to make sure column and row order stuff is done as I want :S
-    //        glPushMatrix();
-    //        glMultMatrixf(m44.getPtr());
-    //        ofDrawCircle(0, 0, 1);
-    //        glPopMatrix();
+    // trying raw opengl commands instead of ofXXX to make sure column and row order stuff is done as I want :S
+    //    glPushMatrix();
+    //    glMultMatrixf(m44.getPtr());
+    //    ofDrawCircle(0, 0, 1);
+    //    glPopMatrix();
 }
 
 
@@ -128,11 +128,11 @@ void draw_bi_gmm(const vector<float>& o_pi,      // vector of mixture weights
                  const vector<float>& o_sigma1,  // sigmas 1
                  const vector<float>& o_sigma2,  // sigmas 2
                  const vector<float>& o_corr,    // correlations
-                 const ofVec2f& offset=ofVec2f(0, 0),
+                 const ofVec2f& offset=ofVec2f::zero(),
                  float draw_scale=1.0,
                  float gaussian_scale=1.0,
-                 ofColor color_min=ofColor(255, 0, 0, 20),
-                 ofColor color_max=ofColor(255, 0, 0, 70)
+                 ofColor color_min=ofColor(0, 200, 0, 20),
+                 ofColor color_max=ofColor(0, 200, 0, 100)
         ) {
 
     int k = o_pi.size();
@@ -189,6 +189,9 @@ public:
     // i'th ProbData contains probability parameters which the i'th point (pts[i]) was sampled from
     vector<ProbData> probs;
 
+    // vector of meshes where each mesh contains a ton of sampled points (to visualised the distribution)
+    vector<ofVboMesh> prob_meshes;
+
 
     // model file management
     string model_root_dir = "models";
@@ -203,8 +206,9 @@ public:
     // other vars
     int prime_length = 300;
     float draw_scale = 5;
-    float gaussian_draw_scale = 2;
-    ofVec2f draw_pos = ofVec2f(100, 30);
+    ofVec2f draw_pos = ofVec2f(100, 20);
+    int sample_vis_count = 2000; // lower this if it's running slow (number of samples per point for probability visualisation)
+    float sample_vis_alpha = 0.05; // increase this if you lower the number above (alpha for each sample in probability visualisation)
 
     bool do_auto_run = true;    // auto run every frame
     bool do_run_once = false;   // only run one frame
@@ -215,6 +219,7 @@ public:
         ofSetVerticalSync(true);
         ofSetLogLevel(OF_LOG_VERBOSE);
         ofSetFrameRate(60);
+        ofBackground(220);
 
         // scan models dir
         ofDirectory dir;
@@ -239,6 +244,7 @@ public:
     void reset() {
         pts.clear();
         probs.clear();
+        prob_meshes.clear();
         t_state = tensorflow::Tensor(); // reset state
     }
 
@@ -330,7 +336,7 @@ public:
 
     //--------------------------------------------------------------
     void draw() override {
-        draw_pos.y = ofGetHeight()/3;
+        draw_pos.y = ofGetHeight() * 0.4;
 
         stringstream str;
         str << ofGetFrameRate() << endl;
@@ -369,6 +375,16 @@ public:
                 // add probabilities to vector
                 probs.push_back(last_model_output);
 
+                // take many samples for probability visualisation
+                ofVboMesh mesh;
+                for(int i=0; i<sample_vis_count; i++) {
+                    mesh.addVertex(ofVec2f(sample_from_bi_gmm(rng, last_model_output.o_pi, last_model_output.o_mu1, last_model_output.o_mu2, last_model_output.o_sigma1, last_model_output.o_sigma2, last_model_output.o_corr)));
+
+                    // color most of the points blue, and some red, so should be redder towards dense parts of the distribution
+                    mesh.addColor( i < sample_vis_count * 0.9 ? ofColor(0, 0, 255, sample_vis_alpha*255) : ofColor(255, 0, 0, sample_vis_alpha*255) );
+                }
+                prob_meshes.push_back(mesh);
+
                 // feed sampled pt back into model
                 run_model(pt, t_state);
             }
@@ -376,29 +392,56 @@ public:
 
 
         // draw stuff
-        // remember pts stores *relative* offsets and not absolute positions
-        ofVec2f cur_pos = draw_pos; // start drawing at draw_pos
+        ofVec2f cur_pos = draw_pos;  // keep track of screen coords of last drawn point
+        ofPushStyle();
         ofSetLineWidth(3);
-        for(int i=0; i<pts.size(); i++) {
-            ofVec2f next_pos = cur_pos + ofVec2f( pts[i] ) * draw_scale;
+        glPointSize(3); // is there no ofXXX function for this?
+        ofPushMatrix();
+        {
+            ofTranslate(draw_pos);       // start drawing at draw_pos
+            ofScale(draw_scale, draw_scale);
 
-            // draw probabilities
-            // the way I'm doing this is rather inefficient: every frame the matrices for each of the components for each of the points is reconstructed
-            // instead, this could be cached to save computation, but i'm trying to keep this a short, simple example
-            const ProbData& p = probs[i];
-            ofVec2f prob_pos(next_pos.x, next_pos.y + ofGetHeight()/3);   // draw probabilities offset in y
-            draw_bi_gmm(p.o_pi, p.o_mu1, p.o_mu2, p.o_sigma1, p.o_sigma2, p.o_corr, prob_pos, draw_scale, gaussian_draw_scale);
+            for(int i=0; i<pts.size(); i++) {
+                ofVec2f offset( pts[i] );
 
-            // draw points. xy is position, z is end of stroke
-            if(i>0 && pts[i-1].z < 0.5) { //  need to check z of previous stroke to decide whether to draw or not
-                ofSetColor(0);
-                ofDrawLine(cur_pos, next_pos);
+                ofTranslate(offset);
+
+                // draw points. xy is relative position offset, z is end of stroke
+                if(i>0 && pts[i-1].z < 0.5) { //  need to check z of previous stroke to decide whether to draw or not
+                    ofSetColor(0);
+                    ofDrawLine(ofVec2f::zero(), -offset);
+                }
+
+                // visualise probabilities
+                ofPushMatrix();
+                {
+                    ofTranslate(0, ofGetHeight()/3/draw_scale);    // offset in y
+
+
+                    // visualise probabilities via sample_vis_count # of samples per point (in BLUE-PURPLE-RED)
+                    const auto& pm = prob_meshes[i];
+                    pm.drawVertices();
+
+
+                    // NOT USING THIS METHOD ANYMORE, THE ONE ABOVE IS MORE ACCURATE I THINK, AND NICER
+                    // visualise probabilities via ellipses on correlation matrix (in GREEN)
+                    // the way I'm doing this is rather inefficient: every frame the matrices for each of the components for each of the points is reconstructed
+                    // instead, this could be cached to save computation, but i'm trying to keep this a short, simple example
+                    //                    const auto& p = probs[i];
+                    //                    draw_bi_gmm(p.o_pi, p.o_mu1, p.o_mu2, p.o_sigma1, p.o_sigma2, p.o_corr);
+
+
+                    // draw actual sampled point (in BLACK)
+                    //                    ofSetColor(0, 0, 0);
+                    //                    ofDrawCircle(0, 0, 2.0f/draw_scale); // need to divide by draw_scale to get back to pixel units
+                }
+                ofPopMatrix();
+
+                cur_pos += offset * draw_scale;
             }
-//            ofCircle(next_pos, 2);    // draw pt as a larger circle
-
-            cur_pos = next_pos;
         }
-
+        ofPopMatrix();
+        ofPopStyle();
 
         // if writing goes off screen, clear drawing
         if(cur_pos.x < 0 || cur_pos.x > ofGetWidth() || cur_pos.y > ofGetHeight() || cur_pos.y < 0) {
@@ -444,6 +487,7 @@ public:
         case OF_KEY_LEFT:
             if(!pts.empty()) pts.pop_back();
             if(!probs.empty()) probs.pop_back();
+            if(!prob_meshes.empty()) prob_meshes.pop_back();
             do_auto_run = false;
             //            prime_model(pts, prime_length); // prime model on key release to avoid lockup if key is held down
             break;
@@ -481,7 +525,10 @@ public:
         pt /= draw_scale;
 
         pts.push_back(pt);
+
+        // add empty data so arrays are in sync
         probs.push_back(ProbData());
+        prob_meshes.push_back(ofVboMesh());
 
         do_auto_run = false;
         do_run_once = false;
@@ -498,6 +545,6 @@ public:
 
 //========================================================================
 int main() {
-    ofSetupOpenGL(1600, 800, OF_WINDOW);
+    ofSetupOpenGL(1280, 720, OF_WINDOW);
     ofRunApp(new ofApp());
 }
