@@ -81,6 +81,13 @@ public:
 
         // initialize classifier with these settings
         classifier.setup(settings);
+        if(!classifier.getGraphDef()) {
+            ofLogError() << "Could not initialize session. Did you download the data files and place them in the data folder? ";
+            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
+            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+            assert(false);
+            ofExit(1);
+        }
 
         // get a list of all images in the 'images' folder
         ofDirectory image_dir;

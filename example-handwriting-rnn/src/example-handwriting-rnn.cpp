@@ -218,6 +218,13 @@ public:
         // scan models dir
         ofDirectory dir;
         dir.listDir(model_root_dir);
+        if(dir.size()==0) {
+            ofLogError() << "Could not find models folder. Did you download the data files and place them in the data folder? ";
+            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
+            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+            assert(false);
+            ofExit(1);
+        }
         for(int i=0; i<dir.getFiles().size(); i++) model_names.push_back(dir.getName(i));
         sort(model_names.begin(), model_names.end());
         load_model_index(0);
@@ -248,6 +255,14 @@ public:
     void load_model(string dir) {
         // init session with graph
         session = msa::tf::create_session_with_graph(dir + "/graph_frz.pb");
+
+        if(!session) {
+            ofLogError() << "Could not initialize session. Did you download the data files and place them in the data folder? ";
+            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
+            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+            assert(false);
+            ofExit(1);
+        }
 
         // init tensor for input
         // meeds to be 3 floats (x, y, end of stroke).

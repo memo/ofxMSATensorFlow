@@ -16,8 +16,12 @@ tensorflow::Status log_error(const tensorflow::Status& status, const string msg)
 GraphDef_ptr load_graph_def(const string path, tensorflow::Env* env) {
     string of_path(ofToDataPath(path));
     GraphDef_ptr graph_def(new tensorflow::GraphDef());
-    log_error( tensorflow::ReadBinaryProto(env, of_path, graph_def.get()), "Error loading graph " + of_path );
-    return graph_def;
+    tensorflow::Status status = tensorflow::ReadBinaryProto(env, of_path, graph_def.get());
+    if(status.ok()) return graph_def;
+
+    // on error return nullptr
+    log_error(status, "Error loading graph " + of_path );
+    return nullptr;
 }
 
 
@@ -30,7 +34,6 @@ Session_ptr create_session_with_graph(
     Session_ptr session(NewSession(session_options));
     if( !session) { ofLogError() << "Error creating session"; return nullptr; }
 
-    // TODO make work with r1.0
     if(!device.empty())
         tensorflow::graph::SetDefaultDevice(device, &graph_def);
 
@@ -55,7 +58,11 @@ Session_ptr create_session_with_graph(
         const string device,
         const tensorflow::SessionOptions& session_options)
 {
-    return create_session_with_graph(load_graph_def(graph_def_path), device, session_options);
+    auto graph_def = load_graph_def(graph_def_path);
+    if(graph_def) return create_session_with_graph(graph_def, device, session_options);
+
+    // on error return nullptr
+    return nullptr;
 }
 
 //--------------------------------------------------------------
