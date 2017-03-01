@@ -87,4 +87,5 @@ android/armeabi-v7a:
 
 ios:
 
-
+osx:
+	ADDON_INCLUDES_EXCLUDE = libs/tensorflow/include/Eigen/src/%
