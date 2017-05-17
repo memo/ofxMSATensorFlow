@@ -35,6 +35,7 @@
 #include "tensorflow/core/framework/graph.pb.h"
 #include "tensorflow/core/framework/step_stats.pb.h"
 #include "tensorflow/core/protobuf/debug.pb.h"
+#include "tensorflow/core/protobuf/rewriter_config.pb.h"
 // @@protoc_insertion_point(includes)
 namespace tensorflow {
 class AllocatorMemoryUsed;
@@ -73,6 +74,9 @@ extern GraphDefDefaultTypeInternal _GraphDef_default_instance_;
 class GraphOptions;
 class GraphOptionsDefaultTypeInternal;
 extern GraphOptionsDefaultTypeInternal _GraphOptions_default_instance_;
+class MemoryStats;
+class MemoryStatsDefaultTypeInternal;
+extern MemoryStatsDefaultTypeInternal _MemoryStats_default_instance_;
 class NodeExecStats;
 class NodeExecStatsDefaultTypeInternal;
 extern NodeExecStatsDefaultTypeInternal _NodeExecStats_default_instance_;
@@ -85,6 +89,9 @@ extern OptimizerOptionsDefaultTypeInternal _OptimizerOptions_default_instance_;
 class RPCOptions;
 class RPCOptionsDefaultTypeInternal;
 extern RPCOptionsDefaultTypeInternal _RPCOptions_default_instance_;
+class RewriterConfig;
+class RewriterConfigDefaultTypeInternal;
+extern RewriterConfigDefaultTypeInternal _RewriterConfig_default_instance_;
 class RunMetadata;
 class RunMetadataDefaultTypeInternal;
 extern RunMetadataDefaultTypeInternal _RunMetadata_default_instance_;
@@ -616,6 +623,24 @@ class GraphOptions : public ::google::protobuf::Message /* @@protoc_insertion_po
   void unsafe_arena_set_allocated_optimizer_options(
       ::tensorflow::OptimizerOptions* optimizer_options);
 
+  // .tensorflow.RewriterConfig rewrite_options = 10;
+  bool has_rewrite_options() const;
+  void clear_rewrite_options();
+  static const int kRewriteOptionsFieldNumber = 10;
+  private:
+  void _slow_mutable_rewrite_options();
+  void _slow_set_allocated_rewrite_options(
+      ::google::protobuf::Arena* message_arena, ::tensorflow::RewriterConfig** rewrite_options);
+  ::tensorflow::RewriterConfig* _slow_release_rewrite_options();
+  public:
+  const ::tensorflow::RewriterConfig& rewrite_options() const;
+  ::tensorflow::RewriterConfig* mutable_rewrite_options();
+  ::tensorflow::RewriterConfig* release_rewrite_options();
+  void set_allocated_rewrite_options(::tensorflow::RewriterConfig* rewrite_options);
+  ::tensorflow::RewriterConfig* unsafe_arena_release_rewrite_options();
+  void unsafe_arena_set_allocated_rewrite_options(
+      ::tensorflow::RewriterConfig* rewrite_options);
+
   // int64 build_cost_model = 4;
   void clear_build_cost_model();
   static const int kBuildCostModelFieldNumber = 4;
@@ -666,6 +691,7 @@ class GraphOptions : public ::google::protobuf::Message /* @@protoc_insertion_po
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::tensorflow::OptimizerOptions* optimizer_options_;
+  ::tensorflow::RewriterConfig* rewrite_options_;
   ::google::protobuf::int64 build_cost_model_;
   ::google::protobuf::int64 build_cost_model_after_;
   bool enable_recv_scheduling_;
@@ -985,10 +1011,16 @@ class ConfigProto : public ::google::protobuf::Message /* @@protoc_insertion_poi
   const ::std::string& device_filters(int index) const;
   ::std::string* mutable_device_filters(int index);
   void set_device_filters(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_device_filters(int index, ::std::string&& value);
+  #endif
   void set_device_filters(int index, const char* value);
   void set_device_filters(int index, const char* value, size_t size);
   ::std::string* add_device_filters();
   void add_device_filters(const ::std::string& value);
+  #if LANG_CXX11
+  void add_device_filters(::std::string&& value);
+  #endif
   void add_device_filters(const char* value);
   void add_device_filters(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& device_filters() const;
@@ -1868,6 +1900,55 @@ inline void GraphOptions::set_timeline_step(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:tensorflow.GraphOptions.timeline_step)
 }
 
+// .tensorflow.RewriterConfig rewrite_options = 10;
+inline bool GraphOptions::has_rewrite_options() const {
+  return this != internal_default_instance() && rewrite_options_ != NULL;
+}
+inline void GraphOptions::clear_rewrite_options() {
+  if (GetArenaNoVirtual() == NULL && rewrite_options_ != NULL) delete rewrite_options_;
+  rewrite_options_ = NULL;
+}
+inline const ::tensorflow::RewriterConfig& GraphOptions::rewrite_options() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphOptions.rewrite_options)
+  return rewrite_options_ != NULL ? *rewrite_options_
+                         : *::tensorflow::RewriterConfig::internal_default_instance();
+}
+inline ::tensorflow::RewriterConfig* GraphOptions::mutable_rewrite_options() {
+  
+  if (rewrite_options_ == NULL) {
+    _slow_mutable_rewrite_options();
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.GraphOptions.rewrite_options)
+  return rewrite_options_;
+}
+inline ::tensorflow::RewriterConfig* GraphOptions::release_rewrite_options() {
+  // @@protoc_insertion_point(field_release:tensorflow.GraphOptions.rewrite_options)
+  
+  if (GetArenaNoVirtual() != NULL) {
+    return _slow_release_rewrite_options();
+  } else {
+    ::tensorflow::RewriterConfig* temp = rewrite_options_;
+    rewrite_options_ = NULL;
+    return temp;
+  }
+}
+inline  void GraphOptions::set_allocated_rewrite_options(::tensorflow::RewriterConfig* rewrite_options) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete rewrite_options_;
+  }
+  if (rewrite_options != NULL) {
+    _slow_set_allocated_rewrite_options(message_arena, &rewrite_options);
+  }
+  rewrite_options_ = rewrite_options;
+  if (rewrite_options) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.GraphOptions.rewrite_options)
+}
+
 // -------------------------------------------------------------------
 
 // ThreadPoolOptionProto
@@ -2033,6 +2114,12 @@ inline void ConfigProto::set_device_filters(int index, const ::std::string& valu
   // @@protoc_insertion_point(field_set:tensorflow.ConfigProto.device_filters)
   device_filters_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void ConfigProto::set_device_filters(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.ConfigProto.device_filters)
+  device_filters_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void ConfigProto::set_device_filters(int index, const char* value) {
   device_filters_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.ConfigProto.device_filters)
@@ -2050,6 +2137,12 @@ inline void ConfigProto::add_device_filters(const ::std::string& value) {
   device_filters_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.ConfigProto.device_filters)
 }
+#if LANG_CXX11
+inline void ConfigProto::add_device_filters(::std::string&& value) {
+  device_filters_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.ConfigProto.device_filters)
+}
+#endif
 inline void ConfigProto::add_device_filters(const char* value) {
   device_filters_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.ConfigProto.device_filters)

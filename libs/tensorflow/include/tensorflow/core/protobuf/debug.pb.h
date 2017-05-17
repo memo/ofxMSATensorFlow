@@ -139,10 +139,16 @@ class DebugTensorWatch : public ::google::protobuf::Message /* @@protoc_insertio
   const ::std::string& debug_ops(int index) const;
   ::std::string* mutable_debug_ops(int index);
   void set_debug_ops(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_debug_ops(int index, ::std::string&& value);
+  #endif
   void set_debug_ops(int index, const char* value);
   void set_debug_ops(int index, const char* value, size_t size);
   ::std::string* add_debug_ops();
   void add_debug_ops(const ::std::string& value);
+  #if LANG_CXX11
+  void add_debug_ops(::std::string&& value);
+  #endif
   void add_debug_ops(const char* value);
   void add_debug_ops(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& debug_ops() const;
@@ -155,10 +161,16 @@ class DebugTensorWatch : public ::google::protobuf::Message /* @@protoc_insertio
   const ::std::string& debug_urls(int index) const;
   ::std::string* mutable_debug_urls(int index);
   void set_debug_urls(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_debug_urls(int index, ::std::string&& value);
+  #endif
   void set_debug_urls(int index, const char* value);
   void set_debug_urls(int index, const char* value, size_t size);
   ::std::string* add_debug_urls();
   void add_debug_urls(const ::std::string& value);
+  #if LANG_CXX11
+  void add_debug_urls(::std::string&& value);
+  #endif
   void add_debug_urls(const char* value);
   void add_debug_urls(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& debug_urls() const;
@@ -184,6 +196,12 @@ class DebugTensorWatch : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::int32 output_slot() const;
   void set_output_slot(::google::protobuf::int32 value);
 
+  // bool tolerate_debug_op_creation_failures = 5;
+  void clear_tolerate_debug_op_creation_failures();
+  static const int kTolerateDebugOpCreationFailuresFieldNumber = 5;
+  bool tolerate_debug_op_creation_failures() const;
+  void set_tolerate_debug_op_creation_failures(bool value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.DebugTensorWatch)
  private:
 
@@ -195,6 +213,7 @@ class DebugTensorWatch : public ::google::protobuf::Message /* @@protoc_insertio
   ::google::protobuf::RepeatedPtrField< ::std::string> debug_urls_;
   ::google::protobuf::internal::ArenaStringPtr node_name_;
   ::google::protobuf::int32 output_slot_;
+  bool tolerate_debug_op_creation_failures_;
   mutable int _cached_size_;
   friend struct  protobuf_tensorflow_2fcore_2fprotobuf_2fdebug_2eproto::TableStruct;
 };
@@ -416,6 +435,12 @@ inline void DebugTensorWatch::set_debug_ops(int index, const ::std::string& valu
   // @@protoc_insertion_point(field_set:tensorflow.DebugTensorWatch.debug_ops)
   debug_ops_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void DebugTensorWatch::set_debug_ops(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.DebugTensorWatch.debug_ops)
+  debug_ops_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void DebugTensorWatch::set_debug_ops(int index, const char* value) {
   debug_ops_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.DebugTensorWatch.debug_ops)
@@ -433,6 +458,12 @@ inline void DebugTensorWatch::add_debug_ops(const ::std::string& value) {
   debug_ops_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.DebugTensorWatch.debug_ops)
 }
+#if LANG_CXX11
+inline void DebugTensorWatch::add_debug_ops(::std::string&& value) {
+  debug_ops_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.DebugTensorWatch.debug_ops)
+}
+#endif
 inline void DebugTensorWatch::add_debug_ops(const char* value) {
   debug_ops_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.DebugTensorWatch.debug_ops)
@@ -471,6 +502,12 @@ inline void DebugTensorWatch::set_debug_urls(int index, const ::std::string& val
   // @@protoc_insertion_point(field_set:tensorflow.DebugTensorWatch.debug_urls)
   debug_urls_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void DebugTensorWatch::set_debug_urls(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.DebugTensorWatch.debug_urls)
+  debug_urls_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void DebugTensorWatch::set_debug_urls(int index, const char* value) {
   debug_urls_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.DebugTensorWatch.debug_urls)
@@ -488,6 +525,12 @@ inline void DebugTensorWatch::add_debug_urls(const ::std::string& value) {
   debug_urls_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.DebugTensorWatch.debug_urls)
 }
+#if LANG_CXX11
+inline void DebugTensorWatch::add_debug_urls(::std::string&& value) {
+  debug_urls_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.DebugTensorWatch.debug_urls)
+}
+#endif
 inline void DebugTensorWatch::add_debug_urls(const char* value) {
   debug_urls_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.DebugTensorWatch.debug_urls)
@@ -505,6 +548,20 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 DebugTensorWatch::mutable_debug_urls() {
   // @@protoc_insertion_point(field_mutable_list:tensorflow.DebugTensorWatch.debug_urls)
   return &debug_urls_;
+}
+
+// bool tolerate_debug_op_creation_failures = 5;
+inline void DebugTensorWatch::clear_tolerate_debug_op_creation_failures() {
+  tolerate_debug_op_creation_failures_ = false;
+}
+inline bool DebugTensorWatch::tolerate_debug_op_creation_failures() const {
+  // @@protoc_insertion_point(field_get:tensorflow.DebugTensorWatch.tolerate_debug_op_creation_failures)
+  return tolerate_debug_op_creation_failures_;
+}
+inline void DebugTensorWatch::set_tolerate_debug_op_creation_failures(bool value) {
+  
+  tolerate_debug_op_creation_failures_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.DebugTensorWatch.tolerate_debug_op_creation_failures)
 }
 
 // -------------------------------------------------------------------

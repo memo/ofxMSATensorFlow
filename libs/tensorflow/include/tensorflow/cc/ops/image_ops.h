@@ -823,7 +823,7 @@ class EncodePng {
 /// to extract.  The glimpse height must be specified first, following
 /// by the glimpse width.
 /// * offsets: A 2-D integer tensor of shape `[batch_size, 2]` containing
-/// the x, y locations of the center of each window.
+/// the y, x locations of the center of each window.
 ///
 /// Optional attributes (see `Attrs`):
 /// * centered: indicates if the offset coordinates are centered relative to

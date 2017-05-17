@@ -156,10 +156,16 @@ class BytesList : public ::google::protobuf::Message /* @@protoc_insertion_point
   const ::std::string& value(int index) const;
   ::std::string* mutable_value(int index);
   void set_value(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(int index, ::std::string&& value);
+  #endif
   void set_value(int index, const char* value);
   void set_value(int index, const void* value, size_t size);
   ::std::string* add_value();
   void add_value(const ::std::string& value);
+  #if LANG_CXX11
+  void add_value(::std::string&& value);
+  #endif
   void add_value(const char* value);
   void add_value(const void* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& value() const;
@@ -915,6 +921,12 @@ inline void BytesList::set_value(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:tensorflow.BytesList.value)
   value_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void BytesList::set_value(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.BytesList.value)
+  value_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void BytesList::set_value(int index, const char* value) {
   value_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.BytesList.value)
@@ -932,6 +944,12 @@ inline void BytesList::add_value(const ::std::string& value) {
   value_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.BytesList.value)
 }
+#if LANG_CXX11
+inline void BytesList::add_value(::std::string&& value) {
+  value_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.BytesList.value)
+}
+#endif
 inline void BytesList::add_value(const char* value) {
   value_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.BytesList.value)

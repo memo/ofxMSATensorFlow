@@ -148,10 +148,16 @@ class ValuesDef : public ::google::protobuf::Message /* @@protoc_insertion_point
   const ::std::string& values(int index) const;
   ::std::string* mutable_values(int index);
   void set_values(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_values(int index, ::std::string&& value);
+  #endif
   void set_values(int index, const char* value);
   void set_values(int index, const char* value, size_t size);
   ::std::string* add_values();
   void add_values(const ::std::string& value);
+  #if LANG_CXX11
+  void add_values(::std::string&& value);
+  #endif
   void add_values(const char* value);
   void add_values(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& values() const;
@@ -438,10 +444,16 @@ class WhileContextDef : public ::google::protobuf::Message /* @@protoc_insertion
   const ::std::string& loop_exit_names(int index) const;
   ::std::string* mutable_loop_exit_names(int index);
   void set_loop_exit_names(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_loop_exit_names(int index, ::std::string&& value);
+  #endif
   void set_loop_exit_names(int index, const char* value);
   void set_loop_exit_names(int index, const char* value, size_t size);
   ::std::string* add_loop_exit_names();
   void add_loop_exit_names(const ::std::string& value);
+  #if LANG_CXX11
+  void add_loop_exit_names(::std::string&& value);
+  #endif
   void add_loop_exit_names(const char* value);
   void add_loop_exit_names(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& loop_exit_names() const;
@@ -587,6 +599,12 @@ inline void ValuesDef::set_values(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:tensorflow.ValuesDef.values)
   values_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void ValuesDef::set_values(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.ValuesDef.values)
+  values_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void ValuesDef::set_values(int index, const char* value) {
   values_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.ValuesDef.values)
@@ -604,6 +622,12 @@ inline void ValuesDef::add_values(const ::std::string& value) {
   values_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.ValuesDef.values)
 }
+#if LANG_CXX11
+inline void ValuesDef::add_values(::std::string&& value) {
+  values_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.ValuesDef.values)
+}
+#endif
 inline void ValuesDef::add_values(const char* value) {
   values_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.ValuesDef.values)
@@ -1235,6 +1259,12 @@ inline void WhileContextDef::set_loop_exit_names(int index, const ::std::string&
   // @@protoc_insertion_point(field_set:tensorflow.WhileContextDef.loop_exit_names)
   loop_exit_names_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void WhileContextDef::set_loop_exit_names(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.WhileContextDef.loop_exit_names)
+  loop_exit_names_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void WhileContextDef::set_loop_exit_names(int index, const char* value) {
   loop_exit_names_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.WhileContextDef.loop_exit_names)
@@ -1252,6 +1282,12 @@ inline void WhileContextDef::add_loop_exit_names(const ::std::string& value) {
   loop_exit_names_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.WhileContextDef.loop_exit_names)
 }
+#if LANG_CXX11
+inline void WhileContextDef::add_loop_exit_names(::std::string&& value) {
+  loop_exit_names_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.WhileContextDef.loop_exit_names)
+}
+#endif
 inline void WhileContextDef::add_loop_exit_names(const char* value) {
   loop_exit_names_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.WhileContextDef.loop_exit_names)

@@ -424,7 +424,7 @@ class StringToHashBucketFast {
 /// A strong hash is important when inputs may be malicious, e.g. URLs with
 /// additional components. Adversaries could try to make their inputs hash to the
 /// same bucket for a denial-of-service attack or to skew the results. A strong
-/// hash prevents this by making it dificult, if not infeasible, to compute inputs
+/// hash prevents this by making it difficult, if not infeasible, to compute inputs
 /// that hash to the same bucket. This comes at a cost of roughly 4x higher compute
 /// time than `tf.string_to_hash_bucket_fast`.
 ///

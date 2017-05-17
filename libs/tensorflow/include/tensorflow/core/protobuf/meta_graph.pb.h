@@ -208,10 +208,16 @@ class MetaGraphDef_MetaInfoDef : public ::google::protobuf::Message /* @@protoc_
   const ::std::string& tags(int index) const;
   ::std::string* mutable_tags(int index);
   void set_tags(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_tags(int index, ::std::string&& value);
+  #endif
   void set_tags(int index, const char* value);
   void set_tags(int index, const char* value, size_t size);
   ::std::string* add_tags();
   void add_tags(const ::std::string& value);
+  #if LANG_CXX11
+  void add_tags(::std::string&& value);
+  #endif
   void add_tags(const char* value);
   void add_tags(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& tags() const;
@@ -606,10 +612,16 @@ class CollectionDef_NodeList : public ::google::protobuf::Message /* @@protoc_in
   const ::std::string& value(int index) const;
   ::std::string* mutable_value(int index);
   void set_value(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(int index, ::std::string&& value);
+  #endif
   void set_value(int index, const char* value);
   void set_value(int index, const char* value, size_t size);
   ::std::string* add_value();
   void add_value(const ::std::string& value);
+  #if LANG_CXX11
+  void add_value(::std::string&& value);
+  #endif
   void add_value(const char* value);
   void add_value(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& value() const;
@@ -714,10 +726,16 @@ class CollectionDef_BytesList : public ::google::protobuf::Message /* @@protoc_i
   const ::std::string& value(int index) const;
   ::std::string* mutable_value(int index);
   void set_value(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(int index, ::std::string&& value);
+  #endif
   void set_value(int index, const char* value);
   void set_value(int index, const void* value, size_t size);
   ::std::string* add_value();
   void add_value(const ::std::string& value);
+  #if LANG_CXX11
+  void add_value(::std::string&& value);
+  #endif
   void add_value(const char* value);
   void add_value(const void* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& value() const;
@@ -1867,6 +1885,12 @@ inline void MetaGraphDef_MetaInfoDef::set_tags(int index, const ::std::string& v
   // @@protoc_insertion_point(field_set:tensorflow.MetaGraphDef.MetaInfoDef.tags)
   tags_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void MetaGraphDef_MetaInfoDef::set_tags(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.MetaGraphDef.MetaInfoDef.tags)
+  tags_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void MetaGraphDef_MetaInfoDef::set_tags(int index, const char* value) {
   tags_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.MetaGraphDef.MetaInfoDef.tags)
@@ -1884,6 +1908,12 @@ inline void MetaGraphDef_MetaInfoDef::add_tags(const ::std::string& value) {
   tags_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.MetaGraphDef.MetaInfoDef.tags)
 }
+#if LANG_CXX11
+inline void MetaGraphDef_MetaInfoDef::add_tags(::std::string&& value) {
+  tags_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.MetaGraphDef.MetaInfoDef.tags)
+}
+#endif
 inline void MetaGraphDef_MetaInfoDef::add_tags(const char* value) {
   tags_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.MetaGraphDef.MetaInfoDef.tags)
@@ -2279,6 +2309,12 @@ inline void CollectionDef_NodeList::set_value(int index, const ::std::string& va
   // @@protoc_insertion_point(field_set:tensorflow.CollectionDef.NodeList.value)
   value_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void CollectionDef_NodeList::set_value(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.CollectionDef.NodeList.value)
+  value_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void CollectionDef_NodeList::set_value(int index, const char* value) {
   value_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.CollectionDef.NodeList.value)
@@ -2296,6 +2332,12 @@ inline void CollectionDef_NodeList::add_value(const ::std::string& value) {
   value_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.CollectionDef.NodeList.value)
 }
+#if LANG_CXX11
+inline void CollectionDef_NodeList::add_value(::std::string&& value) {
+  value_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.CollectionDef.NodeList.value)
+}
+#endif
 inline void CollectionDef_NodeList::add_value(const char* value) {
   value_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.CollectionDef.NodeList.value)
@@ -2338,6 +2380,12 @@ inline void CollectionDef_BytesList::set_value(int index, const ::std::string& v
   // @@protoc_insertion_point(field_set:tensorflow.CollectionDef.BytesList.value)
   value_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void CollectionDef_BytesList::set_value(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.CollectionDef.BytesList.value)
+  value_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void CollectionDef_BytesList::set_value(int index, const char* value) {
   value_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.CollectionDef.BytesList.value)
@@ -2355,6 +2403,12 @@ inline void CollectionDef_BytesList::add_value(const ::std::string& value) {
   value_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.CollectionDef.BytesList.value)
 }
+#if LANG_CXX11
+inline void CollectionDef_BytesList::add_value(::std::string&& value) {
+  value_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.CollectionDef.BytesList.value)
+}
+#endif
 inline void CollectionDef_BytesList::add_value(const char* value) {
   value_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.CollectionDef.BytesList.value)

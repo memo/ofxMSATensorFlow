@@ -36,6 +36,8 @@
 #include "tensorflow/core/protobuf/config.pb_text.h"
 #include "tensorflow/core/protobuf/debug.pb.h"
 #include "tensorflow/core/protobuf/debug.pb_text-impl.h"
+#include "tensorflow/core/protobuf/rewriter_config.pb.h"
+#include "tensorflow/core/protobuf/rewriter_config.pb_text-impl.h"
 
 namespace tensorflow {
 

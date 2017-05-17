@@ -152,10 +152,16 @@ class NodeDef : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::std::string& input(int index) const;
   ::std::string* mutable_input(int index);
   void set_input(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_input(int index, ::std::string&& value);
+  #endif
   void set_input(int index, const char* value);
   void set_input(int index, const char* value, size_t size);
   ::std::string* add_input();
   void add_input(const ::std::string& value);
+  #if LANG_CXX11
+  void add_input(::std::string&& value);
+  #endif
   void add_input(const char* value);
   void add_input(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& input() const;
@@ -398,6 +404,12 @@ inline void NodeDef::set_input(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:tensorflow.NodeDef.input)
   input_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void NodeDef::set_input(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.NodeDef.input)
+  input_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void NodeDef::set_input(int index, const char* value) {
   input_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.NodeDef.input)
@@ -415,6 +427,12 @@ inline void NodeDef::add_input(const ::std::string& value) {
   input_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.NodeDef.input)
 }
+#if LANG_CXX11
+inline void NodeDef::add_input(::std::string&& value) {
+  input_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.NodeDef.input)
+}
+#endif
 inline void NodeDef::add_input(const char* value) {
   input_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.NodeDef.input)

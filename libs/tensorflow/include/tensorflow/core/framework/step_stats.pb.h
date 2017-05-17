@@ -41,6 +41,9 @@ extern AllocatorMemoryUsedDefaultTypeInternal _AllocatorMemoryUsed_default_insta
 class DeviceStepStats;
 class DeviceStepStatsDefaultTypeInternal;
 extern DeviceStepStatsDefaultTypeInternal _DeviceStepStats_default_instance_;
+class MemoryStats;
+class MemoryStatsDefaultTypeInternal;
+extern MemoryStatsDefaultTypeInternal _MemoryStats_default_instance_;
 class NodeExecStats;
 class NodeExecStatsDefaultTypeInternal;
 extern NodeExecStatsDefaultTypeInternal _NodeExecStats_default_instance_;
@@ -314,6 +317,153 @@ class NodeOutput : public ::google::protobuf::Message /* @@protoc_insertion_poin
 };
 // -------------------------------------------------------------------
 
+class MemoryStats : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:tensorflow.MemoryStats) */ {
+ public:
+  MemoryStats();
+  virtual ~MemoryStats();
+
+  MemoryStats(const MemoryStats& from);
+
+  inline MemoryStats& operator=(const MemoryStats& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
+    return GetArenaNoVirtual();
+  }
+  inline void* GetMaybeArenaPointer() const PROTOBUF_FINAL {
+    return MaybeArenaPtr();
+  }
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const MemoryStats& default_instance();
+
+  static inline const MemoryStats* internal_default_instance() {
+    return reinterpret_cast<const MemoryStats*>(
+               &_MemoryStats_default_instance_);
+  }
+
+  void UnsafeArenaSwap(MemoryStats* other);
+  void Swap(MemoryStats* other);
+
+  // implements Message ----------------------------------------------
+
+  inline MemoryStats* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  MemoryStats* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const MemoryStats& from);
+  void MergeFrom(const MemoryStats& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
+      const PROTOBUF_FINAL {
+    return InternalSerializeWithCachedSizesToArray(
+        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
+  }
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(MemoryStats* other);
+  protected:
+  explicit MemoryStats(::google::protobuf::Arena* arena);
+  private:
+  static void ArenaDtor(void* object);
+  inline void RegisterArenaDtor(::google::protobuf::Arena* arena);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated int64 host_persistent_tensor_alloc_ids = 5;
+  int host_persistent_tensor_alloc_ids_size() const;
+  void clear_host_persistent_tensor_alloc_ids();
+  static const int kHostPersistentTensorAllocIdsFieldNumber = 5;
+  ::google::protobuf::int64 host_persistent_tensor_alloc_ids(int index) const;
+  void set_host_persistent_tensor_alloc_ids(int index, ::google::protobuf::int64 value);
+  void add_host_persistent_tensor_alloc_ids(::google::protobuf::int64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+      host_persistent_tensor_alloc_ids() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+      mutable_host_persistent_tensor_alloc_ids();
+
+  // repeated int64 device_persistent_tensor_alloc_ids = 6;
+  int device_persistent_tensor_alloc_ids_size() const;
+  void clear_device_persistent_tensor_alloc_ids();
+  static const int kDevicePersistentTensorAllocIdsFieldNumber = 6;
+  ::google::protobuf::int64 device_persistent_tensor_alloc_ids(int index) const;
+  void set_device_persistent_tensor_alloc_ids(int index, ::google::protobuf::int64 value);
+  void add_device_persistent_tensor_alloc_ids(::google::protobuf::int64 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+      device_persistent_tensor_alloc_ids() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+      mutable_device_persistent_tensor_alloc_ids();
+
+  // int64 host_temp_memory_size = 1;
+  void clear_host_temp_memory_size();
+  static const int kHostTempMemorySizeFieldNumber = 1;
+  ::google::protobuf::int64 host_temp_memory_size() const;
+  void set_host_temp_memory_size(::google::protobuf::int64 value);
+
+  // int64 device_temp_memory_size = 2;
+  void clear_device_temp_memory_size();
+  static const int kDeviceTempMemorySizeFieldNumber = 2;
+  ::google::protobuf::int64 device_temp_memory_size() const;
+  void set_device_temp_memory_size(::google::protobuf::int64 value);
+
+  // int64 host_persistent_memory_size = 3;
+  void clear_host_persistent_memory_size();
+  static const int kHostPersistentMemorySizeFieldNumber = 3;
+  ::google::protobuf::int64 host_persistent_memory_size() const;
+  void set_host_persistent_memory_size(::google::protobuf::int64 value);
+
+  // int64 device_persistent_memory_size = 4;
+  void clear_device_persistent_memory_size();
+  static const int kDevicePersistentMemorySizeFieldNumber = 4;
+  ::google::protobuf::int64 device_persistent_memory_size() const;
+  void set_device_persistent_memory_size(::google::protobuf::int64 value);
+
+  // @@protoc_insertion_point(class_scope:tensorflow.MemoryStats)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  friend class ::google::protobuf::Arena;
+  typedef void InternalArenaConstructable_;
+  typedef void DestructorSkippable_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int64 > host_persistent_tensor_alloc_ids_;
+  mutable int _host_persistent_tensor_alloc_ids_cached_byte_size_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int64 > device_persistent_tensor_alloc_ids_;
+  mutable int _device_persistent_tensor_alloc_ids_cached_byte_size_;
+  ::google::protobuf::int64 host_temp_memory_size_;
+  ::google::protobuf::int64 device_temp_memory_size_;
+  ::google::protobuf::int64 host_persistent_memory_size_;
+  ::google::protobuf::int64 device_persistent_memory_size_;
+  mutable int _cached_size_;
+  friend struct  protobuf_tensorflow_2fcore_2fframework_2fstep_5fstats_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class NodeExecStats : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:tensorflow.NodeExecStats) */ {
  public:
   NodeExecStats();
@@ -457,6 +607,24 @@ class NodeExecStats : public ::google::protobuf::Message /* @@protoc_insertion_p
   void unsafe_arena_set_allocated_timeline_label(
       ::std::string* timeline_label);
 
+  // .tensorflow.MemoryStats memory_stats = 12;
+  bool has_memory_stats() const;
+  void clear_memory_stats();
+  static const int kMemoryStatsFieldNumber = 12;
+  private:
+  void _slow_mutable_memory_stats();
+  void _slow_set_allocated_memory_stats(
+      ::google::protobuf::Arena* message_arena, ::tensorflow::MemoryStats** memory_stats);
+  ::tensorflow::MemoryStats* _slow_release_memory_stats();
+  public:
+  const ::tensorflow::MemoryStats& memory_stats() const;
+  ::tensorflow::MemoryStats* mutable_memory_stats();
+  ::tensorflow::MemoryStats* release_memory_stats();
+  void set_allocated_memory_stats(::tensorflow::MemoryStats* memory_stats);
+  ::tensorflow::MemoryStats* unsafe_arena_release_memory_stats();
+  void unsafe_arena_set_allocated_memory_stats(
+      ::tensorflow::MemoryStats* memory_stats);
+
   // int64 all_start_micros = 2;
   void clear_all_start_micros();
   static const int kAllStartMicrosFieldNumber = 2;
@@ -505,6 +673,7 @@ class NodeExecStats : public ::google::protobuf::Message /* @@protoc_insertion_p
   ::google::protobuf::RepeatedPtrField< ::tensorflow::AllocationDescription > referenced_tensor_;
   ::google::protobuf::internal::ArenaStringPtr node_name_;
   ::google::protobuf::internal::ArenaStringPtr timeline_label_;
+  ::tensorflow::MemoryStats* memory_stats_;
   ::google::protobuf::int64 all_start_micros_;
   ::google::protobuf::int64 op_start_rel_micros_;
   ::google::protobuf::int64 op_end_rel_micros_;
@@ -922,6 +1091,126 @@ inline  void NodeOutput::set_allocated_tensor_description(::tensorflow::TensorDe
 
 // -------------------------------------------------------------------
 
+// MemoryStats
+
+// int64 host_temp_memory_size = 1;
+inline void MemoryStats::clear_host_temp_memory_size() {
+  host_temp_memory_size_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 MemoryStats::host_temp_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.MemoryStats.host_temp_memory_size)
+  return host_temp_memory_size_;
+}
+inline void MemoryStats::set_host_temp_memory_size(::google::protobuf::int64 value) {
+  
+  host_temp_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.MemoryStats.host_temp_memory_size)
+}
+
+// int64 device_temp_memory_size = 2;
+inline void MemoryStats::clear_device_temp_memory_size() {
+  device_temp_memory_size_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 MemoryStats::device_temp_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.MemoryStats.device_temp_memory_size)
+  return device_temp_memory_size_;
+}
+inline void MemoryStats::set_device_temp_memory_size(::google::protobuf::int64 value) {
+  
+  device_temp_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.MemoryStats.device_temp_memory_size)
+}
+
+// int64 host_persistent_memory_size = 3;
+inline void MemoryStats::clear_host_persistent_memory_size() {
+  host_persistent_memory_size_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 MemoryStats::host_persistent_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.MemoryStats.host_persistent_memory_size)
+  return host_persistent_memory_size_;
+}
+inline void MemoryStats::set_host_persistent_memory_size(::google::protobuf::int64 value) {
+  
+  host_persistent_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.MemoryStats.host_persistent_memory_size)
+}
+
+// int64 device_persistent_memory_size = 4;
+inline void MemoryStats::clear_device_persistent_memory_size() {
+  device_persistent_memory_size_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 MemoryStats::device_persistent_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.MemoryStats.device_persistent_memory_size)
+  return device_persistent_memory_size_;
+}
+inline void MemoryStats::set_device_persistent_memory_size(::google::protobuf::int64 value) {
+  
+  device_persistent_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.MemoryStats.device_persistent_memory_size)
+}
+
+// repeated int64 host_persistent_tensor_alloc_ids = 5;
+inline int MemoryStats::host_persistent_tensor_alloc_ids_size() const {
+  return host_persistent_tensor_alloc_ids_.size();
+}
+inline void MemoryStats::clear_host_persistent_tensor_alloc_ids() {
+  host_persistent_tensor_alloc_ids_.Clear();
+}
+inline ::google::protobuf::int64 MemoryStats::host_persistent_tensor_alloc_ids(int index) const {
+  // @@protoc_insertion_point(field_get:tensorflow.MemoryStats.host_persistent_tensor_alloc_ids)
+  return host_persistent_tensor_alloc_ids_.Get(index);
+}
+inline void MemoryStats::set_host_persistent_tensor_alloc_ids(int index, ::google::protobuf::int64 value) {
+  host_persistent_tensor_alloc_ids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:tensorflow.MemoryStats.host_persistent_tensor_alloc_ids)
+}
+inline void MemoryStats::add_host_persistent_tensor_alloc_ids(::google::protobuf::int64 value) {
+  host_persistent_tensor_alloc_ids_.Add(value);
+  // @@protoc_insertion_point(field_add:tensorflow.MemoryStats.host_persistent_tensor_alloc_ids)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+MemoryStats::host_persistent_tensor_alloc_ids() const {
+  // @@protoc_insertion_point(field_list:tensorflow.MemoryStats.host_persistent_tensor_alloc_ids)
+  return host_persistent_tensor_alloc_ids_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+MemoryStats::mutable_host_persistent_tensor_alloc_ids() {
+  // @@protoc_insertion_point(field_mutable_list:tensorflow.MemoryStats.host_persistent_tensor_alloc_ids)
+  return &host_persistent_tensor_alloc_ids_;
+}
+
+// repeated int64 device_persistent_tensor_alloc_ids = 6;
+inline int MemoryStats::device_persistent_tensor_alloc_ids_size() const {
+  return device_persistent_tensor_alloc_ids_.size();
+}
+inline void MemoryStats::clear_device_persistent_tensor_alloc_ids() {
+  device_persistent_tensor_alloc_ids_.Clear();
+}
+inline ::google::protobuf::int64 MemoryStats::device_persistent_tensor_alloc_ids(int index) const {
+  // @@protoc_insertion_point(field_get:tensorflow.MemoryStats.device_persistent_tensor_alloc_ids)
+  return device_persistent_tensor_alloc_ids_.Get(index);
+}
+inline void MemoryStats::set_device_persistent_tensor_alloc_ids(int index, ::google::protobuf::int64 value) {
+  device_persistent_tensor_alloc_ids_.Set(index, value);
+  // @@protoc_insertion_point(field_set:tensorflow.MemoryStats.device_persistent_tensor_alloc_ids)
+}
+inline void MemoryStats::add_device_persistent_tensor_alloc_ids(::google::protobuf::int64 value) {
+  device_persistent_tensor_alloc_ids_.Add(value);
+  // @@protoc_insertion_point(field_add:tensorflow.MemoryStats.device_persistent_tensor_alloc_ids)
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+MemoryStats::device_persistent_tensor_alloc_ids() const {
+  // @@protoc_insertion_point(field_list:tensorflow.MemoryStats.device_persistent_tensor_alloc_ids)
+  return device_persistent_tensor_alloc_ids_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+MemoryStats::mutable_device_persistent_tensor_alloc_ids() {
+  // @@protoc_insertion_point(field_mutable_list:tensorflow.MemoryStats.device_persistent_tensor_alloc_ids)
+  return &device_persistent_tensor_alloc_ids_;
+}
+
+// -------------------------------------------------------------------
+
 // NodeExecStats
 
 // string node_name = 1;
@@ -1230,6 +1519,55 @@ NodeExecStats::referenced_tensor() const {
   return referenced_tensor_;
 }
 
+// .tensorflow.MemoryStats memory_stats = 12;
+inline bool NodeExecStats::has_memory_stats() const {
+  return this != internal_default_instance() && memory_stats_ != NULL;
+}
+inline void NodeExecStats::clear_memory_stats() {
+  if (GetArenaNoVirtual() == NULL && memory_stats_ != NULL) delete memory_stats_;
+  memory_stats_ = NULL;
+}
+inline const ::tensorflow::MemoryStats& NodeExecStats::memory_stats() const {
+  // @@protoc_insertion_point(field_get:tensorflow.NodeExecStats.memory_stats)
+  return memory_stats_ != NULL ? *memory_stats_
+                         : *::tensorflow::MemoryStats::internal_default_instance();
+}
+inline ::tensorflow::MemoryStats* NodeExecStats::mutable_memory_stats() {
+  
+  if (memory_stats_ == NULL) {
+    _slow_mutable_memory_stats();
+  }
+  // @@protoc_insertion_point(field_mutable:tensorflow.NodeExecStats.memory_stats)
+  return memory_stats_;
+}
+inline ::tensorflow::MemoryStats* NodeExecStats::release_memory_stats() {
+  // @@protoc_insertion_point(field_release:tensorflow.NodeExecStats.memory_stats)
+  
+  if (GetArenaNoVirtual() != NULL) {
+    return _slow_release_memory_stats();
+  } else {
+    ::tensorflow::MemoryStats* temp = memory_stats_;
+    memory_stats_ = NULL;
+    return temp;
+  }
+}
+inline  void NodeExecStats::set_allocated_memory_stats(::tensorflow::MemoryStats* memory_stats) {
+  ::google::protobuf::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == NULL) {
+    delete memory_stats_;
+  }
+  if (memory_stats != NULL) {
+    _slow_set_allocated_memory_stats(message_arena, &memory_stats);
+  }
+  memory_stats_ = memory_stats;
+  if (memory_stats) {
+    
+  } else {
+    
+  }
+  // @@protoc_insertion_point(field_set_allocated:tensorflow.NodeExecStats.memory_stats)
+}
+
 // -------------------------------------------------------------------
 
 // DeviceStepStats
@@ -1365,6 +1703,8 @@ StepStats::dev_stats() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

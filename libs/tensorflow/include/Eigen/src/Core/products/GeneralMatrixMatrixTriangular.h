@@ -148,7 +148,7 @@ struct tribb_kernel
     ResMapper res(_res, resStride);
     gebp_kernel<LhsScalar, RhsScalar, Index, ResMapper, mr, nr, ConjLhs, ConjRhs> gebp_kernel;
 
-    Matrix<ResScalar,BlockSize,BlockSize,ColMajor> buffer;
+    Matrix<ResScalar,BlockSize,BlockSize,ColMajor> buffer((internal::constructor_without_unaligned_array_assert()));
 
     // let's process the block per panel of actual_mc x BlockSize,
     // again, each is split into three parts, etc.
@@ -292,12 +292,12 @@ struct general_product_to_triangular_selector<MatrixType,ProductType,UpLo,false>
 
 template<typename MatrixType, unsigned int UpLo>
 template<typename ProductType>
-TriangularView<MatrixType,UpLo>& TriangularViewImpl<MatrixType,UpLo,Dense>::_assignProduct(const ProductType& prod, const Scalar& alpha, bool beta)
+EIGEN_DEVICE_FUNC TriangularView<MatrixType,UpLo>& TriangularViewImpl<MatrixType,UpLo,Dense>::_assignProduct(const ProductType& prod, const Scalar& alpha, bool beta)
 {
   eigen_assert(derived().nestedExpression().rows() == prod.rows() && derived().cols() == prod.cols());
-  
+
   general_product_to_triangular_selector<MatrixType, ProductType, UpLo, internal::traits<ProductType>::InnerSize==1>::run(derived().nestedExpression().const_cast_derived(), prod, alpha, beta);
-  
+
   return derived();
 }
 

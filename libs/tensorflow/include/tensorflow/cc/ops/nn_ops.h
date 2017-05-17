@@ -266,19 +266,25 @@ class BiasAddGrad {
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * strides: 1-D of length 4.  The stride of the sliding window for each dimension
-/// of `input`. Must be in the same order as the dimension specified with format.
+/// * input: A 4-D tensor. The dimension order is interpreted according to the value
+/// of `data_format`, see below for details.
+/// * filter: A 4-D tensor of shape
+/// `[filter_height, filter_width, in_channels, out_channels]`
+/// * strides: 1-D tensor of length 4.  The stride of the sliding window for each
+/// dimension of `input`. The dimension order is determined by the value of
+///   `data_format`, see below for details.
 /// * padding: The type of padding algorithm to use.
 ///
 /// Optional attributes (see `Attrs`):
 /// * data_format: Specify the data format of the input and output data. With the
 /// default format "NHWC", the data is stored in the order of:
-///     [batch, in_height, in_width, in_channels].
+///     [batch, height, width, channels].
 /// Alternatively, the format could be "NCHW", the data storage order of:
-///     [batch, in_channels, in_height, in_width].
+///     [batch, channels, height, width].
 ///
 /// Returns:
-/// * `Output`: The output tensor.
+/// * `Output`: A 4-D tensor. The dimension order is determined by the value of
+/// `data_format`, see below for details.
 class Conv2D {
  public:
   /// Optional attribute setters for Conv2D
@@ -292,9 +298,9 @@ class Conv2D {
 
     /// Specify the data format of the input and output data. With the
     /// default format "NHWC", the data is stored in the order of:
-    ///     [batch, in_height, in_width, in_channels].
+    ///     [batch, height, width, channels].
     /// Alternatively, the format could be "NCHW", the data storage order of:
-    ///     [batch, in_channels, in_height, in_width].
+    ///     [batch, channels, height, width].
     ///
     /// Defaults to "NHWC"
     Attrs DataFormat(StringPiece x) {
@@ -593,16 +599,48 @@ class Conv3DBackpropInputV2 {
 /// of `input`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: Specify the data format of the input and output data. With the
+/// default format "NHWC", the data is stored in the order of:
+///     [batch, height, width, channels].
+/// Alternatively, the format could be "NCHW", the data storage order of:
+///     [batch, channels, height, width].
+///
 /// Returns:
 /// * `Output`: The output tensor.
 class DepthwiseConv2dNative {
  public:
+  /// Optional attribute setters for DepthwiseConv2dNative
+  struct Attrs {
+    /// Specify the data format of the input and output data. With the
+    /// default format "NHWC", the data is stored in the order of:
+    ///     [batch, height, width, channels].
+    /// Alternatively, the format could be "NCHW", the data storage order of:
+    ///     [batch, channels, height, width].
+    ///
+    /// Defaults to "NHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NHWC";
+  };
   DepthwiseConv2dNative(const ::tensorflow::Scope& scope, ::tensorflow::Input
                       input, ::tensorflow::Input filter, const
                       gtl::ArraySlice<int>& strides, StringPiece padding);
+  DepthwiseConv2dNative(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input, ::tensorflow::Input filter, const
+                      gtl::ArraySlice<int>& strides, StringPiece padding, const
+                      DepthwiseConv2dNative::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -611,15 +649,26 @@ class DepthwiseConv2dNative {
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * input: 4-D with shape `[batch, in_height, in_width, in_channels]`.
+/// * input: 4-D with shape based on `data_format`.  For example, if
+/// `data_format` is 'NHWC' then `input` is a 4-D `[batch, in_height,
+/// in_width, in_channels]` tensor.
 /// * filter_sizes: An integer vector representing the tensor shape of `filter`,
 /// where `filter` is a 4-D
 /// `[filter_height, filter_width, in_channels, depthwise_multiplier]` tensor.
-/// * out_backprop: 4-D with shape `[batch, out_height, out_width, out_channels]`.
+/// * out_backprop: 4-D with shape  based on `data_format`.
+/// For example, if `data_format` is 'NHWC' then
+/// out_backprop shape is `[batch, out_height, out_width, out_channels]`.
 /// Gradients w.r.t. the output of the convolution.
 /// * strides: The stride of the sliding window for each dimension of the input
 /// of the convolution.
 /// * padding: The type of padding algorithm to use.
+///
+/// Optional attributes (see `Attrs`):
+/// * data_format: Specify the data format of the input and output data. With the
+/// default format "NHWC", the data is stored in the order of:
+///     [batch, height, width, channels].
+/// Alternatively, the format could be "NCHW", the data storage order of:
+///     [batch, channels, height, width].
 ///
 /// Returns:
 /// * `Output`: 4-D with shape
@@ -627,15 +676,44 @@ class DepthwiseConv2dNative {
 /// the `filter` input of the convolution.
 class DepthwiseConv2dNativeBackpropFilter {
  public:
+  /// Optional attribute setters for DepthwiseConv2dNativeBackpropFilter
+  struct Attrs {
+    /// Specify the data format of the input and output data. With the
+    /// default format "NHWC", the data is stored in the order of:
+    ///     [batch, height, width, channels].
+    /// Alternatively, the format could be "NCHW", the data storage order of:
+    ///     [batch, channels, height, width].
+    ///
+    /// Defaults to "NHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NHWC";
+  };
   DepthwiseConv2dNativeBackpropFilter(const ::tensorflow::Scope& scope,
                                     ::tensorflow::Input input,
                                     ::tensorflow::Input filter_sizes,
                                     ::tensorflow::Input out_backprop, const
                                     gtl::ArraySlice<int>& strides, StringPiece
                                     padding);
+  DepthwiseConv2dNativeBackpropFilter(const ::tensorflow::Scope& scope,
+                                    ::tensorflow::Input input,
+                                    ::tensorflow::Input filter_sizes,
+                                    ::tensorflow::Input out_backprop, const
+                                    gtl::ArraySlice<int>& strides, StringPiece
+                                    padding, const
+                                    DepthwiseConv2dNativeBackpropFilter::Attrs&
+                                    attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -644,30 +722,71 @@ class DepthwiseConv2dNativeBackpropFilter {
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * input_sizes: An integer vector representing the shape of `input`,
-/// where `input` is a 4-D `[batch, height, width, channels]` tensor.
+/// * input_sizes: An integer vector representing the shape of `input`, based
+/// on `data_format`.  For example, if `data_format` is 'NHWC' then
+///  `input` is a 4-D `[batch, height, width, channels]` tensor.
 /// * filter: 4-D with shape
 /// `[filter_height, filter_width, in_channels, depthwise_multiplier]`.
-/// * out_backprop: 4-D with shape `[batch, out_height, out_width, out_channels]`.
+/// * out_backprop: 4-D with shape  based on `data_format`.
+/// For example, if `data_format` is 'NHWC' then
+/// out_backprop shape is `[batch, out_height, out_width, out_channels]`.
 /// Gradients w.r.t. the output of the convolution.
 /// * strides: The stride of the sliding window for each dimension of the input
 /// of the convolution.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: Specify the data format of the input and output data. With the
+/// default format "NHWC", the data is stored in the order of:
+///     [batch, height, width, channels].
+/// Alternatively, the format could be "NCHW", the data storage order of:
+///     [batch, channels, height, width].
+///
 /// Returns:
-/// * `Output`: 4-D with shape `[batch, in_height, in_width, in_channels]`.  Gradient
-/// w.r.t. the input of the convolution.
+/// * `Output`: 4-D with shape according to `data_format`.  For example, if
+/// `data_format` is 'NHWC', output shape is `[batch, in_height,
+/// in_width, in_channels]`.  Gradient w.r.t. the input of the
+/// convolution.
 class DepthwiseConv2dNativeBackpropInput {
  public:
+  /// Optional attribute setters for DepthwiseConv2dNativeBackpropInput
+  struct Attrs {
+    /// Specify the data format of the input and output data. With the
+    /// default format "NHWC", the data is stored in the order of:
+    ///     [batch, height, width, channels].
+    /// Alternatively, the format could be "NCHW", the data storage order of:
+    ///     [batch, channels, height, width].
+    ///
+    /// Defaults to "NHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NHWC";
+  };
   DepthwiseConv2dNativeBackpropInput(const ::tensorflow::Scope& scope,
                                    ::tensorflow::Input input_sizes,
                                    ::tensorflow::Input filter,
                                    ::tensorflow::Input out_backprop, const
                                    gtl::ArraySlice<int>& strides, StringPiece
                                    padding);
+  DepthwiseConv2dNativeBackpropInput(const ::tensorflow::Scope& scope,
+                                   ::tensorflow::Input input_sizes,
+                                   ::tensorflow::Input filter,
+                                   ::tensorflow::Input out_backprop, const
+                                   gtl::ArraySlice<int>& strides, StringPiece
+                                   padding, const
+                                   DepthwiseConv2dNativeBackpropInput::Attrs&
+                                   attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
