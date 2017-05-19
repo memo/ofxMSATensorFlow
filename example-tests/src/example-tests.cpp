@@ -37,13 +37,13 @@ public:
         Tensor tensor;
 
         // bounce data around a bunch of different data types and size, see if data is preserved
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ num_channels, image_width, image_height}));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width, num_channels}));
         msa::tf::pixels_to_tensor(img[0].getPixels(), tensor, do_memcpy);
 
         msa::tf::tensor_to_pixels(tensor, img[1].getPixels(), do_memcpy);
         img[1].update();
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_width / 2, image_height * num_channels * 2}));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height * num_channels * 2, image_width / 2}));
         msa::tf::array_to_tensor(img[1].getPixels().getData(), tensor, do_memcpy);
 
         vector<float> v1;
@@ -56,11 +56,11 @@ public:
         msa::tf::tensor_to_array(tensor, img[2].getPixels().getData(), do_memcpy);
         img[2].update();
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ num_channels*16, image_height/16, image_width/32, 32}));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height/16, image_width/32, num_channels*16, 32}));
         msa::tf::image_to_tensor(img[2], tensor, do_memcpy);
         msa::tf::tensor_to_image(tensor, img[3], do_memcpy);
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ num_channels, image_width, image_height }));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width, num_channels }));
         msa::tf::image_to_tensor(img[3], tensor, do_memcpy);
 
         // CLEAR ALL IMAGES TO TEST AUTO ALLOCATIONS
@@ -68,13 +68,13 @@ public:
 
         msa::tf::tensor_to_image(tensor, img[4], do_memcpy);
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ num_channels, image_width*2, image_height/2 }));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width*2, num_channels }));
         msa::tf::image_to_tensor(img[4], tensor, do_memcpy);
 
         // it's normal that this looks mangled, it's not supposed to be resized, just reshaped
         msa::tf::tensor_to_image(tensor, img[5], do_memcpy);
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ num_channels, image_width, image_height }));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width, num_channels }));
         msa::tf::image_to_tensor(img[5], tensor, do_memcpy);
 
         msa::tf::tensor_to_image(tensor, img[6], do_memcpy);
@@ -85,17 +85,17 @@ public:
         img_temp.setImageType(OF_IMAGE_GRAYSCALE);
         img[7] = img_temp;
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_width, image_height }));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width }));
         msa::tf::image_to_tensor(img[7], tensor, do_memcpy);
 
         msa::tf::tensor_to_image(tensor, img[8], do_memcpy);
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_width/2, image_height*2 }));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height*2, image_width/2 }));
         msa::tf::image_to_tensor(img[8], tensor, do_memcpy);
 
         msa::tf::tensor_to_image(tensor, img[9], do_memcpy);
 
-        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_width, image_height }));
+        tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width }));
         msa::tf::image_to_tensor(img[9], tensor, do_memcpy);
 
         msa::tf::tensor_to_image(tensor, img[10], do_memcpy);

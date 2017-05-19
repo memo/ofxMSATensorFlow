@@ -72,8 +72,8 @@ bool read_labels_file(string file_name, vector<string>& result);
 // default is: if rank==1 -> (w:d0, h:1px, nch:1) | if rank==2 -> (w:d0, h:d1, nch:1) | if rank=>3 -> (w:d1, h:d2, nch:d0)
 //      where rank:=number of tensor dimensions (1,2,3 etc.); d0, d1, d2: dim_size in corresponding dimension)
 // looks complicated, but it's not (we usually think of images as { width, height, depth },
-//      but actually in memory it's { depth, width, height } (if channels are interleaved)
-vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap = "120");
+//      but actually in memory it's { height, width, depth } (if channels are interleaved)
+vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap = "102");
 
 //--------------------------------------------------------------
 // TENSOR DATA COPY FUNCTIONS
@@ -86,10 +86,10 @@ vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap = "12
 template<typename T> void tensor_to_vector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy=false);
 
 // copy into pixels. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> void tensor_to_pixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy=false, string chmap = "120");
+template<typename T> void tensor_to_pixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy=false, string chmap = "102");
 
 // copy into image. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> void tensor_to_image(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy=false, string chmap = "120");
+template<typename T> void tensor_to_image(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy=false, string chmap = "102");
 
 // flatten tensor and copy into array. array must already be allocated
 template<typename T> void tensor_to_array(const tensorflow::Tensor &src, T *dst, bool do_memcpy=false);
@@ -119,10 +119,10 @@ template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst)
 template<typename T> std::vector<T> tensor_to_vector(const tensorflow::Tensor &src, bool do_memcpy=false);
 
 // return pixels. it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src, bool do_memcpy=false, string chmap = "120");
+template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src, bool do_memcpy=false, string chmap = "102");
 
 // return image. it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy=false, string chmap = "120");
+template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy=false, string chmap = "102");
 
 // return scalar value
 template<typename T> T tensor_to_scalar(const tensorflow::Tensor &src);
@@ -132,10 +132,10 @@ template<typename T> T tensor_to_scalar(const tensorflow::Tensor &src);
 template<typename T> tensorflow::Tensor vector_to_tensor(const std::vector<T> &src, bool do_memcpy=false);
 
 // return tensor from pixels
-template<typename T> tensorflow::Tensor pixels_to_tensor(const ofPixels_<T> &src, bool do_memcpy=false);//, string chmap = "120");
+template<typename T> tensorflow::Tensor pixels_to_tensor(const ofPixels_<T> &src, bool do_memcpy=false);//, string chmap = "102");
 
 // return tensor from image
-template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, bool do_memcpy=false);//, string chmap = "120");
+template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, bool do_memcpy=false);//, string chmap = "102");
 
 // return tensor from scalar
 template<typename T> tensorflow::Tensor scalar_to_tensor(const T src);
@@ -258,6 +258,7 @@ template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src
 template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy, string chmap) {
     ofImage_<T> dst;
     tensor_to_image(src, dst, do_memcpy, chmap);
+    return dst;
 }
 
 
