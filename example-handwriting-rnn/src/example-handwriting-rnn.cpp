@@ -378,7 +378,7 @@ public:
                 // take many samples for probability visualisation
                 ofVboMesh mesh;
                 for(int i=0; i<sample_vis_count; i++) {
-                    mesh.addVertex(ofVec2f(sample_from_bi_gmm(rng, last_model_output.o_pi, last_model_output.o_mu1, last_model_output.o_mu2, last_model_output.o_sigma1, last_model_output.o_sigma2, last_model_output.o_corr)));
+                    mesh.addVertex(ofVec3f(sample_from_bi_gmm(rng, last_model_output.o_pi, last_model_output.o_mu1, last_model_output.o_mu2, last_model_output.o_sigma1, last_model_output.o_sigma2, last_model_output.o_corr)));
 
                     // color most of the points blue, and some red, so should be redder towards dense parts of the distribution
                     mesh.addColor( i < sample_vis_count * 0.9 ? ofColor(0, 0, 255, sample_vis_alpha*255) : ofColor(255, 0, 0, sample_vis_alpha*255) );
