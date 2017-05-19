@@ -139,10 +139,16 @@ class QueueRunnerDef : public ::google::protobuf::Message /* @@protoc_insertion_
   const ::std::string& enqueue_op_name(int index) const;
   ::std::string* mutable_enqueue_op_name(int index);
   void set_enqueue_op_name(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_enqueue_op_name(int index, ::std::string&& value);
+  #endif
   void set_enqueue_op_name(int index, const char* value);
   void set_enqueue_op_name(int index, const char* value, size_t size);
   ::std::string* add_enqueue_op_name();
   void add_enqueue_op_name(const ::std::string& value);
+  #if LANG_CXX11
+  void add_enqueue_op_name(::std::string&& value);
+  #endif
   void add_enqueue_op_name(const char* value);
   void add_enqueue_op_name(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& enqueue_op_name() const;
@@ -309,6 +315,12 @@ inline void QueueRunnerDef::set_enqueue_op_name(int index, const ::std::string& 
   // @@protoc_insertion_point(field_set:tensorflow.QueueRunnerDef.enqueue_op_name)
   enqueue_op_name_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void QueueRunnerDef::set_enqueue_op_name(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.QueueRunnerDef.enqueue_op_name)
+  enqueue_op_name_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void QueueRunnerDef::set_enqueue_op_name(int index, const char* value) {
   enqueue_op_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.QueueRunnerDef.enqueue_op_name)
@@ -326,6 +338,12 @@ inline void QueueRunnerDef::add_enqueue_op_name(const ::std::string& value) {
   enqueue_op_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.QueueRunnerDef.enqueue_op_name)
 }
+#if LANG_CXX11
+inline void QueueRunnerDef::add_enqueue_op_name(::std::string&& value) {
+  enqueue_op_name_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.QueueRunnerDef.enqueue_op_name)
+}
+#endif
 inline void QueueRunnerDef::add_enqueue_op_name(const char* value) {
   enqueue_op_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.QueueRunnerDef.enqueue_op_name)

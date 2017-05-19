@@ -4,6 +4,8 @@
 
 #include "tensorflow/core/framework/graph_transfer_info.pb.h"
 #include "tensorflow/core/framework/graph_transfer_info.pb_text.h"
+#include "tensorflow/core/framework/types.pb.h"
+#include "tensorflow/core/framework/types.pb_text-impl.h"
 #include "tensorflow/core/lib/strings/proto_text_util.h"
 #include "tensorflow/core/lib/strings/scanner.h"
 

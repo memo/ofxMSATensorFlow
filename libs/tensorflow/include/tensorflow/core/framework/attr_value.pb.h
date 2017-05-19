@@ -156,10 +156,16 @@ class AttrValue_ListValue : public ::google::protobuf::Message /* @@protoc_inser
   const ::std::string& s(int index) const;
   ::std::string* mutable_s(int index);
   void set_s(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_s(int index, ::std::string&& value);
+  #endif
   void set_s(int index, const char* value);
   void set_s(int index, const void* value, size_t size);
   ::std::string* add_s();
   void add_s(const ::std::string& value);
+  #if LANG_CXX11
+  void add_s(::std::string&& value);
+  #endif
   void add_s(const char* value);
   void add_s(const void* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& s() const;
@@ -705,6 +711,12 @@ inline void AttrValue_ListValue::set_s(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:tensorflow.AttrValue.ListValue.s)
   s_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void AttrValue_ListValue::set_s(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.AttrValue.ListValue.s)
+  s_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void AttrValue_ListValue::set_s(int index, const char* value) {
   s_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.AttrValue.ListValue.s)
@@ -722,6 +734,12 @@ inline void AttrValue_ListValue::add_s(const ::std::string& value) {
   s_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.AttrValue.ListValue.s)
 }
+#if LANG_CXX11
+inline void AttrValue_ListValue::add_s(::std::string&& value) {
+  s_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.AttrValue.ListValue.s)
+}
+#endif
 inline void AttrValue_ListValue::add_s(const char* value) {
   s_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.AttrValue.ListValue.s)

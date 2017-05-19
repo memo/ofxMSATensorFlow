@@ -197,6 +197,41 @@ class Any {
 };
 typedef Any ReduceAny;
 
+/// Returns the truth value of abs(x-y) < tolerance element-wise.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The z tensor.
+class ApproximateEqual {
+ public:
+  /// Optional attribute setters for ApproximateEqual
+  struct Attrs {
+    /// Defaults to 1e-05
+    Attrs Tolerance(float x) {
+      Attrs ret = *this;
+      ret.tolerance_ = x;
+      return ret;
+    }
+
+    float tolerance_ = 1e-05f;
+  };
+  ApproximateEqual(const ::tensorflow::Scope& scope, ::tensorflow::Input x,
+                 ::tensorflow::Input y);
+  ApproximateEqual(const ::tensorflow::Scope& scope, ::tensorflow::Input x,
+                 ::tensorflow::Input y, const ApproximateEqual::Attrs& attrs);
+  operator ::tensorflow::Output() const { return z; }
+  operator ::tensorflow::Input() const { return z; }
+  ::tensorflow::Node* node() const { return z.node(); }
+
+  static Attrs Tolerance(float x) {
+    return Attrs().Tolerance(x);
+  }
+
+  ::tensorflow::Output z;
+};
+
 /// Returns the index with the largest value across dimensions of a tensor.
 ///
 /// Arguments:
@@ -376,6 +411,38 @@ class Betainc {
   ::tensorflow::Node* node() const { return z.node(); }
 
   ::tensorflow::Output z;
+};
+
+/// Counts the number of occurrences of each value in an integer array.
+///
+/// Outputs a vector with length `size` and the same dtype as `weights`. If
+/// `weights` are empty, then index `i` stores the number of times the value `i` is
+/// counted in `arr`. If `weights` are non-empty, then index `i` stores the sum of
+/// the value in `weights` at each index where the corresponding value in `arr` is
+/// `i`.
+///
+/// Values in `arr` outside of the range [0, size) are ignored.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * arr: int32 `Tensor`.
+/// * size: non-negative int32 scalar `Tensor`.
+/// * weights: is an int32, int64, float32, or float64 `Tensor` with the same
+/// shape as `arr`, or a length-0 `Tensor`, in which case it acts as all weights
+/// equal to 1.
+///
+/// Returns:
+/// * `Output`: 1D `Tensor` with length equal to `size`. The counts or summed weights for
+/// each value in the range [0, size).
+class Bincount {
+ public:
+  Bincount(const ::tensorflow::Scope& scope, ::tensorflow::Input arr,
+         ::tensorflow::Input size, ::tensorflow::Input weights);
+  operator ::tensorflow::Output() const { return bins; }
+  operator ::tensorflow::Input() const { return bins; }
+  ::tensorflow::Node* node() const { return bins.node(); }
+
+  ::tensorflow::Output bins;
 };
 
 /// Cast x of type SrcT to y of DstT.
@@ -844,77 +911,6 @@ class Expm1 {
   ::tensorflow::Output y;
 };
 
-/// Compute the 1-dimensional discrete Fourier Transform over the inner-most
-///
-/// dimension of `input`.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: A complex64 tensor.
-///
-/// Returns:
-/// * `Output`: A complex64 tensor of the same shape as `input`. The inner-most
-/// dimension of `input` is replaced with its 1D Fourier Transform.
-class FFT {
- public:
-  FFT(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  ::tensorflow::Output output;
-};
-
-/// Compute the 2-dimensional discrete Fourier Transform over the inner-most
-///
-/// 2 dimensions of `input`.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: A complex64 tensor.
-///
-/// Returns:
-/// * `Output`: A complex64 tensor of the same shape as `input`. The inner-most 2
-///   dimensions of `input` are replaced with their 2D Fourier Transform.
-///
-/// @compatibility(numpy)
-/// Equivalent to np.fft2
-/// @end_compatibility
-class FFT2D {
- public:
-  FFT2D(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  ::tensorflow::Output output;
-};
-
-/// Compute the 3-dimensional discrete Fourier Transform over the inner-most 3
-///
-/// dimensions of `input`.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: A complex64 tensor.
-///
-/// Returns:
-/// * `Output`: A complex64 tensor of the same shape as `input`. The inner-most 3
-///   dimensions of `input` are replaced with their 3D Fourier Transform.
-///
-/// @compatibility(numpy)
-/// Equivalent to np.fft3
-/// @end_compatibility
-class FFT3D {
- public:
-  FFT3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  ::tensorflow::Output output;
-};
-
 /// Returns element-wise largest integer not greater than x.
 ///
 /// Arguments:
@@ -1017,77 +1013,6 @@ class GreaterEqual {
   ::tensorflow::Node* node() const { return z.node(); }
 
   ::tensorflow::Output z;
-};
-
-/// Compute the inverse 1-dimensional discrete Fourier Transform over the inner-most
-///
-/// dimension of `input`.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: A complex64 tensor.
-///
-/// Returns:
-/// * `Output`: A complex64 tensor of the same shape as `input`. The inner-most
-/// dimension of `input` is replaced with its inverse 1D Fourier Transform.
-class IFFT {
- public:
-  IFFT(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  ::tensorflow::Output output;
-};
-
-/// Compute the inverse 2-dimensional discrete Fourier Transform over the inner-most
-///
-/// 2 dimensions of `input`.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: A complex64 tensor.
-///
-/// Returns:
-/// * `Output`: A complex64 tensor of the same shape as `input`. The inner-most 2
-///   dimensions of `input` are replaced with their inverse 2D Fourier Transform.
-///
-/// @compatibility(numpy)
-/// Equivalent to np.ifft2
-/// @end_compatibility
-class IFFT2D {
- public:
-  IFFT2D(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  ::tensorflow::Output output;
-};
-
-/// Compute the inverse 3-dimensional discrete Fourier Transform over the inner-most
-///
-/// 3 dimensions of `input`.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: A complex64 tensor.
-///
-/// Returns:
-/// * `Output`: A complex64 tensor of the same shape as `input`. The inner-most 3
-///   dimensions of `input` are replaced with their inverse 3D Fourier Transform.
-///
-/// @compatibility(numpy)
-/// Equivalent to np.fft3
-/// @end_compatibility
-class IFFT3D {
- public:
-  IFFT3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  ::tensorflow::Output output;
 };
 
 /// Compute the lower regularized incomplete Gamma function `Q(a, x)`.
@@ -2337,15 +2262,17 @@ class Rsqrt {
 
 /// Computes the maximum along segments of a tensor.
 ///
-/// Read [the section on Segmentation](../../api_docs/python/math_ops.md#segmentation)
-/// for an explanation of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Computes a tensor such that
 /// \\(output_i = \max_j(data_j)\\) where `max` is over `j` such
 /// that `segment_ids[j] == i`.
 ///
+/// If the max is empty for a given segment ID `i`, `output[i] = 0`.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/SegmentMax.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMax.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -2369,17 +2296,18 @@ class SegmentMax {
 
 /// Computes the mean along segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Computes a tensor such that
 /// \\(output_i = \frac{\sum_j data_j}{N}\\) where `mean` is
 /// over `j` such that `segment_ids[j] == i` and `N` is the total number of
 /// values summed.
 ///
+/// If the mean is empty for a given segment ID `i`, `output[i] = 0`.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/SegmentMean.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMean.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -2403,16 +2331,17 @@ class SegmentMean {
 
 /// Computes the minimum along segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Computes a tensor such that
 /// \\(output_i = \min_j(data_j)\\) where `min` is over `j` such
 /// that `segment_ids[j] == i`.
 ///
+/// If the min is empty for a given segment ID `i`, `output[i] = 0`.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/SegmentMin.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMin.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -2436,16 +2365,17 @@ class SegmentMin {
 
 /// Computes the product along segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Computes a tensor such that
 /// \\(output_i = \prod_j data_j\\) where the product is over `j` such
 /// that `segment_ids[j] == i`.
 ///
+/// If the product is empty for a given segment ID `i`, `output[i] = 1`.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/SegmentProd.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentProd.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -2469,15 +2399,17 @@ class SegmentProd {
 
 /// Computes the sum along segments of a tensor.
 ///
-/// Read [the section on Segmentation](../../api_docs/python/math_ops.md#segmentation)
-/// for an explanation of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Computes a tensor such that
 /// \\(output_i = \sum_j data_j\\) where sum is over `j` such
 /// that `segment_ids[j] == i`.
 ///
+/// If the sum is empty for a given segment ID `i`, `output[i] = 0`.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/SegmentSum.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentSum.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -2693,9 +2625,8 @@ class SparseMatMul {
 
 /// Computes the mean along sparse segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Like `SegmentMean`, but `segment_ids` can have rank less than `data`'s first
 /// dimension, selecting a subset of dimension 0, specified by `indices`.
@@ -2749,9 +2680,8 @@ class SparseSegmentMeanGrad {
 ///
 /// N is the size of the segment being reduced.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -2801,9 +2731,8 @@ class SparseSegmentSqrtNGrad {
 
 /// Computes the sum along sparse segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Like `SegmentSum`, but `segment_ids` can have rank less than `data`'s first
 /// dimension, selecting a subset of dimension 0, specified by `indices`.
@@ -3071,11 +3000,10 @@ class TruncateMod {
 
 /// Computes the Max along segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
-/// This operator is similar to the [unsorted segment sum operator](../../api_docs/python/math_ops.md#UnsortedSegmentSum).
+/// This operator is similar to the [unsorted segment sum operator](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
 /// Instead of computing the sum over segments, it computes the maximum
 /// such that:
 ///
@@ -3086,7 +3014,7 @@ class TruncateMod {
 ///  `output[i] = numeric_limits<T>::min()`.
 ///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/UnsortedSegmentSum.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentSum.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -3111,9 +3039,8 @@ class UnsortedSegmentMax {
 
 /// Computes the sum along segments of a tensor.
 ///
-/// Read [the section on
-/// Segmentation](../../api_docs/python/math_ops.md#segmentation) for an explanation
-/// of segments.
+/// Read @{$math_ops#segmentation$the section on segmentation} for an explanation of
+/// segments.
 ///
 /// Computes a tensor such that
 /// `(output[i] = sum_{j...} data[j...]` where the sum is over tuples `j...` such
@@ -3126,7 +3053,7 @@ class UnsortedSegmentMax {
 /// `num_segments` should equal the number of distinct segment IDs.
 ///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/UnsortedSegmentSum.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentSum.png" alt>
 /// </div>
 ///
 /// Arguments:

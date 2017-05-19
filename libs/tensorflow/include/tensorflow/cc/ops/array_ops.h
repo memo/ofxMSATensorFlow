@@ -354,288 +354,6 @@ class Concat {
   ::tensorflow::Output output;
 };
 
-/// Copy Op.
-///
-/// Performs CPU-to-CPU or GPU-to-GPU deep-copying of tensor, depending on the
-/// device on which the tensor is allocated.
-///
-/// Unlike the CopyHost Op, this op does not have HostMemory constraint on its
-/// input or output.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: Input tensor.
-///
-/// Optional attributes (see `Attrs`):
-/// * tensor_name: The name of the input tensor.
-///
-/// Returns:
-/// * `Output`: Output tensor, deep-copied from input.
-class Copy {
- public:
-  /// Optional attribute setters for Copy
-  struct Attrs {
-    /// The name of the input tensor.
-    ///
-    /// Defaults to ""
-    Attrs TensorName(StringPiece x) {
-      Attrs ret = *this;
-      ret.tensor_name_ = x;
-      return ret;
-    }
-
-    StringPiece tensor_name_ = "";
-  };
-  Copy(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  Copy(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
-     Copy::Attrs& attrs);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  static Attrs TensorName(StringPiece x) {
-    return Attrs().TensorName(x);
-  }
-
-  ::tensorflow::Output output;
-};
-
-/// Copy Host Op.
-///
-/// Performs CPU-to-CPU deep-copying of tensor.
-///
-/// Unlike the Copy Op, this op has HostMemory constraint on its input or output.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: Input tensor.
-///
-/// Optional attributes (see `Attrs`):
-/// * tensor_name: The name of the input tensor.
-///
-/// Returns:
-/// * `Output`: Output tensor, deep-copied from input.
-class CopyHost {
- public:
-  /// Optional attribute setters for CopyHost
-  struct Attrs {
-    /// The name of the input tensor.
-    ///
-    /// Defaults to ""
-    Attrs TensorName(StringPiece x) {
-      Attrs ret = *this;
-      ret.tensor_name_ = x;
-      return ret;
-    }
-
-    StringPiece tensor_name_ = "";
-  };
-  CopyHost(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  CopyHost(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
-         CopyHost::Attrs& attrs);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  static Attrs TensorName(StringPiece x) {
-    return Attrs().TensorName(x);
-  }
-
-  ::tensorflow::Output output;
-};
-
-/// Debug Identity Op.
-///
-/// Provides an identity mapping of the non-Ref type input tensor for debugging.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: Input tensor, non-Reference type.
-///
-/// Optional attributes (see `Attrs`):
-/// * tensor_name: Name of the input tensor.
-/// * debug_urls: List of URLs to debug targets, e.g.,
-/// file:///foo/tfdbg_dump, grpc:://localhost:11011
-///
-/// Returns:
-/// * `Output`: Output tensor that equals the input tensor.
-class DebugIdentity {
- public:
-  /// Optional attribute setters for DebugIdentity
-  struct Attrs {
-    /// Name of the input tensor.
-    ///
-    /// Defaults to ""
-    Attrs TensorName(StringPiece x) {
-      Attrs ret = *this;
-      ret.tensor_name_ = x;
-      return ret;
-    }
-
-    /// List of URLs to debug targets, e.g.,
-    /// file:///foo/tfdbg_dump, grpc:://localhost:11011
-    ///
-    /// Defaults to []
-    Attrs DebugUrls(const gtl::ArraySlice<string>& x) {
-      Attrs ret = *this;
-      ret.debug_urls_ = x;
-      return ret;
-    }
-
-    StringPiece tensor_name_ = "";
-    gtl::ArraySlice<string> debug_urls_ = {};
-  };
-  DebugIdentity(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  DebugIdentity(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
-              const DebugIdentity::Attrs& attrs);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  static Attrs TensorName(StringPiece x) {
-    return Attrs().TensorName(x);
-  }
-  static Attrs DebugUrls(const gtl::ArraySlice<string>& x) {
-    return Attrs().DebugUrls(x);
-  }
-
-  ::tensorflow::Output output;
-};
-
-/// Debug NaN Value Counter Op
-///
-/// Counts number of NaNs in the input tensor, for debugging.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: Input tensor, non-Reference type.
-///
-/// Optional attributes (see `Attrs`):
-/// * tensor_name: Name of the input tensor.
-/// * debug_urls: List of URLs to debug targets, e.g.,
-/// file:///foo/tfdbg_dump, grpc:://localhost:11011
-///
-/// Returns:
-/// * `Output`: An integer output tensor that is the number of NaNs in the input.
-class DebugNanCount {
- public:
-  /// Optional attribute setters for DebugNanCount
-  struct Attrs {
-    /// Name of the input tensor.
-    ///
-    /// Defaults to ""
-    Attrs TensorName(StringPiece x) {
-      Attrs ret = *this;
-      ret.tensor_name_ = x;
-      return ret;
-    }
-
-    /// List of URLs to debug targets, e.g.,
-    /// file:///foo/tfdbg_dump, grpc:://localhost:11011
-    ///
-    /// Defaults to []
-    Attrs DebugUrls(const gtl::ArraySlice<string>& x) {
-      Attrs ret = *this;
-      ret.debug_urls_ = x;
-      return ret;
-    }
-
-    StringPiece tensor_name_ = "";
-    gtl::ArraySlice<string> debug_urls_ = {};
-  };
-  DebugNanCount(const ::tensorflow::Scope& scope, ::tensorflow::Input input);
-  DebugNanCount(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
-              const DebugNanCount::Attrs& attrs);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  static Attrs TensorName(StringPiece x) {
-    return Attrs().TensorName(x);
-  }
-  static Attrs DebugUrls(const gtl::ArraySlice<string>& x) {
-    return Attrs().DebugUrls(x);
-  }
-
-  ::tensorflow::Output output;
-};
-
-/// Debug Numeric Summary Op.
-///
-/// Provide a basic summary of numeric value types, range and distribution.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * input: Input tensor, non-Reference type, float or double.
-///
-/// Optional attributes (see `Attrs`):
-/// * tensor_name: Name of the input tensor.
-/// * debug_urls: List of URLs to debug targets, e.g.,
-/// file:///foo/tfdbg_dump, grpc:://localhost:11011
-///
-/// Returns:
-/// * `Output`: A double tensor of shape [12], the elements of which are:
-///   [0]: is initialized (1.0) or not (0.0).
-///   [1]: total number of elements
-///   [2]: -inf count
-///   [3]: negative element count (excluding -inf)
-///   [4]: zero element count
-///   [5]: positive element count (excluding +inf)
-///   [6]: +inf element count
-///   [7]: NaN element count
-/// Output elements [1:8] are all zero, if the tensor is uninitialized.
-///   [8]: minimum of all non-inf and non-NaN elements.
-///        If uninitialized or no such element exists: +inf.
-///   [9]: maximum of all non-inf and non-NaN elements.
-///        If uninitialized or no such element exists: -inf.
-///   [10]: mean of all non-inf and non-NaN elements.
-///         If uninitialized or no such element exists: NaN.
-///   [11]: variance of all non-inf and non-NaN elements.
-///         If uninitialized or no such element exists: NaN.
-class DebugNumericSummary {
- public:
-  /// Optional attribute setters for DebugNumericSummary
-  struct Attrs {
-    /// Name of the input tensor.
-    ///
-    /// Defaults to ""
-    Attrs TensorName(StringPiece x) {
-      Attrs ret = *this;
-      ret.tensor_name_ = x;
-      return ret;
-    }
-
-    /// List of URLs to debug targets, e.g.,
-    /// file:///foo/tfdbg_dump, grpc:://localhost:11011
-    ///
-    /// Defaults to []
-    Attrs DebugUrls(const gtl::ArraySlice<string>& x) {
-      Attrs ret = *this;
-      ret.debug_urls_ = x;
-      return ret;
-    }
-
-    StringPiece tensor_name_ = "";
-    gtl::ArraySlice<string> debug_urls_ = {};
-  };
-  DebugNumericSummary(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                    input);
-  DebugNumericSummary(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                    input, const DebugNumericSummary::Attrs& attrs);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  static Attrs TensorName(StringPiece x) {
-    return Attrs().TensorName(x);
-  }
-  static Attrs DebugUrls(const gtl::ArraySlice<string>& x) {
-    return Attrs().DebugUrls(x);
-  }
-
-  ::tensorflow::Output output;
-};
-
 /// DepthToSpace for tensors of type T.
 ///
 /// Rearranges data from depth into blocks of spatial data.
@@ -2275,6 +1993,87 @@ class PreventGradient {
 
   static Attrs Message(StringPiece x) {
     return Attrs().Message(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Use QuantizeAndDequantizeV2 instead.
+/// DEPRECATED at GraphDef version 22:
+/// Replaced by QuantizeAndDequantizeV2.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The output tensor.
+class QuantizeAndDequantize {
+ public:
+  /// Optional attribute setters for QuantizeAndDequantize
+  struct Attrs {
+    /// Defaults to true
+    Attrs SignedInput(bool x) {
+      Attrs ret = *this;
+      ret.signed_input_ = x;
+      return ret;
+    }
+
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Defaults to false
+    Attrs RangeGiven(bool x) {
+      Attrs ret = *this;
+      ret.range_given_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs InputMin(float x) {
+      Attrs ret = *this;
+      ret.input_min_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs InputMax(float x) {
+      Attrs ret = *this;
+      ret.input_max_ = x;
+      return ret;
+    }
+
+    bool signed_input_ = true;
+    int64 num_bits_ = 8;
+    bool range_given_ = false;
+    float input_min_ = 0.0f;
+    float input_max_ = 0.0f;
+  };
+  QuantizeAndDequantize(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input);
+  QuantizeAndDequantize(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input, const QuantizeAndDequantize::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs SignedInput(bool x) {
+    return Attrs().SignedInput(x);
+  }
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs RangeGiven(bool x) {
+    return Attrs().RangeGiven(x);
+  }
+  static Attrs InputMin(float x) {
+    return Attrs().InputMin(x);
+  }
+  static Attrs InputMax(float x) {
+    return Attrs().InputMax(x);
   }
 
   ::tensorflow::Output output;

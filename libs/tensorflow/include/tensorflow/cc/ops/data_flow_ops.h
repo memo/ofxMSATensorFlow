@@ -710,6 +710,24 @@ class FIFOQueue {
   ::tensorflow::Output handle;
 };
 
+/// DEPRECATED at GraphDef version 23:
+/// Use GetSessionHandleV2.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The handle tensor.
+class GetSessionHandle {
+ public:
+  GetSessionHandle(const ::tensorflow::Scope& scope, ::tensorflow::Input value);
+  operator ::tensorflow::Output() const { return handle; }
+  operator ::tensorflow::Input() const { return handle; }
+  ::tensorflow::Node* node() const { return handle.node(); }
+
+  ::tensorflow::Output handle;
+};
+
 /// Store the input tensor in the state of the current session.
 ///
 /// Arguments:
@@ -717,10 +735,11 @@ class FIFOQueue {
 /// * value: The tensor to be stored.
 ///
 /// Returns:
-/// * `Output`: The handle for the tensor stored in the session state.
-class GetSessionHandle {
+/// * `Output`: The handle for the tensor stored in the session state, represented
+/// as a ResourceHandle object.
+class GetSessionHandleV2 {
  public:
-  GetSessionHandle(const ::tensorflow::Scope& scope, ::tensorflow::Input value);
+  GetSessionHandleV2(const ::tensorflow::Scope& scope, ::tensorflow::Input value);
   operator ::tensorflow::Output() const { return handle; }
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }

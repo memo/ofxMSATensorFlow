@@ -288,10 +288,16 @@ class KernelDef : public ::google::protobuf::Message /* @@protoc_insertion_point
   const ::std::string& host_memory_arg(int index) const;
   ::std::string* mutable_host_memory_arg(int index);
   void set_host_memory_arg(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_host_memory_arg(int index, ::std::string&& value);
+  #endif
   void set_host_memory_arg(int index, const char* value);
   void set_host_memory_arg(int index, const char* value, size_t size);
   ::std::string* add_host_memory_arg();
   void add_host_memory_arg(const ::std::string& value);
+  #if LANG_CXX11
+  void add_host_memory_arg(::std::string&& value);
+  #endif
   void add_host_memory_arg(const char* value);
   void add_host_memory_arg(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& host_memory_arg() const;
@@ -662,6 +668,12 @@ inline void KernelDef::set_host_memory_arg(int index, const ::std::string& value
   // @@protoc_insertion_point(field_set:tensorflow.KernelDef.host_memory_arg)
   host_memory_arg_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void KernelDef::set_host_memory_arg(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.KernelDef.host_memory_arg)
+  host_memory_arg_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void KernelDef::set_host_memory_arg(int index, const char* value) {
   host_memory_arg_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.KernelDef.host_memory_arg)
@@ -679,6 +691,12 @@ inline void KernelDef::add_host_memory_arg(const ::std::string& value) {
   host_memory_arg_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.KernelDef.host_memory_arg)
 }
+#if LANG_CXX11
+inline void KernelDef::add_host_memory_arg(::std::string&& value) {
+  host_memory_arg_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.KernelDef.host_memory_arg)
+}
+#endif
 inline void KernelDef::add_host_memory_arg(const char* value) {
   host_memory_arg_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.KernelDef.host_memory_arg)

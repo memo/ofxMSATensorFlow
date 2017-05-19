@@ -196,10 +196,16 @@ class TensorProto : public ::google::protobuf::Message /* @@protoc_insertion_poi
   const ::std::string& string_val(int index) const;
   ::std::string* mutable_string_val(int index);
   void set_string_val(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_string_val(int index, ::std::string&& value);
+  #endif
   void set_string_val(int index, const char* value);
   void set_string_val(int index, const void* value, size_t size);
   ::std::string* add_string_val();
   void add_string_val(const ::std::string& value);
+  #if LANG_CXX11
+  void add_string_val(::std::string&& value);
+  #endif
   void add_string_val(const char* value);
   void add_string_val(const void* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& string_val() const;
@@ -631,6 +637,12 @@ inline void TensorProto::set_string_val(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:tensorflow.TensorProto.string_val)
   string_val_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void TensorProto::set_string_val(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.TensorProto.string_val)
+  string_val_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void TensorProto::set_string_val(int index, const char* value) {
   string_val_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.TensorProto.string_val)
@@ -648,6 +660,12 @@ inline void TensorProto::add_string_val(const ::std::string& value) {
   string_val_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.TensorProto.string_val)
 }
+#if LANG_CXX11
+inline void TensorProto::add_string_val(::std::string&& value) {
+  string_val_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.TensorProto.string_val)
+}
+#endif
 inline void TensorProto::add_string_val(const char* value) {
   string_val_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.TensorProto.string_val)

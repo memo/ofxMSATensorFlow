@@ -29,6 +29,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
+#include "tensorflow/core/framework/types.pb.h"
 // @@protoc_insertion_point(includes)
 namespace tensorflow {
 class GraphTransferInfo;
@@ -479,6 +480,12 @@ class GraphTransferInfo_ConstNodeInfo : public ::google::protobuf::Message /* @@
   ::google::protobuf::int32 node_id() const;
   void set_node_id(::google::protobuf::int32 value);
 
+  // .tensorflow.DataType dtype = 5;
+  void clear_dtype();
+  static const int kDtypeFieldNumber = 5;
+  ::tensorflow::DataType dtype() const;
+  void set_dtype(::tensorflow::DataType value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.GraphTransferInfo.ConstNodeInfo)
  private:
 
@@ -491,6 +498,7 @@ class GraphTransferInfo_ConstNodeInfo : public ::google::protobuf::Message /* @@
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr data_;
   ::google::protobuf::int32 node_id_;
+  int dtype_;
   mutable int _cached_size_;
   friend struct  protobuf_tensorflow_2fcore_2fframework_2fgraph_5ftransfer_5finfo_2eproto::TableStruct;
 };
@@ -824,6 +832,12 @@ class GraphTransferInfo_GraphInputNodeInfo : public ::google::protobuf::Message 
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
+  // .tensorflow.DataType dtype = 3;
+  void clear_dtype();
+  static const int kDtypeFieldNumber = 3;
+  ::tensorflow::DataType dtype() const;
+  void set_dtype(::tensorflow::DataType value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.GraphTransferInfo.GraphInputNodeInfo)
  private:
 
@@ -834,6 +848,7 @@ class GraphTransferInfo_GraphInputNodeInfo : public ::google::protobuf::Message 
   ::google::protobuf::RepeatedField< ::google::protobuf::int64 > shape_;
   mutable int _shape_cached_byte_size_;
   ::google::protobuf::internal::ArenaStringPtr name_;
+  int dtype_;
   mutable int _cached_size_;
   friend struct  protobuf_tensorflow_2fcore_2fframework_2fgraph_5ftransfer_5finfo_2eproto::TableStruct;
 };
@@ -944,6 +959,12 @@ class GraphTransferInfo_GraphOutputNodeInfo : public ::google::protobuf::Message
   void unsafe_arena_set_allocated_name(
       ::std::string* name);
 
+  // .tensorflow.DataType dtype = 3;
+  void clear_dtype();
+  static const int kDtypeFieldNumber = 3;
+  ::tensorflow::DataType dtype() const;
+  void set_dtype(::tensorflow::DataType value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.GraphTransferInfo.GraphOutputNodeInfo)
  private:
 
@@ -954,6 +975,7 @@ class GraphTransferInfo_GraphOutputNodeInfo : public ::google::protobuf::Message
   ::google::protobuf::RepeatedField< ::google::protobuf::int64 > shape_;
   mutable int _shape_cached_byte_size_;
   ::google::protobuf::internal::ArenaStringPtr name_;
+  int dtype_;
   mutable int _cached_size_;
   friend struct  protobuf_tensorflow_2fcore_2fframework_2fgraph_5ftransfer_5finfo_2eproto::TableStruct;
 };
@@ -1589,6 +1611,20 @@ inline void GraphTransferInfo_ConstNodeInfo::unsafe_arena_set_allocated_data(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensorflow.GraphTransferInfo.ConstNodeInfo.data)
 }
 
+// .tensorflow.DataType dtype = 5;
+inline void GraphTransferInfo_ConstNodeInfo::clear_dtype() {
+  dtype_ = 0;
+}
+inline ::tensorflow::DataType GraphTransferInfo_ConstNodeInfo::dtype() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphTransferInfo.ConstNodeInfo.dtype)
+  return static_cast< ::tensorflow::DataType >(dtype_);
+}
+inline void GraphTransferInfo_ConstNodeInfo::set_dtype(::tensorflow::DataType value) {
+  
+  dtype_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.GraphTransferInfo.ConstNodeInfo.dtype)
+}
+
 // -------------------------------------------------------------------
 
 // GraphTransferInfo_NodeInputInfo
@@ -1785,6 +1821,20 @@ GraphTransferInfo_GraphInputNodeInfo::mutable_shape() {
   return &shape_;
 }
 
+// .tensorflow.DataType dtype = 3;
+inline void GraphTransferInfo_GraphInputNodeInfo::clear_dtype() {
+  dtype_ = 0;
+}
+inline ::tensorflow::DataType GraphTransferInfo_GraphInputNodeInfo::dtype() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphTransferInfo.GraphInputNodeInfo.dtype)
+  return static_cast< ::tensorflow::DataType >(dtype_);
+}
+inline void GraphTransferInfo_GraphInputNodeInfo::set_dtype(::tensorflow::DataType value) {
+  
+  dtype_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.GraphTransferInfo.GraphInputNodeInfo.dtype)
+}
+
 // -------------------------------------------------------------------
 
 // GraphTransferInfo_GraphOutputNodeInfo
@@ -1883,6 +1933,20 @@ inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
 GraphTransferInfo_GraphOutputNodeInfo::mutable_shape() {
   // @@protoc_insertion_point(field_mutable_list:tensorflow.GraphTransferInfo.GraphOutputNodeInfo.shape)
   return &shape_;
+}
+
+// .tensorflow.DataType dtype = 3;
+inline void GraphTransferInfo_GraphOutputNodeInfo::clear_dtype() {
+  dtype_ = 0;
+}
+inline ::tensorflow::DataType GraphTransferInfo_GraphOutputNodeInfo::dtype() const {
+  // @@protoc_insertion_point(field_get:tensorflow.GraphTransferInfo.GraphOutputNodeInfo.dtype)
+  return static_cast< ::tensorflow::DataType >(dtype_);
+}
+inline void GraphTransferInfo_GraphOutputNodeInfo::set_dtype(::tensorflow::DataType value) {
+  
+  dtype_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.GraphTransferInfo.GraphOutputNodeInfo.dtype)
 }
 
 // -------------------------------------------------------------------

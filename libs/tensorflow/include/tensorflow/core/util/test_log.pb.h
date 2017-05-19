@@ -29,6 +29,7 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_field_inl.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/any.pb.h>
 // @@protoc_insertion_point(includes)
@@ -94,6 +95,29 @@ void AddDescriptors();
 void InitDefaults();
 }  // namespace protobuf_tensorflow_2fcore_2futil_2ftest_5flog_2eproto
 
+enum TestResults_BenchmarkType {
+  TestResults_BenchmarkType_UNKNOWN = 0,
+  TestResults_BenchmarkType_CPP_MICROBENCHMARK = 1,
+  TestResults_BenchmarkType_PYTHON_BENCHMARK = 2,
+  TestResults_BenchmarkType_ANDROID_BENCHMARK = 3,
+  TestResults_BenchmarkType_TestResults_BenchmarkType_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
+  TestResults_BenchmarkType_TestResults_BenchmarkType_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
+};
+bool TestResults_BenchmarkType_IsValid(int value);
+const TestResults_BenchmarkType TestResults_BenchmarkType_BenchmarkType_MIN = TestResults_BenchmarkType_UNKNOWN;
+const TestResults_BenchmarkType TestResults_BenchmarkType_BenchmarkType_MAX = TestResults_BenchmarkType_ANDROID_BENCHMARK;
+const int TestResults_BenchmarkType_BenchmarkType_ARRAYSIZE = TestResults_BenchmarkType_BenchmarkType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* TestResults_BenchmarkType_descriptor();
+inline const ::std::string& TestResults_BenchmarkType_Name(TestResults_BenchmarkType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    TestResults_BenchmarkType_descriptor(), value);
+}
+inline bool TestResults_BenchmarkType_Parse(
+    const ::std::string& name, TestResults_BenchmarkType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<TestResults_BenchmarkType>(
+    TestResults_BenchmarkType_descriptor(), name, value);
+}
 // ===================================================================
 
 class EntryValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:tensorflow.EntryValue) */ {
@@ -581,10 +605,16 @@ class BuildConfiguration : public ::google::protobuf::Message /* @@protoc_insert
   const ::std::string& cc_flags(int index) const;
   ::std::string* mutable_cc_flags(int index);
   void set_cc_flags(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_cc_flags(int index, ::std::string&& value);
+  #endif
   void set_cc_flags(int index, const char* value);
   void set_cc_flags(int index, const char* value, size_t size);
   ::std::string* add_cc_flags();
   void add_cc_flags(const ::std::string& value);
+  #if LANG_CXX11
+  void add_cc_flags(::std::string&& value);
+  #endif
   void add_cc_flags(const char* value);
   void add_cc_flags(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& cc_flags() const;
@@ -597,10 +627,16 @@ class BuildConfiguration : public ::google::protobuf::Message /* @@protoc_insert
   const ::std::string& opts(int index) const;
   ::std::string* mutable_opts(int index);
   void set_opts(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_opts(int index, ::std::string&& value);
+  #endif
   void set_opts(int index, const char* value);
   void set_opts(int index, const char* value, size_t size);
   ::std::string* add_opts();
   void add_opts(const ::std::string& value);
+  #if LANG_CXX11
+  void add_opts(::std::string&& value);
+  #endif
   void add_opts(const char* value);
   void add_opts(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& opts() const;
@@ -1808,10 +1844,16 @@ class RunConfiguration : public ::google::protobuf::Message /* @@protoc_insertio
   const ::std::string& argument(int index) const;
   ::std::string* mutable_argument(int index);
   void set_argument(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_argument(int index, ::std::string&& value);
+  #endif
   void set_argument(int index, const char* value);
   void set_argument(int index, const char* value, size_t size);
   ::std::string* add_argument();
   void add_argument(const ::std::string& value);
+  #if LANG_CXX11
+  void add_argument(::std::string&& value);
+  #endif
   void add_argument(const char* value);
   void add_argument(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& argument() const;
@@ -1906,6 +1948,36 @@ class TestResults : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
 
   // nested types ----------------------------------------------------
+
+  typedef TestResults_BenchmarkType BenchmarkType;
+  static const BenchmarkType UNKNOWN =
+    TestResults_BenchmarkType_UNKNOWN;
+  static const BenchmarkType CPP_MICROBENCHMARK =
+    TestResults_BenchmarkType_CPP_MICROBENCHMARK;
+  static const BenchmarkType PYTHON_BENCHMARK =
+    TestResults_BenchmarkType_PYTHON_BENCHMARK;
+  static const BenchmarkType ANDROID_BENCHMARK =
+    TestResults_BenchmarkType_ANDROID_BENCHMARK;
+  static inline bool BenchmarkType_IsValid(int value) {
+    return TestResults_BenchmarkType_IsValid(value);
+  }
+  static const BenchmarkType BenchmarkType_MIN =
+    TestResults_BenchmarkType_BenchmarkType_MIN;
+  static const BenchmarkType BenchmarkType_MAX =
+    TestResults_BenchmarkType_BenchmarkType_MAX;
+  static const int BenchmarkType_ARRAYSIZE =
+    TestResults_BenchmarkType_BenchmarkType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  BenchmarkType_descriptor() {
+    return TestResults_BenchmarkType_descriptor();
+  }
+  static inline const ::std::string& BenchmarkType_Name(BenchmarkType value) {
+    return TestResults_BenchmarkType_Name(value);
+  }
+  static inline bool BenchmarkType_Parse(const ::std::string& name,
+      BenchmarkType* value) {
+    return TestResults_BenchmarkType_Parse(name, value);
+  }
 
   // accessors -------------------------------------------------------
 
@@ -2039,6 +2111,12 @@ class TestResults : public ::google::protobuf::Message /* @@protoc_insertion_poi
   double run_time() const;
   void set_run_time(double value);
 
+  // .tensorflow.TestResults.BenchmarkType benchmark_type = 10;
+  void clear_benchmark_type();
+  static const int kBenchmarkTypeFieldNumber = 10;
+  ::tensorflow::TestResults_BenchmarkType benchmark_type() const;
+  void set_benchmark_type(::tensorflow::TestResults_BenchmarkType value);
+
   // @@protoc_insertion_point(class_scope:tensorflow.TestResults)
  private:
 
@@ -2055,6 +2133,7 @@ class TestResults : public ::google::protobuf::Message /* @@protoc_insertion_poi
   ::tensorflow::RunConfiguration* run_configuration_;
   ::google::protobuf::int64 start_time_;
   double run_time_;
+  int benchmark_type_;
   mutable int _cached_size_;
   friend struct  protobuf_tensorflow_2fcore_2futil_2ftest_5flog_2eproto::TableStruct;
 };
@@ -2482,6 +2561,12 @@ inline void BuildConfiguration::set_cc_flags(int index, const ::std::string& val
   // @@protoc_insertion_point(field_set:tensorflow.BuildConfiguration.cc_flags)
   cc_flags_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void BuildConfiguration::set_cc_flags(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.BuildConfiguration.cc_flags)
+  cc_flags_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void BuildConfiguration::set_cc_flags(int index, const char* value) {
   cc_flags_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.BuildConfiguration.cc_flags)
@@ -2499,6 +2584,12 @@ inline void BuildConfiguration::add_cc_flags(const ::std::string& value) {
   cc_flags_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.BuildConfiguration.cc_flags)
 }
+#if LANG_CXX11
+inline void BuildConfiguration::add_cc_flags(::std::string&& value) {
+  cc_flags_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.BuildConfiguration.cc_flags)
+}
+#endif
 inline void BuildConfiguration::add_cc_flags(const char* value) {
   cc_flags_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.BuildConfiguration.cc_flags)
@@ -2537,6 +2628,12 @@ inline void BuildConfiguration::set_opts(int index, const ::std::string& value) 
   // @@protoc_insertion_point(field_set:tensorflow.BuildConfiguration.opts)
   opts_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void BuildConfiguration::set_opts(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.BuildConfiguration.opts)
+  opts_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void BuildConfiguration::set_opts(int index, const char* value) {
   opts_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.BuildConfiguration.opts)
@@ -2554,6 +2651,12 @@ inline void BuildConfiguration::add_opts(const ::std::string& value) {
   opts_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.BuildConfiguration.opts)
 }
+#if LANG_CXX11
+inline void BuildConfiguration::add_opts(::std::string&& value) {
+  opts_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.BuildConfiguration.opts)
+}
+#endif
 inline void BuildConfiguration::add_opts(const char* value) {
   opts_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.BuildConfiguration.opts)
@@ -4204,6 +4307,12 @@ inline void RunConfiguration::set_argument(int index, const ::std::string& value
   // @@protoc_insertion_point(field_set:tensorflow.RunConfiguration.argument)
   argument_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void RunConfiguration::set_argument(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:tensorflow.RunConfiguration.argument)
+  argument_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void RunConfiguration::set_argument(int index, const char* value) {
   argument_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:tensorflow.RunConfiguration.argument)
@@ -4221,6 +4330,12 @@ inline void RunConfiguration::add_argument(const ::std::string& value) {
   argument_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:tensorflow.RunConfiguration.argument)
 }
+#if LANG_CXX11
+inline void RunConfiguration::add_argument(::std::string&& value) {
+  argument_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:tensorflow.RunConfiguration.argument)
+}
+#endif
 inline void RunConfiguration::add_argument(const char* value) {
   argument_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:tensorflow.RunConfiguration.argument)
@@ -4649,6 +4764,20 @@ inline void TestResults::unsafe_arena_set_allocated_name(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:tensorflow.TestResults.name)
 }
 
+// .tensorflow.TestResults.BenchmarkType benchmark_type = 10;
+inline void TestResults::clear_benchmark_type() {
+  benchmark_type_ = 0;
+}
+inline ::tensorflow::TestResults_BenchmarkType TestResults::benchmark_type() const {
+  // @@protoc_insertion_point(field_get:tensorflow.TestResults.benchmark_type)
+  return static_cast< ::tensorflow::TestResults_BenchmarkType >(benchmark_type_);
+}
+inline void TestResults::set_benchmark_type(::tensorflow::TestResults_BenchmarkType value) {
+  
+  benchmark_type_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.TestResults.benchmark_type)
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
@@ -4683,6 +4812,20 @@ inline void TestResults::unsafe_arena_set_allocated_name(
 
 
 }  // namespace tensorflow
+
+#ifndef SWIG
+namespace google {
+namespace protobuf {
+
+template <> struct is_proto_enum< ::tensorflow::TestResults_BenchmarkType> : ::google::protobuf::internal::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::tensorflow::TestResults_BenchmarkType>() {
+  return ::tensorflow::TestResults_BenchmarkType_descriptor();
+}
+
+}  // namespace protobuf
+}  // namespace google
+#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

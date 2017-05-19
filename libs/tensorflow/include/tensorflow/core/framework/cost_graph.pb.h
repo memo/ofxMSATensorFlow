@@ -455,11 +455,17 @@ class CostGraphDef_Node : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::int64 temporary_memory_size() const;
   void set_temporary_memory_size(::google::protobuf::int64 value);
 
-  // int64 host_peak_memory_size = 10;
-  void clear_host_peak_memory_size();
-  static const int kHostPeakMemorySizeFieldNumber = 10;
-  ::google::protobuf::int64 host_peak_memory_size() const;
-  void set_host_peak_memory_size(::google::protobuf::int64 value);
+  // int64 host_temp_memory_size = 10;
+  void clear_host_temp_memory_size();
+  static const int kHostTempMemorySizeFieldNumber = 10;
+  ::google::protobuf::int64 host_temp_memory_size() const;
+  void set_host_temp_memory_size(::google::protobuf::int64 value);
+
+  // int64 device_temp_memory_size = 11;
+  void clear_device_temp_memory_size();
+  static const int kDeviceTempMemorySizeFieldNumber = 11;
+  ::google::protobuf::int64 device_temp_memory_size() const;
+  void set_device_temp_memory_size(::google::protobuf::int64 value);
 
   // int32 id = 3;
   void clear_id();
@@ -473,29 +479,35 @@ class CostGraphDef_Node : public ::google::protobuf::Message /* @@protoc_inserti
   bool is_final() const;
   void set_is_final(bool value);
 
-  // int64 device_peak_memory_size = 11;
-  void clear_device_peak_memory_size();
-  static const int kDevicePeakMemorySizeFieldNumber = 11;
-  ::google::protobuf::int64 device_peak_memory_size() const;
-  void set_device_peak_memory_size(::google::protobuf::int64 value);
+  // int64 host_persistent_memory_size = 12;
+  void clear_host_persistent_memory_size();
+  static const int kHostPersistentMemorySizeFieldNumber = 12;
+  ::google::protobuf::int64 host_persistent_memory_size() const;
+  void set_host_persistent_memory_size(::google::protobuf::int64 value);
 
-  // int64 persisted_memory_size = 12;
-  void clear_persisted_memory_size();
-  static const int kPersistedMemorySizeFieldNumber = 12;
-  ::google::protobuf::int64 persisted_memory_size() const;
-  void set_persisted_memory_size(::google::protobuf::int64 value);
-
-  // int64 auxiliary_memory_size = 13;
-  void clear_auxiliary_memory_size();
-  static const int kAuxiliaryMemorySizeFieldNumber = 13;
-  ::google::protobuf::int64 auxiliary_memory_size() const;
-  void set_auxiliary_memory_size(::google::protobuf::int64 value);
+  // int64 device_persistent_memory_size = 16;
+  void clear_device_persistent_memory_size();
+  static const int kDevicePersistentMemorySizeFieldNumber = 16;
+  ::google::protobuf::int64 device_persistent_memory_size() const;
+  void set_device_persistent_memory_size(::google::protobuf::int64 value);
 
   // int64 compute_cost = 9;
   void clear_compute_cost();
   static const int kComputeCostFieldNumber = 9;
   ::google::protobuf::int64 compute_cost() const;
   void set_compute_cost(::google::protobuf::int64 value);
+
+  // int64 compute_time = 14;
+  void clear_compute_time();
+  static const int kComputeTimeFieldNumber = 14;
+  ::google::protobuf::int64 compute_time() const;
+  void set_compute_time(::google::protobuf::int64 value);
+
+  // int64 memory_time = 15;
+  void clear_memory_time();
+  static const int kMemoryTimeFieldNumber = 15;
+  ::google::protobuf::int64 memory_time() const;
+  void set_memory_time(::google::protobuf::int64 value);
 
   // @@protoc_insertion_point(class_scope:tensorflow.CostGraphDef.Node)
  private:
@@ -511,13 +523,15 @@ class CostGraphDef_Node : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr device_;
   ::google::protobuf::int64 temporary_memory_size_;
-  ::google::protobuf::int64 host_peak_memory_size_;
+  ::google::protobuf::int64 host_temp_memory_size_;
+  ::google::protobuf::int64 device_temp_memory_size_;
   ::google::protobuf::int32 id_;
   bool is_final_;
-  ::google::protobuf::int64 device_peak_memory_size_;
-  ::google::protobuf::int64 persisted_memory_size_;
-  ::google::protobuf::int64 auxiliary_memory_size_;
+  ::google::protobuf::int64 host_persistent_memory_size_;
+  ::google::protobuf::int64 device_persistent_memory_size_;
   ::google::protobuf::int64 compute_cost_;
+  ::google::protobuf::int64 compute_time_;
+  ::google::protobuf::int64 memory_time_;
   mutable int _cached_size_;
   friend struct  protobuf_tensorflow_2fcore_2fframework_2fcost_5fgraph_2eproto::TableStruct;
 };
@@ -982,60 +996,60 @@ inline void CostGraphDef_Node::set_temporary_memory_size(::google::protobuf::int
   // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.temporary_memory_size)
 }
 
-// int64 host_peak_memory_size = 10;
-inline void CostGraphDef_Node::clear_host_peak_memory_size() {
-  host_peak_memory_size_ = GOOGLE_LONGLONG(0);
+// int64 host_temp_memory_size = 10;
+inline void CostGraphDef_Node::clear_host_temp_memory_size() {
+  host_temp_memory_size_ = GOOGLE_LONGLONG(0);
 }
-inline ::google::protobuf::int64 CostGraphDef_Node::host_peak_memory_size() const {
-  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.host_peak_memory_size)
-  return host_peak_memory_size_;
+inline ::google::protobuf::int64 CostGraphDef_Node::host_temp_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.host_temp_memory_size)
+  return host_temp_memory_size_;
 }
-inline void CostGraphDef_Node::set_host_peak_memory_size(::google::protobuf::int64 value) {
+inline void CostGraphDef_Node::set_host_temp_memory_size(::google::protobuf::int64 value) {
   
-  host_peak_memory_size_ = value;
-  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.host_peak_memory_size)
+  host_temp_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.host_temp_memory_size)
 }
 
-// int64 device_peak_memory_size = 11;
-inline void CostGraphDef_Node::clear_device_peak_memory_size() {
-  device_peak_memory_size_ = GOOGLE_LONGLONG(0);
+// int64 device_temp_memory_size = 11;
+inline void CostGraphDef_Node::clear_device_temp_memory_size() {
+  device_temp_memory_size_ = GOOGLE_LONGLONG(0);
 }
-inline ::google::protobuf::int64 CostGraphDef_Node::device_peak_memory_size() const {
-  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.device_peak_memory_size)
-  return device_peak_memory_size_;
+inline ::google::protobuf::int64 CostGraphDef_Node::device_temp_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.device_temp_memory_size)
+  return device_temp_memory_size_;
 }
-inline void CostGraphDef_Node::set_device_peak_memory_size(::google::protobuf::int64 value) {
+inline void CostGraphDef_Node::set_device_temp_memory_size(::google::protobuf::int64 value) {
   
-  device_peak_memory_size_ = value;
-  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.device_peak_memory_size)
+  device_temp_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.device_temp_memory_size)
 }
 
-// int64 persisted_memory_size = 12;
-inline void CostGraphDef_Node::clear_persisted_memory_size() {
-  persisted_memory_size_ = GOOGLE_LONGLONG(0);
+// int64 host_persistent_memory_size = 12;
+inline void CostGraphDef_Node::clear_host_persistent_memory_size() {
+  host_persistent_memory_size_ = GOOGLE_LONGLONG(0);
 }
-inline ::google::protobuf::int64 CostGraphDef_Node::persisted_memory_size() const {
-  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.persisted_memory_size)
-  return persisted_memory_size_;
+inline ::google::protobuf::int64 CostGraphDef_Node::host_persistent_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.host_persistent_memory_size)
+  return host_persistent_memory_size_;
 }
-inline void CostGraphDef_Node::set_persisted_memory_size(::google::protobuf::int64 value) {
+inline void CostGraphDef_Node::set_host_persistent_memory_size(::google::protobuf::int64 value) {
   
-  persisted_memory_size_ = value;
-  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.persisted_memory_size)
+  host_persistent_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.host_persistent_memory_size)
 }
 
-// int64 auxiliary_memory_size = 13;
-inline void CostGraphDef_Node::clear_auxiliary_memory_size() {
-  auxiliary_memory_size_ = GOOGLE_LONGLONG(0);
+// int64 device_persistent_memory_size = 16;
+inline void CostGraphDef_Node::clear_device_persistent_memory_size() {
+  device_persistent_memory_size_ = GOOGLE_LONGLONG(0);
 }
-inline ::google::protobuf::int64 CostGraphDef_Node::auxiliary_memory_size() const {
-  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.auxiliary_memory_size)
-  return auxiliary_memory_size_;
+inline ::google::protobuf::int64 CostGraphDef_Node::device_persistent_memory_size() const {
+  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.device_persistent_memory_size)
+  return device_persistent_memory_size_;
 }
-inline void CostGraphDef_Node::set_auxiliary_memory_size(::google::protobuf::int64 value) {
+inline void CostGraphDef_Node::set_device_persistent_memory_size(::google::protobuf::int64 value) {
   
-  auxiliary_memory_size_ = value;
-  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.auxiliary_memory_size)
+  device_persistent_memory_size_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.device_persistent_memory_size)
 }
 
 // int64 compute_cost = 9;
@@ -1050,6 +1064,34 @@ inline void CostGraphDef_Node::set_compute_cost(::google::protobuf::int64 value)
   
   compute_cost_ = value;
   // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.compute_cost)
+}
+
+// int64 compute_time = 14;
+inline void CostGraphDef_Node::clear_compute_time() {
+  compute_time_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 CostGraphDef_Node::compute_time() const {
+  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.compute_time)
+  return compute_time_;
+}
+inline void CostGraphDef_Node::set_compute_time(::google::protobuf::int64 value) {
+  
+  compute_time_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.compute_time)
+}
+
+// int64 memory_time = 15;
+inline void CostGraphDef_Node::clear_memory_time() {
+  memory_time_ = GOOGLE_LONGLONG(0);
+}
+inline ::google::protobuf::int64 CostGraphDef_Node::memory_time() const {
+  // @@protoc_insertion_point(field_get:tensorflow.CostGraphDef.Node.memory_time)
+  return memory_time_;
+}
+inline void CostGraphDef_Node::set_memory_time(::google::protobuf::int64 value) {
+  
+  memory_time_ = value;
+  // @@protoc_insertion_point(field_set:tensorflow.CostGraphDef.Node.memory_time)
 }
 
 // bool is_final = 7;
