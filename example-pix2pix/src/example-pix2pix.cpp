@@ -1,23 +1,18 @@
 /*
-Generative character based Long Short-Term Memory (LSTM) Recurrent Neural Network (RNN) demo,
-ala Karpathy's char-rnn(http://karpathy.github.io/2015/05/21/rnn-effectiveness/)
-and Graves2013(https://arxiv.org/abs/1308.0850).
+pix2pix (Image-to-Image Translation with Conditional Adversarial Nets).
 
-Models are trained and saved in python with this code (https://github.com/memo/char-rnn-tensorflow)
+An accessible explanation can be found [here](https://phillipi.github.io/pix2pix/) and [here](https://affinelayer.com/pix2pix/).
+
+The network basically learns to map from one image to another.
+
+E.g. in the example you draw in the left viewport, and it generates the image in the right viewport.
+
+I'm supplying three pretrained models from the original paper: cityscapes, building facades, and maps.
+
+Models are trained and saved in python with [this code](https://github.com/memo/pix2pix-tensorflow)
+(which is based on [this](https://github.com/affinelayer/pix2pix-tensorflow) tensorflow implementation,
+which is based on the original [torch implementation](https://phillipi.github.io/pix2pix/)),
 and loaded in openframeworks for prediction.
-
-I'm supplying a bunch of pretrained models (bible, cooking, erotic, linux, love songs, shakespeare, trump),
-and while the text is being generated character by character (at 60fps!) you can switch models in realtime mid-sentence or mid-word.
-(Drop more trained models into the folder and they'll be loaded too).
-
-Typing on the keyboard also primes the system, so it'll try and complete based on what you type.
-
-This is a simplified version of what I explain here (https://vimeo.com/203485851), where models can be mixed as well.
-
-Note, all models are trained really quickly with no hyperparameter search or cross validation,
-using default architecture of 2 layer LSTM of size 128 with no dropout or any other regularisation.
-So they're not great. A bit of hyperparameter tuning would give much better results - but note that would be done in python.
-The openframeworks code won't change at all, it'll just load the better model.
  */
 
 #include "ofMain.h"
