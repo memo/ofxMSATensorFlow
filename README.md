@@ -2,11 +2,11 @@
 # ofxMSATensorFlow
 [OpenFrameworks](http://openframeworks.cc) addon for Google's graph based numerical computation, machine intelligence, deep learning library [TensorFlow](https://www.tensorflow.org).
 
-This update includes the newly released **TensorFlow r1.0**, and might have broken backwards compatibility. Sorry about that (tbh tensorflow has been breaking backwards compatibility with every update!). Hopefully from now on the API should be a bit more stable. 
+This update includes the newly released **TensorFlow r1.1**, and might have broken backwards compatibility. Sorry about that (tbh tensorflow has been breaking backwards compatibility with every update!). Hopefully from now on the API should be a bit more stable. 
 
 Tested on **openFrameworks 0.9.8**.
 
-I provide precompiled libraries for **Linux** and **OSX**. For linux there are both **GPU** and **CPU**-only libs, OSX is **CPU**-only (I don't have a Mac with NVidia). I haven't touched Windows yet as building from sources is 'experimental' (and doing Linux and OSX was painful enough).
+I provide precompiled libraries for **Linux** ~~and OSX~~ (OSX still on tf r1.0). For linux there are both **GPU** and **CPU**-only libs, OSX is **CPU**-only. I haven't touched Windows yet as building from sources is 'experimental' (and doing Linux and OSX was painful enough).
 
 You can find instructions and more information in the **[wiki](https://github.com/memo/ofxMSATensorFlow/wiki)**, particularly for **[Getting Started](https://github.com/memo/ofxMSATensorFlow/wiki/Getting-started)**.
 
@@ -14,22 +14,22 @@ You can find instructions and more information in the **[wiki](https://github.co
 
 TensorFlow is written in C/C++ with python bindings, and most of the documentation and examples are for python. This addon wraps the C/C++ backend (and a little bit of the new C++ FrontEnd) with a number of examples. The basic idea is:
 
-1. Build graphs and/or train models in python, Java, C++ or any other language/platform with tensorflow bindings
-2. Save the graphs or trained models to binary files
-3. Load the graphs or trained models in openframeworks, feed them data, manipulate, get results, play, and connect them to the ofUniverse
+1. Build graphs (i.e. 'models') in python, Java, C++ or any other language/platform with tensorflow bindings
+2. Save the trained models to binary files
+3. Load the trained models in openframeworks, feed them data, manipulate, get results, play, and connect them to the ofUniverse
 
 You could potentially do steps 1-2 in openframeworks as well, but the python API is a bit more user-friendly for building graphs and training. 
 
 ---
 ## Examples
-The examples are quite basic. They shouldn't be considered *tensorflow* examples or tutorials, but they mainly just demonstrate loading and manipulating of tensorflow models in openFrameworks. I really need to include more, but do checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info) (both for tensorflow python). **The general pattern is: build and train models in python, and then play with them in openframeworks for prediction / inference**.
+The examples are quite basic. They shouldn't be considered tensorflow examples or tutorials, they mainly just demonstrate loading and manipulating of different types of tensorflow models in openFrameworks. Potentially you could load any pretrained model in openframeworks and manipulate. E.g. checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info). It should be relatively straightforward to export those models and load in openframeworks for prediction / inference.
 
 ---
 
 ### example-pix2pix
 ![example-pix2pix_400x2x](https://cloud.githubusercontent.com/assets/144230/26264408/a4700456-3cd4-11e7-8b2c-632f99acac28.gif)
 
-pix2pix (Image-to-Image Translation with Conditional Adversarial Nets). An accessible explanation is [here](https://phillipi.github.io/pix2pix/). It basically learns to map from one image to another. I'm supplying three pretrained models from the original paper: cityscapes, build facades, and maps. Models are trained and saved in python with [this code](https://github.com/memo/pix2pix-tensorflow), and loaded in openframeworks for prediction. 
+pix2pix (Image-to-Image Translation with Conditional Adversarial Nets). An accessible explanation can be found [here](https://phillipi.github.io/pix2pix/) and [here](https://affinelayer.com/pix2pix/). It basically learns to map from one image to another. E.g. in the example you draw in the left viewport, and it generates the image in the right viewport. I'm supplying three pretrained models from the original paper: cityscapes, building facades, and maps. Models are trained and saved in python with [this code](https://github.com/memo/pix2pix-tensorflow) (which is based on [this](https://github.com/affinelayer/pix2pix-tensorflow) tensorflow implementation, which is based on the original [torch implementation](https://phillipi.github.io/pix2pix/)", and loaded in openframeworks for prediction. 
 
 ---
 
