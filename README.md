@@ -2,7 +2,7 @@
 # ofxMSATensorFlow
 [OpenFrameworks](http://openframeworks.cc) addon for Google's graph based machine intelligence / deep learning library [TensorFlow](https://www.tensorflow.org).
 
-This update includes the newly released **TensorFlow r1.1** and has been tested on **openFrameworks 0.9.8**.
+This update includes the newly released **TensorFlow r1.1** and has been tested with **openFrameworks 0.9.8**.
 
 I provide precompiled libraries for **Linux** and **OSX** (though OSX might lag a little bit behind as I don't have regular access). For linux there are both **GPU** and **CPU**-only libs, while OSX is **CPU**-only. I haven't touched Windows yet as building from sources is 'experimental' (and doing Linux and OSX was painful enough).
 
@@ -12,7 +12,7 @@ You can find instructions and more information in the **[wiki](https://github.co
 
 TensorFlow is written in C/C++ with python bindings, and most of the documentation and examples are for python. This addon wraps the C/C++ backend (and a little bit of the new C++ FrontEnd) with a number of examples. The basic idea is:
 
-1. **Build and train *graphs* ** (i.e. 'networks', 'models') mostly in python (possibly Java, C++ or any other language/platform with tensorflow bindings)
+1. **Build and train graphs** (i.e. 'networks', 'models') mostly in python (possibly Java, C++ or any other language/platform with tensorflow bindings)
 2. **Save the trained models** to binary files
 3. **Load the trained models in openframeworks**, feed them data, manipulate, get results, play, and connect them to the ofUniverse
 
