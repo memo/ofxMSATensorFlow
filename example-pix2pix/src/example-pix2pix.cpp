@@ -348,14 +348,26 @@ public:
 
 
         // display drawing helpers
-        ofSetColor(draw_color);
         ofNoFill();
         switch(draw_mode) {
         case 0:
+            ofSetLineWidth(3);
+            ofSetColor(ofColor::black);
+            ofDrawCircle(ofGetMouseX(), ofGetMouseY(), draw_radius+1);
+
+            ofSetLineWidth(3);
+            ofSetColor(draw_color);
             ofDrawCircle(ofGetMouseX(), ofGetMouseY(), draw_radius);
+
             break;
         case 1:
             if(ofGetMousePressed(0)) {
+                ofSetLineWidth(3);
+                ofSetColor(ofColor::black);
+                ofDrawRectangle(mousePressPos.x-1, mousePressPos.y-1, ofGetMouseX()-mousePressPos.x+3, ofGetMouseY()-mousePressPos.y+3);
+
+                ofSetLineWidth(3);
+                ofSetColor(draw_color);
                 ofDrawRectangle(mousePressPos.x, mousePressPos.y, ofGetMouseX()-mousePressPos.x, ofGetMouseY()-mousePressPos.y);
             }
         }
