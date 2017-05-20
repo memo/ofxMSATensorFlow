@@ -20,7 +20,7 @@ You could potentially do steps 1-2 in openframeworks as well, but the python API
 
 ---
 ## Examples
-The examples are quite basic. They shouldn't be considered tensorflow examples or tutorials, they mainly just demonstrate loading and manipulating of different types of tensorflow models in openFrameworks. Potentially you could load any pretrained model in openframeworks and manipulate. E.g. checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info). It should be relatively straightforward to export those models and load in openframeworks for prediction / inference. There's info in the wiki on [how to do this](https://github.com/memo/ofxMSATensorFlow/wiki/Loading-and-using-trained-tensorflow-models-in-openFrameworks). 
+The examples are quite basic. They shouldn't be considered tensorflow examples or tutorials, they mainly just demonstrate loading and manipulating of different types of tensorflow models in openFrameworks. Potentially you could load any pretrained model in openframeworks and manipulate. E.g. checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info). There's info in the wiki on [how to do export and distribute models](https://github.com/memo/ofxMSATensorFlow/wiki/Loading-and-using-trained-tensorflow-models-in-openFrameworks).
 
 ---
 
