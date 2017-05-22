@@ -17,6 +17,47 @@ template<typename T> int sample_from_prob(std::default_random_engine& rgen, cons
 template<typename T> void zero_probs(vector<T>& p);
 
 
+//--------------------------------------------------------------
+// sample a point from a bivariate gaussian mixture model
+// maths based on http://www.statisticalengineering.com/bivariate_normal.htm
+ofVec2f sample_from_bi_gmm(std::default_random_engine& rng,// random number generator
+                           const vector<float>& o_pi,      // vector of mixture weights
+                           const vector<float>& o_mu1,     // means 1
+                           const vector<float>& o_mu2,     // means 2
+                           const vector<float>& o_sigma1,  // sigmas 1
+                           const vector<float>& o_sigma2,  // sigmas 2
+                           const vector<float>& o_corr     // correlations
+                           );
+
+
+//--------------------------------------------------------------
+// visualise bivariate gaussian distribution as an ellipse
+// rotate unit circle by matrix of normalised eigenvectors and scale by sqrt eigenvalues (tip from @colormotor)
+// eigen decomposition from on http://www.math.harvard.edu/archive/21b_fall_04/exhibits/2dmatrices/index.html
+// also see nice visualisation at http://demonstrations.wolfram.com/TheBivariateNormalDistribution/
+void draw_bi_gaussian(float mu1,     // mean 1
+                      float mu2,     // mean 2
+                      float sigma1,  // sigma 1
+                      float sigma2,  // sigma 2
+                      float rho,     // correlation
+                      float scale=1.0 // arbitrary scale
+        );
+
+//--------------------------------------------------------------
+// visualise bivariate gaussian mixture model
+void draw_bi_gmm(const vector<float>& o_pi,      // vector of mixture weights
+                 const vector<float>& o_mu1,     // means 1
+                 const vector<float>& o_mu2,     // means 2
+                 const vector<float>& o_sigma1,  // sigmas 1
+                 const vector<float>& o_sigma2,  // sigmas 2
+                 const vector<float>& o_corr,    // correlations
+                 const ofVec2f& offset=ofVec2f::zero(),
+                 float draw_scale=1.0,
+                 float gaussian_scale=1.0,
+                 ofColor color_min=ofColor(0, 200, 0, 20),
+                 ofColor color_max=ofColor(0, 200, 0, 100)
+        );
+
 
 // IMPLEMENTATIONS
 
