@@ -20,7 +20,16 @@ You could potentially do steps 1-2 in openframeworks as well, but the python API
 
 ---
 ## Examples
-The examples are quite basic. They shouldn't be considered tensorflow examples or tutorials, they mainly just demonstrate loading and manipulating of different types of tensorflow models in openFrameworks. Potentially you could load any pretrained model in openframeworks and manipulate. E.g. checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info). There's info in the wiki on [how to do export and distribute models](https://github.com/memo/ofxMSATensorFlow/wiki/Loading-and-using-trained-tensorflow-models-in-openFrameworks).
+The examples are quite minimal and shouldn't be considered comprehensive tensorflow tutorials. They demonstrate *loading and manipulating different types of tensorflow models in openFrameworks*. E.g.
+
+* for **image classification** see *example-mnist* or *example-inception3*
+* for **sequence generation of *discrete* data** such as text (with **stateful LSTM/RNN**, where LSTM state is retrieved and passed back in at every time-step) see *example-char-rnn*
+* for **sequence generation of *continuous* data** such as handwriting (with **Recurrent Mixture Density Networks**) see *example-handwriting-rnn*
+* for **image generation** (with **Conditional Generative Adversarial Networks**) see *example-pix2pix*
+* for **constructing graphs in C++** see *example-build-graph*
+* for the **most basic example** of loading a model, feeding it data and fetching the results, see *example-basic*
+
+Potentially you could load any pretrained model in openframeworks and manipulate. E.g. checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info). There's info in the wiki on [how to do export and distribute models](https://github.com/memo/ofxMSATensorFlow/wiki/Loading-and-using-trained-tensorflow-models-in-openFrameworks).
 
 ---
 
