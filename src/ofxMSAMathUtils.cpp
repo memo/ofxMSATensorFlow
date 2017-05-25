@@ -7,9 +7,8 @@ namespace tf {
 // calculate required scale and offset to map a number from range [input_min, input_max] to [output_min, output_max]
 // pass in float variables which will be filled with the right values
 // if scaling a massive array, this might be faster than using ofMap on every element
-// in the case of 'ranges', [input_min, input_max] = [ranges.x, ranges.y], [output_min, output_max] = [ranges.z, ranges.w]
-void calc_scale_offset(const ofVec4f& ranges, float& scale, float &offset) {
-    calc_scale_offset(ranges.x, ranges.y, ranges.z, ranges.w, scale, offset);
+void calc_scale_offset(const ofVec2f& in_range, const ofVec2f& out_range, float& scale, float &offset) {
+    calc_scale_offset(in_range.x, in_range.y, out_range.x, out_range.y, scale, offset);
 }
 
 void calc_scale_offset(float input_min, float input_max, float output_min, float output_max, float& scale, float &offset) {

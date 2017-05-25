@@ -80,41 +80,42 @@ vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap = k_c
 
 
 //--------------------------------------------------------------
-// TENSOR DATA COPY FUNCTIONS
+// TENSOR <--> OF FORMAT CONVERSION FUNCTIONS
+// to convert between ofImage, ofPixels, std::vector <--> tensor
 // src & dest must be of same TYPE otherwise will fail/assert/crash! (e.g. Tensor<float>, ofImage<float>, vector<float>
 // src & dest can be different shapes but must be SAME NUMBER OF ELEMENTS, bounds checking is not done, will crash if src is larger than dest
 // do_memcpy is very fast, but could be dangerous due to alignment issues?
-// optional 'ranges' parameter maps values while copying from range (x,y) to (z,w). NOTE: ONLY WHEN do_memcpy is false!!
+// optional 'in_range, out_range' parameterx maps values while copying from range in_range(x,y) to out_range(x,y). NOTE: ONLY WHEN do_memcpy is false!!
 // (PS using explicit function names, because I find it more readable and less bug prone)
 
 
 // flatten tensor and copy into 1D std::vector. vector will be allocated if nessecary
-template<typename T> void tensor_to_vector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> void tensor_to_vector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // copy into pixels. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> void tensor_to_pixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f(), string chmap = k_chmap_hwc);
+template<typename T> void tensor_to_pixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), string chmap = k_chmap_hwc);
 
 // copy into image. dst won't be reshaped if it's already allocated. otherwise it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> void tensor_to_image(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f(), string chmap = k_chmap_hwc);
+template<typename T> void tensor_to_image(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), string chmap = k_chmap_hwc);
 
 // flatten tensor and copy into array. array must already be allocated
-template<typename T> void tensor_to_array(const tensorflow::Tensor &src, T *dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> void tensor_to_array(const tensorflow::Tensor &src, T *dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 
 // copy std::vector into tensor. tensor must already be allocated and will not be reshaped
-template<typename T> void vector_to_tensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> void vector_to_tensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // copy pixels into tensor. tensor must already be allocated and will not be reshaped
-template<typename T> void pixels_to_tensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> void pixels_to_tensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // copy image into tensor. tensor must already be allocated and will not be reshaped
-template<typename T> void image_to_tensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> void image_to_tensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // copy array into tensor. tensor must already be allocated and will not be reshaped
-template<typename T> void array_to_tensor(const T *src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> void array_to_tensor(const T *src, tensorflow::Tensor &dst, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // copy array into tensor. tensor must already be allocated and will not be reshaped
-template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst, const ofVec4f& ranges=ofVec4f());
+template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 
 //--------------------------------------------------------------
@@ -122,36 +123,36 @@ template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst,
 // different to the above, these alloc and return the target type (instead of writing to a parameter)
 
 // flatten tensor and return std::vector
-template<typename T> std::vector<T> tensor_to_vector(const tensorflow::Tensor &src, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> std::vector<T> tensor_to_vector(const tensorflow::Tensor &src, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // return pixels. it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f(), string chmap = k_chmap_hwc);
+template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), string chmap = k_chmap_hwc);
 
 // return image. it'll be allocated according to tensorPixelDims(, chmap)
-template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f(), string chmap = k_chmap_hwc);
+template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), string chmap = k_chmap_hwc);
 
 // return scalar value
-template<typename T> T tensor_to_scalar(const tensorflow::Tensor &src, const ofVec4f& ranges=ofVec4f());
+template<typename T> T tensor_to_scalar(const tensorflow::Tensor &src, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 
 // return tensor from vector
-template<typename T> tensorflow::Tensor vector_to_tensor(const std::vector<T> &src, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> tensorflow::Tensor vector_to_tensor(const std::vector<T> &src, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // return tensor from pixels
-template<typename T> tensorflow::Tensor pixels_to_tensor(const ofPixels_<T> &src, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> tensorflow::Tensor pixels_to_tensor(const ofPixels_<T> &src, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // return tensor from image
-template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, bool do_memcpy=false, const ofVec4f& ranges=ofVec4f());
+template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, bool do_memcpy=false, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 // return tensor from scalar
-template<typename T> tensorflow::Tensor scalar_to_tensor(const T src, const ofVec4f& ranges=ofVec4f());
+template<typename T> tensorflow::Tensor scalar_to_tensor(const T src, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f());
 
 
 //--------------------------------------------------------------
 // convert grayscale float image into RGB float image where R -ve and B is +ve
 // dst image is allocated if nessecary
-template<typename T> void gray_to_color(const ofPixels_<T> &src, ofPixels_<T> &dst, const ofVec4f& ranges=ofVec4f(), float scale=1.0f);
-template<typename T> void gray_to_color(const ofImage_<T> &src, ofImage_<T> &dst, const ofVec4f& ranges=ofVec4f(), float scale=1.0f);
+template<typename T> void gray_to_color(const ofPixels_<T> &src, ofPixels_<T> &dst, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), float scale=1.0f);
+template<typename T> void gray_to_color(const ofImage_<T> &src, ofImage_<T> &dst, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), float scale=1.0f);
 
 
 // IMPLEMENTATIONS
@@ -173,143 +174,143 @@ template<typename T> void gray_to_color(const ofImage_<T> &src, ofImage_<T> &dst
 //--------------------------------------------------------------
 
 //--------------------------------------------------------------
-template<typename T> void tensor_to_vector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy, const ofVec4f& ranges) {
+template<typename T> void tensor_to_vector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
     if(dst.size() != src.NumElements()) dst.resize(src.NumElements());
-    tensor_to_array(src, dst.data(), do_memcpy, ranges);
+    tensor_to_array(src, dst.data(), do_memcpy, in_range, out_range);
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void tensor_to_pixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy, const ofVec4f& ranges, string chmap) {
+template<typename T> void tensor_to_pixels(const tensorflow::Tensor &src, ofPixels_<T> &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range, string chmap) {
     if(!dst.isAllocated()) {
         auto dims(tensor_to_pixel_dims(src, chmap));
         dst.allocate(dims[0], dims[1], dims[2]);
     }
 
-    tensor_to_array(src, dst.getData(), do_memcpy, ranges);
+    tensor_to_array(src, dst.getData(), do_memcpy, in_range, out_range);
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void tensor_to_image(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy, const ofVec4f& ranges, string chmap) {
+template<typename T> void tensor_to_image(const tensorflow::Tensor &src, ofImage_<T> &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range, string chmap) {
     if(!dst.isAllocated()) {
         auto dims(tensor_to_pixel_dims(src, chmap));
         dst.allocate(dims[0], dims[1], dims[2] == 1 ? OF_IMAGE_GRAYSCALE : (dims[2] == 3 ? OF_IMAGE_COLOR : OF_IMAGE_COLOR_ALPHA));
     }
-    tensor_to_pixels(src, dst.getPixels(), do_memcpy, ranges, chmap);
+    tensor_to_pixels(src, dst.getPixels(), do_memcpy, in_range, out_range, chmap);
     dst.update();
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void tensor_to_array(const tensorflow::Tensor &src, T *dst, bool do_memcpy, const ofVec4f& ranges) {
+template<typename T> void tensor_to_array(const tensorflow::Tensor &src, T *dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
     auto src_data = src.flat<T>().data();
     int n = src.NumElements();
     if(do_memcpy) memcpy(dst, src_data, n * sizeof(T));
     else {
         float scale, offset;
-        calc_scale_offset(ranges, scale, offset);
+        calc_scale_offset(in_range, out_range, scale, offset);
         for(int i=0; i<n; i++) dst[i] = src_data[i] * scale + offset;
      }
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void vector_to_tensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy, const ofVec4f& ranges) {
-    array_to_tensor(src.data(), dst, do_memcpy, ranges);
+template<typename T> void vector_to_tensor(const std::vector<T> &src, tensorflow::Tensor &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
+    array_to_tensor(src.data(), dst, do_memcpy, in_range, out_range);
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void pixels_to_tensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy, const ofVec4f& ranges) {
-    array_to_tensor(src.getData(), dst, do_memcpy, ranges);
+template<typename T> void pixels_to_tensor(const ofPixels_<T> &src, tensorflow::Tensor &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
+    array_to_tensor(src.getData(), dst, do_memcpy, in_range, out_range);
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void image_to_tensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy, const ofVec4f& ranges) {
-    pixels_to_tensor(src.getPixels(), dst, do_memcpy, ranges);
+template<typename T> void image_to_tensor(const ofImage_<T> &src, tensorflow::Tensor &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
+    pixels_to_tensor(src.getPixels(), dst, do_memcpy, in_range, out_range);
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void array_to_tensor(const T *in, tensorflow::Tensor &dst, bool do_memcpy, const ofVec4f& ranges) {
+template<typename T> void array_to_tensor(const T *in, tensorflow::Tensor &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
     auto dst_data = dst.flat<T>().data();
     int n = dst.NumElements();
     if(do_memcpy) memcpy(dst_data, in, n * sizeof(T));
     else {
         float scale, offset;
-        calc_scale_offset(ranges, scale, offset);
+        calc_scale_offset(in_range, out_range, scale, offset);
         for(int i=0; i<n; i++) dst_data[i] = in[i] * scale + offset;
     }
 }
 
 
 //--------------------------------------------------------------
-template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst, const ofVec4f& ranges) {
+template<typename T> void scalar_to_tensor(const T src, tensorflow::Tensor &dst, const ofVec2f& in_range, const ofVec2f& out_range) {
     float scale, offset;
-    calc_scale_offset(ranges, scale, offset);
+    calc_scale_offset(in_range, out_range, scale, offset);
     dst.scalar<T>()() = src * scale + offset;
 }
 
 
 //--------------------------------------------------------------
 //--------------------------------------------------------------
-template<typename T> std::vector<T> tensor_to_vector(const tensorflow::Tensor &src, bool do_memcpy, const ofVec4f& ranges) {
+template<typename T> std::vector<T> tensor_to_vector(const tensorflow::Tensor &src, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
     std::vector<T> dst;
-    tensor_to_vector(src, dst, do_memcpy, ranges);
+    tensor_to_vector(src, dst, do_memcpy, in_range, out_range);
     return dst;
 }
 
 
 //--------------------------------------------------------------
-template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src, bool do_memcpy, const ofVec4f& ranges, string chmap){
+template<typename T> ofPixels_<T> tensor_to_pixels(const tensorflow::Tensor &src, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range, string chmap){
     ofPixels_<T> dst;
-    tensor_to_pixels(src, dst, do_memcpy, ranges, chmap);
+    tensor_to_pixels(src, dst, do_memcpy, in_range, out_range, chmap);
     return dst;
 }
 
 
 //--------------------------------------------------------------
-template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy, const ofVec4f& ranges, string chmap) {
+template<typename T> ofImage_<T> tensor_to_image(const tensorflow::Tensor &src, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range, string chmap) {
     ofImage_<T> dst;
-    tensor_to_image(src, dst, do_memcpy, ranges, chmap);
+    tensor_to_image(src, dst, do_memcpy, in_range, out_range, chmap);
     return dst;
 }
 
 
 //--------------------------------------------------------------
-template<typename T> T tensor_to_scalar(const tensorflow::Tensor &src, const ofVec4f& ranges) {
+template<typename T> T tensor_to_scalar(const tensorflow::Tensor &src, const ofVec2f& in_range, const ofVec2f& out_range) {
     float scale, offset;
-    calc_scale_offset(ranges, scale, offset);
+    calc_scale_offset(in_range, out_range, scale, offset);
     return src.scalar<T>()() * scale + offset;
 }
 
 
 //--------------------------------------------------------------
-template<typename T> tensorflow::Tensor vector_to_tensor(const std::vector<T> &src, bool do_memcpy, const ofVec4f& ranges) {
+template<typename T> tensorflow::Tensor vector_to_tensor(const std::vector<T> &src, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
     tensorflow::Tensor dst( tensorflow::Tensor(tensorflow::DT_FLOAT, {src.size()}).vec<T>() );   // initting tensor with float, converting later
-    vector_to_tensor(src, dst, do_memcpy, ranges);
+    vector_to_tensor(src, dst, do_memcpy, in_range, out_range);
     return dst;
 }
 
 //--------------------------------------------------------------
-template<typename T> tensorflow::Tensor pixels_to_tensor(const ofPixels_<T> &src, bool do_memcpy, const ofVec4f& ranges) {
+template<typename T> tensorflow::Tensor pixels_to_tensor(const ofPixels_<T> &src, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
    tensorflow::Tensor dst( tensorflow::Tensor(tensorflow::DT_FLOAT, { src.getNumChannels(), src.getWidth(), src.getHeight()}) );
-   pixels_to_tensor(src, dst, do_memcpy, ranges);
+   pixels_to_tensor(src, dst, do_memcpy, in_range, out_range);
    return dst;
 }
 
 //--------------------------------------------------------------
-template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, bool do_memcpy, const ofVec4f& ranges) {
-    return pixels_to_tensor(src.getPixels(), do_memcpy, ranges);
+template<typename T> tensorflow::Tensor image_to_tensor(const ofImage_<T> &src, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
+    return pixels_to_tensor(src.getPixels(), do_memcpy, in_range, out_range);
 }
 
 
 //--------------------------------------------------------------
-template<typename T> tensorflow::Tensor scalar_to_tensor(const T src, const ofVec4f& ranges) {
+template<typename T> tensorflow::Tensor scalar_to_tensor(const T src, const ofVec2f& in_range, const ofVec2f& out_range) {
     tensorflow::Tensor dst = tensorflow::Tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape());// = tensorflow::Tensor(tensorflow::DT_FLOAT, {1}).scalar<T>();
-    scalar_to_tensor(src, dst, ranges);
+    scalar_to_tensor(src, dst, in_range, out_range);
     return dst;
 }
 

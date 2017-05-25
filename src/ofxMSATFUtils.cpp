@@ -7,7 +7,11 @@ namespace tf {
 
 //--------------------------------------------------------------
 tensorflow::Status log_error(const tensorflow::Status& status, const string msg) {
-    if(!status.ok()) ofLogError() << msg << " | " << status.ToString();
+    if(!status.ok()) {
+        string s = msg + " | " + status.ToString();
+        ofLogError() << s;
+        throw std::runtime_error(s);
+    }
     return status;
 }
 

@@ -35,7 +35,7 @@ void LayerVisualizer::setup(tensorflow::Session& session, const tensorflow::Grap
             // i.e. 10 columns (one per digit) and 784 rows (one for each pixel of the input image)
             // we need to transpose the weights matrix to easily get sections of it out, this is easy as an image
             ofFloatPixels weights_pix_full;  // rows: weights for each digit (10), col: weights for each pixel (784)
-            msa::tf::tensor_to_pixels(output_tensors[l], weights_pix_full, false, ofVec4f(), "10");
+            msa::tf::tensor_to_pixels(output_tensors[l], weights_pix_full, false, ofVec2f(), ofVec2f(), "10");
             weights_pix_full.rotate90(1);   // now rows: weights for each pixel, cols: weights for each digit
             weights_pix_full.mirror(false, true);
 
