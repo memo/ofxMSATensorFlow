@@ -32,7 +32,7 @@ public:
 
         img[0] = img_orig;
 
-        bool do_memcpy = true;
+        bool do_memcpy = false;
 
         Tensor tensor;
 
@@ -40,11 +40,11 @@ public:
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width, num_channels}));
         msa::tf::pixels_to_tensor(img[0].getPixels(), tensor, do_memcpy);
 
-        msa::tf::tensor_to_pixels(tensor, img[1].getPixels(), do_memcpy);
+        msa::tf::tensor_to_pixels(tensor, img[1].getPixels(), do_memcpy, ofVec4f(0, 1, 0, 2));    // map from range (0, 1), to (0, 2)
         img[1].update();
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height * num_channels * 2, image_width / 2}));
-        msa::tf::array_to_tensor(img[1].getPixels().getData(), tensor, do_memcpy);
+        msa::tf::array_to_tensor(img[1].getPixels().getData(), tensor, do_memcpy, ofVec4f(0, 2, 0, 1)); // map back to (0, 1)
 
         vector<float> v1;
         msa::tf::tensor_to_vector(tensor, v1, do_memcpy);
@@ -57,11 +57,11 @@ public:
         img[2].update();
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height/16, image_width/32, num_channels*16, 32}));
-        msa::tf::image_to_tensor(img[2], tensor, do_memcpy);
+        msa::tf::image_to_tensor(img[2], tensor, do_memcpy, ofVec4f(0, 1, -1, 1)); // map range to (-1, 1)
         msa::tf::tensor_to_image(tensor, img[3], do_memcpy);
 
         tensor = Tensor(DT_FLOAT, tensorflow::TensorShape({ image_height, image_width, num_channels }));
-        msa::tf::image_to_tensor(img[3], tensor, do_memcpy);
+        msa::tf::image_to_tensor(img[3], tensor, do_memcpy, ofVec4f(-1, 1, 0, 1)); // map back to (0, 1)
 
         // CLEAR ALL IMAGES TO TEST AUTO ALLOCATIONS
         for(int i=4; i<kNumIterations; i++) img[i].clear();

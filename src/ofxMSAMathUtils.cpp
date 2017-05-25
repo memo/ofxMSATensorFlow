@@ -4,6 +4,24 @@
 namespace msa {
 namespace tf {
 
+// calculate required scale and offset to map a number from range [input_min, input_max] to [output_min, output_max]
+// pass in float variables which will be filled with the right values
+// if scaling a massive array, this might be faster than using ofMap on every element
+// in the case of 'ranges', [input_min, input_max] = [ranges.x, ranges.y], [output_min, output_max] = [ranges.z, ranges.w]
+void calc_scale_offset(const ofVec4f& ranges, float& scale, float &offset) {
+    calc_scale_offset(ranges.x, ranges.y, ranges.z, ranges.w, scale, offset);
+}
+
+void calc_scale_offset(float input_min, float input_max, float output_min, float output_max, float& scale, float &offset) {
+    if(fabs(input_max - input_min) > std::numeric_limits<float>::epsilon()) {
+        scale = 1.0f/(input_max - input_min) * (output_max - output_min);
+        offset = (output_min - input_min * scale);
+    } else {
+        scale= 1.0f;
+        offset = 0.0f;
+    }
+}
+
 
 //--------------------------------------------------------------
 // sample a point from a bivariate gaussian mixture model

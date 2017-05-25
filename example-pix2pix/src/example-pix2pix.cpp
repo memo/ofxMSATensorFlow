@@ -189,16 +189,8 @@ public:
     //--------------------------------------------------------------
     // run model on an image
     void run_model(ofFloatPixels& pix) {
-        // dump input image into tensor
-        msa::tf::pixels_to_tensor(pix, t_in);
-
-        // our input image is in the range 0...1 but we need to convert to input_range (e.g. -1...1)
-        // probably is an API for doing this without a manual loop, but can't find it right now
-        // e.g. this doesn't compile: t_in = t_in * (input_range[1] - input_range[0]) + input_range[0];
-        // so doing it manual ghetto style
-        auto t_data = t_in.flat<float>().data();
-        for(int i=0; i<t_in.NumElements(); i++) t_data[i] = ofMap(t_data[i], 0.0f, 1.0f, input_range[0], input_range[1]);
-
+        // dump image into tensor. do not use memcpy. map range as nessecary
+        msa::tf::pixels_to_tensor(pix, t_in, false, ofVec4f(0.0f, 1.0f, input_range[0], input_range[1]));
 
         // run graph, feed inputs (t_in), fetch output (t_outs)
         // remember that t_outs is a std::vector, t_outs[0] contains the actual image data
@@ -213,14 +205,9 @@ public:
 
         // convert model output from tensor to image
         if(t_outs.size() > 0) {
-            // output image is in the range output_range (e.g. -1...1) but we need to convert to 0...1
-            // probably is an API for doing this without a loop, but can't find it right now
-            // so doing it manual ghetto style
-            auto t_data = t_outs[0].flat<float>().data();
-            for(int i=0; i<t_outs[0].NumElements(); i++) t_data[i] = ofMap(t_data[i], output_range[0], output_range[1], 0.0f, 1.0f);
 
-            // dump tensor into an ofImage
-            msa::tf::tensor_to_image(t_outs[0], img_out);
+            // dump tensor into image. do not use memcpy, map range as nessecary
+            msa::tf::tensor_to_image(t_outs[0], img_out, false, ofVec4f(output_range[0], output_range[1], 0.0f, 1.0f));
         }
     }
 
