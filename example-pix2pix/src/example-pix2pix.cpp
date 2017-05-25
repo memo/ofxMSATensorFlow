@@ -25,31 +25,26 @@ and loaded in openframeworks for prediction.
 //--------------------------------------------------------------
 class ofApp : public ofBaseApp {
 public:
+    // a simple wrapper for a simple predictor model with one (n-dim) input and one (n-dim) output
+    msa::tf::SimpleModel model;
+
     // a bunch of properties of the models
     // ideally should read from disk and vary with the model
     // but trying to keep the code minimal so hardcoding them
     const int input_shape[2] = {256, 256}; // dimensions {height, width} for input image
     const int output_shape[2] = {256, 256}; // dimensions {height, width} for output image
-    const float input_range[2] = {-1, 1}; // range of values {min, max} that model expects for input
-    const float output_range[2] = {-1, 1}; // range of values {min, max} that model outputs
+    ofVec2f input_range = {-1, 1}; // range of values {min, max} that model expects for input
+    ofVec2f output_range = {-1, 1}; // range of values {min, max} that model outputs
     const string input_op_name = "generator/generator_inputs"; // name of op to feed input to
     const string output_op_name = "generator/generator_outputs"; // name of op to fetch output from
-
 
     // fbo for drawing into (will be fed to model)
     ofFbo fbo;
 
     // images in and out of model
-    ofFloatImage img_in; // input to the model (read from fbo), copied to t_in
-    ofFloatImage img_out; // output from the model (copied from t_outs)
-
-    // tensors in and out of model (converted to and from the above images)
-    tensorflow::Tensor t_in;   // input to the model
-    vector<tensorflow::Tensor> t_outs; // all outputs of the model, note that this is a std::vector, there can be multiple outs
-
-    // shared pointer to tensorflow::Session
-    msa::tf::Session_ptr session;
-
+    // preallocating these to save allocating them every frame
+    ofFloatImage img_in; // input to the model (read from fbo)
+    ofFloatImage img_out; // output from the model
 
     // model file management
     string model_root_dir = "models";
@@ -98,14 +93,58 @@ public:
     }
 
 
+    //--------------------------------------------------------------
+    // Load graph (model trained in and exported from python) by folder NAME, and initialise session
+    void load_model(string model_dir) {
+        ofLogVerbose() << "loading model " << model_dir;
+
+        // init the model
+        // note that it expects arrays for input op names and output op names, so just use {}
+        model.setup(model_dir + "/graph_frz.pb", {input_op_name}, {output_op_name});
+        if(! model.is_loaded()) {
+            ofLogError() << "Model init error. Did you download the data files and place them in the data folder? ";
+            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
+            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+            assert(false);
+            ofExit(1);
+        }
+
+        // init tensor for input. shape should be: {batch size, image height, image width, number of channels}
+        // (ideally the SimpleModel graph loader would read this info from the graph_def and call this internally)
+        model.init_inputs(tensorflow::DT_FLOAT, {1, input_shape[0], input_shape[1], 3});
+
+
+        // allocate fbo and images with correct dimensions, and no alpha channel
+        ofLogVerbose() << "allocating fbo and images " << input_shape;
+        fbo.allocate(input_shape[1], input_shape[0], GL_RGB);
+        img_in.allocate(input_shape[1], input_shape[0], OF_IMAGE_COLOR);
+        img_out.allocate(output_shape[1], output_shape[0], OF_IMAGE_COLOR);
+
+        // load test image (also needed for color palette extraction)
+        ofLogVerbose() << "loading test image";
+        ofImage img;
+        img.load(model_dir + "/test_image.png");
+        if(img.isAllocated()) {
+            fbo.begin();
+            ofSetColor(255);
+            img.draw(0, 0, fbo.getWidth(), fbo.getHeight());
+            fbo.end();
+
+            // get colors
+            colors = get_colors(img.getPixels(), max_colors);
+            draw_color_index = 0;
+            if(colors.size() > 0) draw_color = colors[0];
+        } else {
+            ofLogError() << "Test image not found";
+        }
+    }
 
     //--------------------------------------------------------------
-    // Load graph (model trained in and exported from python) by folder INDEX, and initialize session
+    // Load model by folder INDEX, and initialise session
     void load_model_index(int index) {
         cur_model_index = ofClamp(index, 0, model_names.size()-1);
         load_model(model_root_dir + "/" + model_names[cur_model_index]);
     }
-
 
 
     //--------------------------------------------------------------
@@ -137,80 +176,6 @@ public:
 
         return colors;
     }
-
-
-
-    //--------------------------------------------------------------
-    // Load graph (model trained in and exported from python) by folder NAME, and initialize session
-    void load_model(string model_dir) {
-        ofLogVerbose() << "loading model " << model_dir;
-        // init session with graph
-        session = msa::tf::create_session_with_graph(model_dir + "/graph_frz.pb");
-
-        if(!session) {
-            ofLogError() << "Could not initialize session. Did you download the data files and place them in the data folder? ";
-            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
-            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
-            assert(false);
-            ofExit(1);
-        }
-
-
-        // init tensor for input, shape should be: {batch size, image height, image width, number of channels}
-        t_in = tensorflow::Tensor(tensorflow::DT_FLOAT, {1, input_shape[0], input_shape[1], 3});
-
-        // allocate fbo and images with correct dimensions, and no alpha channel
-        ofLogVerbose() << "allocating fbo and images " << input_shape;
-        fbo.allocate(input_shape[1], input_shape[0], GL_RGB);
-        img_in.allocate(input_shape[1], input_shape[0], OF_IMAGE_COLOR);
-        img_out.allocate(output_shape[1], output_shape[0], OF_IMAGE_COLOR);
-
-        // load test image (also needed for color palette extraction)
-        ofLogVerbose() << "loading test image";
-        ofImage img;
-        img.load(model_dir + "/test_image.png");
-        if(img.isAllocated()) {
-            fbo.begin();
-            ofSetColor(255);
-            img.draw(0, 0, fbo.getWidth(), fbo.getHeight());
-            fbo.end();
-
-            // get colors
-            colors = get_colors(img.getPixels(), max_colors);
-            draw_color_index = 0;
-            if(colors.size() > 0) draw_color = colors[0];
-        } else {
-            ofLogError() << "Test image not found";
-        }
-    }
-
-
-
-    //--------------------------------------------------------------
-    // run model on an image
-    void run_model(ofFloatPixels& pix) {
-        // dump image into tensor. do not use memcpy. map range as nessecary
-        msa::tf::pixels_to_tensor(pix, t_in, false, ofVec4f(0.0f, 1.0f, input_range[0], input_range[1]));
-
-        // run graph, feed inputs (t_in), fetch output (t_outs)
-        // remember that t_outs is a std::vector, t_outs[0] contains the actual image data
-        // also remember that t_outs[0] is going to be { batch size (==1), image height, image width, number of channels }
-        vector<string> fetch_tensors = { output_op_name };
-        tensorflow::Status status = session->Run({ { input_op_name, t_in }}, fetch_tensors, {}, &t_outs);
-
-        if(status != tensorflow::Status::OK()) {
-            ofLogError() << status.error_message();
-            return;
-        }
-
-        // convert model output from tensor to image
-        if(t_outs.size() > 0) {
-
-            // dump tensor into image. do not use memcpy, map range as nessecary
-            msa::tf::tensor_to_image(t_outs[0], img_out, false, ofVec4f(output_range[0], output_range[1], 0.0f, 1.0f));
-        }
-    }
-
 
 
     //--------------------------------------------------------------
@@ -248,15 +213,10 @@ public:
 //        img_in.update(); // update so we can draw if need be (useful for debuging)
 
         // run model on it
-        if(session) {
-            if(do_auto_run) {
-                run_model(img_in.getPixels());
-            }
-        }
-
+        if(do_auto_run)
+            model.run(img_in, img_out, input_range, output_range);
 
         // DISPLAY STUFF
-
         stringstream str;
         str << ofGetFrameRate() << endl;
         str << endl;
