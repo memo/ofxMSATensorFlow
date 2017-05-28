@@ -17,8 +17,6 @@ and loaded in openframeworks for prediction.
 
 #include "ofMain.h"
 #include "ofxMSATensorFlow.h"
-#include "ofxOpenCv.h"
-
 
 
 //--------------------------------------------------------------
@@ -30,7 +28,7 @@ public:
 
     // a bunch of properties of the models
     // ideally should read from disk and vary with the model
-    // but trying to keep the code minimal so hardcoding them
+    // but trying to keep the code minimal so hardcoding them since they're the same for all models
     const int input_shape[2] = {256, 256}; // dimensions {height, width} for input image
     const int output_shape[2] = {256, 256}; // dimensions {height, width} for output image
     ofVec2f input_range = {-1, 1}; // range of values {min, max} that model expects for input
@@ -62,7 +60,7 @@ public:
 
     // other vars
     bool do_auto_run = true;    // auto run every frame
-    int draw_mode = 0;     // draw lines vs boxes
+    int draw_mode = 0;     // draw vs boxes
     int draw_radius = 10;
     ofVec2f mousePressPos;
 
@@ -100,7 +98,7 @@ public:
 
         // init the model
         // note that it expects arrays for input op names and output op names, so just use {}
-        model.setup(model_dir + "/graph_frz.pb", {input_op_name}, {output_op_name});
+        model.setup(ofFilePath::join(model_dir, "graph_frz.pb"), {input_op_name}, {output_op_name});
         if(! model.is_loaded()) {
             ofLogError() << "Model init error. Did you download the data files and place them in the data folder? ";
             ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
@@ -120,61 +118,62 @@ public:
         img_in.allocate(input_shape[1], input_shape[0], OF_IMAGE_COLOR);
         img_out.allocate(output_shape[1], output_shape[0], OF_IMAGE_COLOR);
 
-        // load test image (also needed for color palette extraction)
+        // load test image
         ofLogVerbose() << "loading test image";
         ofImage img;
-        img.load(model_dir + "/test_image.png");
+        img.load(ofFilePath::join(model_dir, "test_image.png"));
         if(img.isAllocated()) {
             fbo.begin();
             ofSetColor(255);
             img.draw(0, 0, fbo.getWidth(), fbo.getHeight());
             fbo.end();
 
-            // get colors
-            colors = get_colors(img.getPixels(), max_colors);
-            draw_color_index = 0;
-            if(colors.size() > 0) draw_color = colors[0];
         } else {
             ofLogError() << "Test image not found";
         }
+
+        // load color palette for drawing
+        ofLogVerbose() << "loading color palette";
+        colors.clear();
+        ofBuffer buf;
+        buf = ofBufferFromFile(ofFilePath::join(model_dir, "/palette.txt"));
+        if(buf.size()>0) {
+            for(const auto& line : buf.getLines()) {
+                ofLogVerbose() << line;
+                if(line.size() == 6) // if valid hex code
+                    colors.push_back(ofColor::fromHex(ofHexToInt(line)));
+            }
+            draw_color_index = 0;
+            if(colors.size() > 0) draw_color = colors[0];
+        } else {
+            ofLogError() << "Palette info not found";
+        }
+
+        // load default brush info
+        ofLogVerbose() << "loading default brush info";
+        buf = ofBufferFromFile(ofFilePath::join(model_dir, "/default_brush.txt"));
+        if(buf.size()>0) {
+            auto str_info = buf.getFirstLine();
+            ofLogVerbose() << str_info;
+            auto str_infos = ofSplitString(str_info, " ", true, true);
+            if(str_infos[0]=="draw") draw_mode == 0;
+            else if(str_infos[0]=="box") draw_mode = 1;
+            else ofLogError() << "Unknown draw mode: " << str_infos[0];
+
+            draw_radius = ofToInt(str_infos[1]);
+
+        } else {
+            ofLogError() << "Default brush info not found";
+        }
+
     }
+
 
     //--------------------------------------------------------------
     // Load model by folder INDEX, and initialise session
     void load_model_index(int index) {
         cur_model_index = ofClamp(index, 0, model_names.size()-1);
         load_model(model_root_dir + "/" + model_names[cur_model_index]);
-    }
-
-
-    //--------------------------------------------------------------
-    // Extract a color palette from an image using the K-means algorithm.
-    // based on https://github.com/mantissa/ofxColorQuantizer by Jeremy Rotsztain
-    // in turn based on ocvColorQuantize demo that ships with Cinder
-    // https://github.com/cinder/Cinder-OpenCV/blob/master/samples/ocvColorQuantize
-    static vector<ofColor> get_colors(ofPixels inputImage, int colorCount){
-        const int sampleCount = inputImage.getHeight() * inputImage.getWidth();
-        cv::Mat colorSamples( sampleCount, 1, CV_32FC3 );
-
-        unsigned char * pixels = inputImage.getData();
-
-        cv::MatIterator_<cv::Vec3f> sampleIt = colorSamples.begin<cv::Vec3f>();
-        for(int i=0; i<sampleCount; i++){
-            int pos = i * 3;
-            *sampleIt = cv::Vec3f( pixels[pos], pixels[pos+1], pixels[pos+2] );
-            sampleIt++;
-        }
-
-        cv::Mat labels, clusters;
-        cv::kmeans( colorSamples, colorCount, labels, cv::TermCriteria(), 2, cv::KMEANS_RANDOM_CENTERS, clusters ); //cv::TermCriteria::COUNT, 8, 0
-
-        vector<ofColor> colors;
-        for( int i = 0; i < colorCount; ++i ){
-            ofColor clusterColor = ofColor( clusters.at<cv::Vec3f>(i,0)[0], clusters.at<cv::Vec3f>(i,0)[1], clusters.at<cv::Vec3f>(i,0)[2] );
-            colors.push_back(clusterColor);
-        }
-
-        return colors;
     }
 
 
@@ -205,7 +204,6 @@ public:
     }
 
 
-
     //--------------------------------------------------------------
     void draw() {
         // read from fbo into img_in
@@ -222,9 +220,9 @@ public:
         str << endl;
         str << "ENTER : toggle auto run " << (do_auto_run ? "(X)" : "( )") << endl;
         str << "DEL   : clear drawing " << endl;
-        str << "d     : toggle draw mode " << (draw_mode==0 ? "(lines)" : "(boxes)") << endl;
+        str << "d     : toggle draw mode " << (draw_mode==0 ? "(draw)" : "(boxes)") << endl;
         str << "[/]   : change draw radius (" << draw_radius << ")" << endl;
-        str << "-/+   : change draw color " << endl;
+        str << "z/x   : change draw color " << endl;
         str << "i     : get color from mouse" << endl;
         str << endl;
         str << "draw in the box on the left" << endl;
@@ -266,7 +264,7 @@ public:
         ofSetColor(draw_color);
         ofDrawCircle(x+palette_draw_size/2, y+palette_draw_size/2, palette_draw_size/2);
         ofSetColor(200);
-        ofDrawBitmapString("current color", x+palette_draw_size+10, y+palette_draw_size/2);
+        ofDrawBitmapString("current draw color (change with z/x keys)", x+palette_draw_size+10, y+palette_draw_size/2);
         y += palette_draw_size + 10;
 
         // draw color palette
@@ -350,15 +348,13 @@ public:
             draw_radius++;
             break;
 
-        case '-':
-        case '_':
+        case 'z':
             draw_color_index--;
             if(draw_color_index < 0) draw_color_index += colors.size(); // wrap around
             draw_color = colors[draw_color_index];
             break;
 
-        case '=':
-        case '+':
+        case 'x':
             draw_color_index++;
             if(draw_color_index >= colors.size()) draw_color_index -= colors.size(); // wrap around
             draw_color = colors[draw_color_index];
@@ -389,12 +385,16 @@ public:
     //--------------------------------------------------------------
     void mouseDragged( int x, int y, int button) {
         switch(draw_mode) {
-        case 0: // draw lines
+        case 0: // draw
             fbo.begin();
             ofSetColor(draw_color);
             ofFill();
-            ofDrawCircle(x, y, draw_radius);
-            ofSetLineWidth(draw_radius*2);
+            if(draw_radius>0) {
+                ofDrawCircle(x, y, draw_radius);
+                ofSetLineWidth(draw_radius*2);
+            } else {
+                ofSetLineWidth(0.1f);
+            }
             ofDrawLine(x, y, ofGetPreviousMouseX(), ofGetPreviousMouseY());
             fbo.end();
             break;
@@ -416,9 +416,9 @@ public:
     //--------------------------------------------------------------
     virtual void mouseReleased(int x, int y, int button) {
         switch(draw_mode) {
-        case 0: // draw lines
+        case 0: // draw
             break;
-        case 1: // draw boxes
+        case 1: // boxes
             fbo.begin();
             ofSetColor(draw_color);
             ofFill();

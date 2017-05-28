@@ -17,7 +17,6 @@ Project{
 
         of.addons: [
             "ofxMSATensorFlow",
-            "ofxOpenCv"
         ]
 
         // additional flags for the project. the of module sets some
