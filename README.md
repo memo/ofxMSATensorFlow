@@ -25,7 +25,7 @@ The examples are quite minimal and shouldn't be considered comprehensive tensorf
 * for **image classification** see *example-mnist* or *example-inception3*
 * for **sequence generation of *discrete* data** such as text (with **stateful LSTM/RNN**, where LSTM state is retrieved and passed back in at every time-step) see *example-char-rnn*
 * for **sequence generation of *continuous* data** such as handwriting (with **Recurrent Mixture Density Networks**) see *example-handwriting-rnn*
-* for **image generation** (with **Conditional Generative Adversarial Networks**) see *example-pix2pix*
+* for **image generation** (with **Conditional Generative Adversarial Networks**) see *example-pix2pix* or *example-pix2pix-webcam*
 * for **constructing graphs in C++** see *example-build-graph*
 * for the **most basic example** of loading a model, feeding it data and fetching the results, see *example-basic*
 
@@ -37,6 +37,12 @@ Potentially you could load any pretrained model in openframeworks and manipulate
 ![example-pix2pix_400x2x](https://cloud.githubusercontent.com/assets/144230/26264408/a4700456-3cd4-11e7-8b2c-632f99acac28.gif)
 
 pix2pix (Image-to-Image Translation with Conditional Adversarial Nets). An accessible explanation can be found [here](https://phillipi.github.io/pix2pix/) and [here](https://affinelayer.com/pix2pix/). The network basically learns to map from one image to another. E.g. in the example you draw in the left viewport, and it generates the image in the right viewport. I'm supplying three pretrained models from the original paper: cityscapes, building facades, and maps. And a model I trained on [150 art collections from around the world](https://commons.wikimedia.org/wiki/Category:Google_Art_Project_works_by_collection). Models are trained and saved in python with [this code](https://github.com/memo/pix2pix-tensorflow) (which is based on [this](https://github.com/affinelayer/pix2pix-tensorflow) tensorflow implementation, which is based on the original [torch implementation](https://phillipi.github.io/pix2pix/)), and loaded in openframeworks for prediction. 
+
+---
+
+### example-pix2pix-webcam
+![example-pix2pix-webcam_250x_short_800px_10fps](https://cloud.githubusercontent.com/assets/144230/26558171/ab2ebb3a-449e-11e7-92d9-30db72e6daa0.gif)
+Same as pix2pix-example with the addition of live webcam input. See description of pix2pix-example for more info on pix2pix and the models I provide. I'm using a very simple and ghetto method of transforming the webcam input into the desired colour palette before feeding into the model. See the code for more info on this.
 
 ---
 
