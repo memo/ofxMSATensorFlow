@@ -52,9 +52,8 @@ public:
 
 
     // color management for drawing
-    const int max_colors = 10; // max number of colors to extract from test image
+    vector<ofColor> colors; // contains color palette to be used for drawing (loaded from data/models/XYZ/palette.txt)
     const int palette_draw_size = 50;
-    vector<ofColor> colors; // contains color palette that we should use for drawing (extracted from test image)
     int draw_color_index = 0;
     ofColor draw_color;
 
@@ -157,7 +156,7 @@ public:
             auto str_info = buf.getFirstLine();
             ofLogVerbose() << str_info;
             auto str_infos = ofSplitString(str_info, " ", true, true);
-            if(str_infos[0]=="draw") draw_mode == 0;
+            if(str_infos[0]=="draw") draw_mode = 0;
             else if(str_infos[0]=="box") draw_mode = 1;
             else ofLogError() << "Unknown draw mode: " << str_infos[0];
 
