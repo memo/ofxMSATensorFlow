@@ -8,6 +8,7 @@ The network basically learns to map from one image to another.
 E.g. in the example you draw in the left viewport, and it generates the image in the right viewport.
 
 I'm supplying three pretrained models from the original paper: cityscapes, building facades, and maps.
+And a model I trained on [150 art collections from around the world](https://commons.wikimedia.org/wiki/Category:Google_Art_Project_works_by_collection).
 
 Models are trained and saved in python with [this code](https://github.com/memo/pix2pix-tensorflow)
 (which is based on [this](https://github.com/affinelayer/pix2pix-tensorflow) tensorflow implementation,
