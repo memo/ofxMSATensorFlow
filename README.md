@@ -33,6 +33,8 @@ Potentially you could load any pretrained model in openframeworks and manipulate
 
 ---
 
+*(Note: the animations below are animated-gifs, hence the low color count, dithering, and low framerate)*
+
 ### example-pix2pix-webcam
 ![example-pix2pix-webcam_250x_short_800px_10fps](https://cloud.githubusercontent.com/assets/144230/26558171/ab2ebb3a-449e-11e7-92d9-30db72e6daa0.gif)
 
