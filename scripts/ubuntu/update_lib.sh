@@ -31,6 +31,7 @@ LIB_SRC='../../libs/tensorflow/lib/linux64/libtensorflow_cc.so'
 DST_LD_CONF='/etc/ld.so.conf.d/libtensorflow_cc.so.conf '
 
 echo 'Copying' $LIB_SRC 'to' $LIB_DST
+mkdir $LIB_DST
 cp $LIB_SRC $LIB_DST
 
 echo 'Writing path to' $DST_LD_CONF
