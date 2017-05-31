@@ -70,9 +70,9 @@ Session_ptr create_session_with_graph(
 }
 
 //--------------------------------------------------------------
-vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
+vector<tensorflow::int64> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
     int rank = t.shape().dims();
-    vector<int> tensor_dims(rank);
+    vector<tensorflow::int64> tensor_dims(rank);
     for(int i=0; i<rank; i++) tensor_dims[i] = t.dim_size(i); // useful for debugging
 
     // add z to end of string to top it up to length 3, this'll make it default to 1
@@ -93,7 +93,7 @@ vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
         }
     }
 
-    vector<int> image_dims( {
+    vector<tensorflow::int64> image_dims( {
                 (rank > dim_indices[0] ? (int)t.dim_size( dim_indices[0]) : 1),
         (rank > dim_indices[1] ? (int)t.dim_size( dim_indices[1]) : 1),
         (rank > dim_indices[2] ? (int)t.dim_size( dim_indices[2]) : 1)
@@ -102,6 +102,17 @@ vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
 }
 
 
+//--------------------------------------------------------------
+vector<tensorflow::int64> get_imagedims_for_tensorshape(const vector<tensorflow::int64>& tensorshape, bool shape_includes_batch) {
+    tensorflow::int64 h_index = shape_includes_batch ? 1 : 0;   // index in shape for image height
+    tensorflow::int64 w_index = shape_includes_batch ? 2 : 1;   // index in shape for image width
+    tensorflow::int64 c_index = shape_includes_batch ? 3 : 2;   // index in shape for number of channels
+
+    tensorflow::int64 h = h_index < tensorshape.size() ? tensorshape[h_index] : 1; // value for image height
+    tensorflow::int64 w = w_index < tensorshape.size() ? tensorshape[w_index] : 1; // value for image width
+    tensorflow::int64 c = c_index < tensorshape.size() ? tensorshape[c_index] : 1; // value for image height
+    return {w, h, c};
+}
 
 //--------------------------------------------------------------
 //void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name) {

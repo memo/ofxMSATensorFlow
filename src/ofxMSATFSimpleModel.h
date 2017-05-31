@@ -48,6 +48,11 @@ public:
     // (ideally the SimpleModel constructor or setup would read this info from the graph_def and call this internally)
     void init_inputs(tensorflow::DataType type, const tensorflow::TensorShape& shape, int tensor_index=0);
 
+    // version of above that takes std::vector instead of tensorflow::TensorShape
+    void init_inputs(tensorflow::DataType type, const vector<tensorflow::int64>& shape, int tensor_index=0) {
+        init_inputs(type, tensorflow::TensorShape(shape), tensor_index);
+    }
+
 
     //--------------------------------------------------------------
     // getters

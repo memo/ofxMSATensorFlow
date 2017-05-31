@@ -75,8 +75,15 @@ bool read_labels_file(string file_name, vector<string>& result);
 // looks complicated, but it's not (we usually think of images as { width, height, depth },
 //      but actually in memory it's { height, width, depth } (if channels are interleaved)
 
+
+// TODO, need to tidy this up
 const string k_chmap_hwc = "102";   // [height, width, number of channels]
-vector<int> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap = k_chmap_hwc);
+vector<tensorflow::int64> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap = k_chmap_hwc);
+
+// this is simplified version of above, without chmap, need to tidy this up
+vector<tensorflow::int64> get_imagedims_for_tensorshape(const vector<tensorflow::int64>& tensorshape, bool shape_includes_batch=true);
+
+template<typename T> void allocate_image_for_tensorshape(ofImage_<T>& img, const vector<tensorflow::int64>& tensorshape, bool shape_includes_batch=true);
 
 
 //--------------------------------------------------------------
@@ -149,6 +156,14 @@ template<typename T> tensorflow::Tensor scalar_to_tensor(const T src, const ofVe
 
 
 //--------------------------------------------------------------
+// Shape conversions
+//vector<tensorflow::int64> tfshape_to_vector(const tensorflow::TensorShape& shape);
+//tensorflow::TensorShape vector_to_tfshape(const vector<tensorflow::int64>& shape);
+
+
+
+
+//--------------------------------------------------------------
 // convert grayscale float image into RGB float image where R -ve and B is +ve
 // dst image is allocated if nessecary
 template<typename T> void gray_to_color(const ofPixels_<T> &src, ofPixels_<T> &dst, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), float scale=1.0f);
@@ -172,6 +187,21 @@ template<typename T> void gray_to_color(const ofImage_<T> &src, ofImage_<T> &dst
 //--------------------------------------------------------------
 //--------------------------------------------------------------
 //--------------------------------------------------------------
+
+//--------------------------------------------------------------
+template<typename T> void allocate_image_for_tensorshape(ofImage_<T>& img, const vector<tensorflow::int64>& tensorshape, bool shape_includes_batch) {
+    auto image_dims = get_imagedims_for_tensorshape(tensorshape, shape_includes_batch);
+    ofImageType image_type;
+    switch(image_dims[2]) {
+    case 1: image_type = OF_IMAGE_GRAYSCALE; break;
+    case 3: image_type = OF_IMAGE_COLOR; break;
+    case 4: image_type = OF_IMAGE_COLOR_ALPHA; break;
+    default: ofLogError() << "allocate_image_for_tensorshape : unknown number of channels for image " << image_dims[2]; return;
+    }
+
+    img.allocate(image_dims[0], image_dims[1], image_type);
+}
+
 
 //--------------------------------------------------------------
 template<typename T> void tensor_to_vector(const tensorflow::Tensor &src, std::vector<T> &dst, bool do_memcpy, const ofVec2f& in_range, const ofVec2f& out_range) {
