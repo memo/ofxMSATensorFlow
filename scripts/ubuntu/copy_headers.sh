@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DST='../libs/tensorflow/include'
+DST='../../libs/tensorflow/include'
 
 if [[ $# -eq 0 ]] ; then
 	echo
