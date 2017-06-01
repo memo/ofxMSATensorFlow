@@ -33,7 +33,7 @@ bool ImageClassifier::setup(const ImageClassifier::Settings& settings, string de
 
     // make sure we have rank==3 for image dims (w, h, c)
     if(settings.image_dims.size() != 3) {
-        ofLogError() << "ImageClassifier::ImageClassifier -image dimesions needs three: width x height x number of channels";
+        ofLogError("ofxMSATensorFlow") << "ImageClassifier::ImageClassifier -image dimesions needs three: width x height x number of channels";
         return false;
     }
 
@@ -47,7 +47,7 @@ bool ImageClassifier::setup(const ImageClassifier::Settings& settings, string de
 
     // sanitiy check, make sure they match, return if error
     if(test_num_elements != num_elements) {
-        ofLogError() << "ImageClassifier::ImageClassifier - Image elements doesn't match tensor elements:" << num_elements << " != " << test_num_elements;
+        ofLogError("ofxMSATensorFlow") << "ImageClassifier::ImageClassifier - Image elements doesn't match tensor elements:" << num_elements << " != " << test_num_elements;
         num_elements = 0;
         return false;
     }
@@ -93,23 +93,23 @@ bool ImageClassifier::hack_variables(string substr) {
     std::vector<string> names;
 
     int node_count = graph_def->node_size();
-    ofLogNotice() << "Classifier::hack_variables - " << node_count << " nodes in graph";
+    ofLogNotice("ofxMSATensorFlow") << "Classifier::hack_variables - " << node_count << " nodes in graph";
 
     // iterate all nodes
     for(int i=0; i<node_count; i++) {
         auto n = graph_def->node(i);
-        ofLogNotice() << i << ":" << n.name();
+        ofLogNotice("ofxMSATensorFlow") << i << ":" << n.name();
 
         // if name contains var_hack, add to vector
         if(n.name().find(substr) != std::string::npos) {
             names.push_back(n.name());
-            ofLogNotice() << "......bang";
+            ofLogNotice("ofxMSATensorFlow") << "......bang";
         }
     }
 
     // run the network inputting the names of the constant variables we want to run
     if(!session->Run({}, names, {}, &output_tensors).ok()) {
-        ofLogError() << "Error running network for weights and biases variable hack";
+        ofLogError("ofxMSATensorFlow") << "Error running network for weights and biases variable hack";
         return false;
     }
     return true;
@@ -142,7 +142,7 @@ bool ImageClassifier::classify(const ofPixels &pix)  {
     if(settings.norm_stddev > 0) {
         float* pix_data = processed_img.getPixels().getData();
         if(!pix_data) {
-            ofLogError() << "Could not classify. pixel data is NULL";
+            ofLogError("ofxMSATensorFlow") << "Could not classify. pixel data is NULL";
             return false;
         }
         for(int i=0; i<num_elements; i++) pix_data[i] = (pix_data[i] - settings.norm_mean) / settings.norm_stddev;
@@ -166,7 +166,7 @@ bool ImageClassifier::classify(const ofPixels &pix)  {
     // feed the data into the network, and request output
     // output_tensors don't need to be initialized or allocated. they will be filled once the network runs
     if(!session->Run(inputs, { settings.output_layer_name }, {}, &output_tensors).ok()) {
-        ofLogError() << "Error during running. Check console for details.";
+        ofLogError("ofxMSATensorFlow") << "Error during running. Check console for details.";
         return false;
     }
 

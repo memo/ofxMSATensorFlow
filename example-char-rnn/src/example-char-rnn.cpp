@@ -30,6 +30,8 @@ class ofApp : public ofBaseApp {
 public:
 
     // shared pointer to tensorflow::Session
+    // This is using the lower level C API
+    // For the higer level C++ API (using msa::tf::SimpleModel) see example-pix2pix-simple
     msa::tf::Session_ptr session;
 
 
@@ -54,9 +56,8 @@ public:
 
 
     // model file management
-    string model_root_dir = "models";
-    vector<string> model_names;
-    int cur_model_index = 0;
+    ofDirectory models_dir;    // data/models folder which contains subfolders for each model
+    int cur_model_index = 0; // which model (i.e. folder) we're currently using
 
 
     // random generator for sampling
@@ -81,18 +82,14 @@ public:
 
 
         // scan models dir
-        ofDirectory dir;
-        dir.listDir(model_root_dir);
-        if(dir.size()==0) {
-            ofLogError() << "Could not find models folder. Did you download the data files and place them in the data folder? ";
-            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
-            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+        models_dir.listDir("models");
+        if(models_dir.size()==0) {
+            ofLogError() << "Couldn't find models folder." << msa::tf::missing_data_error();
             assert(false);
             ofExit(1);
         }
-        for(int i=0; i<dir.getFiles().size(); i++) model_names.push_back(dir.getName(i));
-        sort(model_names.begin(), model_names.end());
-        load_model_index(0);
+        models_dir.sort();
+        load_model_index(0); // load first model
 
         // seed rng
         rng.seed(ofGetSystemTimeMicros());
@@ -100,10 +97,10 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load graph (model trained in and exported from python) by folder INDEX, and initialize session
+    // Load model by folder INDEX
     void load_model_index(int index) {
-        cur_model_index = ofClamp(index, 0, model_names.size()-1);
-        load_model(model_root_dir + "/" + model_names[cur_model_index]);
+        cur_model_index = ofClamp(index, 0, models_dir.size()-1);
+        load_model(models_dir.getPath(cur_model_index));
     }
 
 
@@ -114,9 +111,7 @@ public:
         session = msa::tf::create_session_with_graph(dir + "/graph_frz.pb");
 
         if(!session) {
-            ofLogError() << "Could not initialize session. Did you download the data files and place them in the data folder? ";
-            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
-            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+            ofLogError() << "Session init error." << msa::tf::missing_data_error();
             assert(false);
             ofExit(1);
         }
@@ -247,9 +242,9 @@ public:
         str << endl;
 
         str << "Press number key to load model: " << endl;
-        for(int i=0; i<model_names.size(); i++) {
+        for(int i=0; i<models_dir.size(); i++) {
             auto marker = (i==cur_model_index) ? ">" : " ";
-            str << " " << (i+1) << " : " << marker << " " << model_names[i] << endl;
+            str << " " << (i+1) << " : " << marker << " " << models_dir.getName(i) << endl;
         }
 
         str << endl;

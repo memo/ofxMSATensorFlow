@@ -6,6 +6,8 @@
  * Python script constructs tensor flow graph which simply multiplies two numbers and exports binary model (see bin/py)
  *
  * openFrameworks code loads and processes pre-trained model (i.e. makes calculations/predictions)
+ * This is using the lower level C API
+ * For the higer level C++ API (using msa::tf::SimpleModel) see example-pix2pix-simple
  *
  */
 
@@ -16,6 +18,8 @@ class ofApp : public ofBaseApp {
 public:
 
     // shared pointer to tensorflow::Session
+    // This is using the lower level C API
+    // For the higer level C++ API (using msa::tf::SimpleModel) see example-pix2pix-simple
     msa::tf::Session_ptr session;
 
 
@@ -27,6 +31,11 @@ public:
 
         // Load graph (i.e. trained model) we exported from python, and initialize session
         session = msa::tf::create_session_with_graph("models/model.pb");
+
+        if(!session) {
+            ofLogError() << "Model not found. " << msa::tf::missing_data_error();
+            ofExit(1);
+        }
     }
 
 

@@ -3,13 +3,13 @@
 namespace msa {
 namespace tf {
 
-#define OFXMSATF_LOG_RETURN_ERROR(expr, msg)    TF_RETURN_IF_ERROR(logError(expr, msg))
+//#define OFXMSATF_LOG_RETURN_ERROR(expr, msg)    TF_RETURN_IF_ERROR(logError(expr, msg))
 
 //--------------------------------------------------------------
 tensorflow::Status log_error(const tensorflow::Status& status, const string msg) {
     if(!status.ok()) {
         string s = msg + " | " + status.ToString();
-        ofLogError() << s;
+        ofLogError("ofxMSATensorFlow") << s;
         throw std::runtime_error(s);
     }
     return status;
@@ -17,42 +17,60 @@ tensorflow::Status log_error(const tensorflow::Status& status, const string msg)
 
 
 //--------------------------------------------------------------
+string missing_data_error() {
+    string s;
+    s += "Did you download the data files and place them in the data folder?\n";
+    s += "Download from https://github.com/memo/ofxMSATensorFlow/releases\n";
+    s += "More info at https://github.com/memo/ofxMSATensorFlow/wiki\n";
+    return s;
+}
+
+
+//--------------------------------------------------------------
+Session_ptr create_session(const tensorflow::SessionOptions& session_options) {
+    tensorflow::Session* session;
+    auto status = tensorflow::NewSession(session_options, &session);
+    log_error(status, "create_session");
+    return Session_ptr(session);
+}
+
+
+//--------------------------------------------------------------
 GraphDef_ptr load_graph_def(const string path, tensorflow::Env* env) {
     string of_path(ofToDataPath(path));
-    GraphDef_ptr graph_def(new tensorflow::GraphDef());
-    tensorflow::Status status = tensorflow::ReadBinaryProto(env, of_path, graph_def.get());
-    if(status.ok()) return graph_def;
+    GraphDef_ptr graph_def(new tensorflow::GraphDef()); // TODO try this as normal pointer and change to shared later
+    auto status = tensorflow::ReadBinaryProto(env, of_path, graph_def.get());
+    log_error(status, "load_graph_def: " + of_path );
+    return graph_def;
+}
 
-    // on error return nullptr
-    log_error(status, "Error loading graph " + of_path );
-    return nullptr;
+
+//--------------------------------------------------------------
+void create_graph_in_session(Session_ptr session, GraphDef_ptr graph_def, const string device) {
+    if(!device.empty()) tensorflow::graph::SetDefaultDevice(device, graph_def.get());
+    auto status = session->Create(*graph_def);
+    log_error(status, "create_graph_in_session");
+}
+
+
+//--------------------------------------------------------------
+tensorflow::SessionOptions session_gpu_options(bool allow_growth, double gpu_memory_fraction, const tensorflow::SessionOptions& session_options_base) {
+    tensorflow::SessionOptions session_options(session_options_base);
+    session_options.config.mutable_gpu_options()->set_allow_growth(allow_growth);
+    session_options.config.mutable_gpu_options()->set_per_process_gpu_memory_fraction(gpu_memory_fraction);
+    return session_options;
 }
 
 
 //--------------------------------------------------------------
 Session_ptr create_session_with_graph(
-        tensorflow::GraphDef& graph_def,
+        GraphDef_ptr graph_def,
         const string device,
         const tensorflow::SessionOptions& session_options)
 {
-    Session_ptr session(NewSession(session_options));
-    if( !session) { ofLogError() << "Error creating session"; return nullptr; }
-
-    if(!device.empty())
-        tensorflow::graph::SetDefaultDevice(device, &graph_def);
-
-    log_error(session->Create(graph_def), "Error creating graph for session");
+    Session_ptr session = create_session(session_options);
+    create_graph_in_session(session, graph_def, device);
     return session;
-}
-
-
-//--------------------------------------------------------------
-Session_ptr create_session_with_graph(
-        GraphDef_ptr pgraph_def,
-        const string device,
-        const tensorflow::SessionOptions& session_options)
-{
-    return create_session_with_graph(*pgraph_def, device, session_options);
 }
 
 
@@ -62,12 +80,26 @@ Session_ptr create_session_with_graph(
         const string device,
         const tensorflow::SessionOptions& session_options)
 {
-    auto graph_def = load_graph_def(graph_def_path);
+    GraphDef_ptr graph_def = load_graph_def(graph_def_path);
     if(graph_def) return create_session_with_graph(graph_def, device, session_options);
-
-    // on error return nullptr
     return nullptr;
 }
+
+
+//--------------------------------------------------------------
+//Session_ptr create_session_with_graph(
+//        tensorflow::GraphDef& graph_def_ref,
+//        const string device,
+//        const tensorflow::SessionOptions& session_options)
+//{
+//    Session_ptr session = create_session(session_options);
+////    if( !session) { ofLogError("ofxMSATensorFlow) << "Error creating session"; return nullptr; }
+
+
+//    log_error(session->Create(graph_def_ref), "Error creating graph for session");
+//    return session;
+//}
+
 
 //--------------------------------------------------------------
 vector<tensorflow::int64> tensor_to_pixel_dims(const tensorflow::Tensor &t, string chmap) {
@@ -94,10 +126,10 @@ vector<tensorflow::int64> tensor_to_pixel_dims(const tensorflow::Tensor &t, stri
     }
 
     vector<tensorflow::int64> image_dims( {
-                (rank > dim_indices[0] ? (int)t.dim_size( dim_indices[0]) : 1),
-        (rank > dim_indices[1] ? (int)t.dim_size( dim_indices[1]) : 1),
-        (rank > dim_indices[2] ? (int)t.dim_size( dim_indices[2]) : 1)
-      });
+                                              (rank > dim_indices[0] ? (int)t.dim_size( dim_indices[0]) : 1),
+                                              (rank > dim_indices[1] ? (int)t.dim_size( dim_indices[1]) : 1),
+                                              (rank > dim_indices[2] ? (int)t.dim_size( dim_indices[2]) : 1)
+                                          });
     return image_dims;
 }
 
@@ -116,23 +148,23 @@ vector<tensorflow::int64> get_imagedims_for_tensorshape(const vector<tensorflow:
 
 //--------------------------------------------------------------
 //void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name) {
-    //    tensorflow::GraphDefBuilder b;
-    //    tensorflow::ops::TopKV2(tensorflow::ops::Const(scores_tensor, b.opts()), tensorflow::ops::Const(topk_count, b.opts()), b.opts().WithName(output_name));
+//    tensorflow::GraphDefBuilder b;
+//    tensorflow::ops::TopKV2(tensorflow::ops::Const(scores_tensor, b.opts()), tensorflow::ops::Const(topk_count, b.opts()), b.opts().WithName(output_name));
 
-    //    // This runs the GraphDef network definition that we've just constructed, and
-    //    // returns the results in the output tensors.
-    //    tensorflow::GraphDef graph;
-    //    b.ToGraphDef(&graph);
+//    // This runs the GraphDef network definition that we've just constructed, and
+//    // returns the results in the output tensors.
+//    tensorflow::GraphDef graph;
+//    b.ToGraphDef(&graph);
 
-    //    std::unique_ptr<tensorflow::Session> session(tensorflow::NewSession(tensorflow::SessionOptions()));
-    //    session->Create(graph);
+//    std::unique_ptr<tensorflow::Session> session(tensorflow::NewSession(tensorflow::SessionOptions()));
+//    session->Create(graph);
 
-    //    // The TopK node returns two outputs, the scores and their original indices,
-    //    // so we have to append :0 and :1 to specify them both.
-    //    std::vector<tensorflow::Tensor> output_tensors;
-    //    session->Run({}, {output_name + ":0", output_name + ":1"},{}, &output_tensors);
-    //    tensor_to_vector(output_tensors[0], out_scores);
-    //    tensor_to_vector(output_tensors[1], out_indices);
+//    // The TopK node returns two outputs, the scores and their original indices,
+//    // so we have to append :0 and :1 to specify them both.
+//    std::vector<tensorflow::Tensor> output_tensors;
+//    session->Run({}, {output_name + ":0", output_name + ":1"},{}, &output_tensors);
+//    tensor_to_vector(output_tensors[0], out_scores);
+//    tensor_to_vector(output_tensors[1], out_indices);
 //}
 
 void get_topk(const vector<float> probs, vector<int> &out_indices, vector<float> &out_values, int k) {
@@ -155,7 +187,7 @@ void get_topk(const vector<float> probs, vector<int> &out_indices, vector<float>
 bool read_labels_file(string file_name, vector<string>& result) {
     std::ifstream file(file_name);
     if (!file) {
-        ofLogError() <<"ReadLabelsFile: " << file_name << " not found.";
+        ofLogError("ofxMSATensorFlow") <<"ReadLabelsFile: " << file_name << " not found.";
         return false;
     }
 

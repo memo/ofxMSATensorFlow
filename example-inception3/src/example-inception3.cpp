@@ -19,6 +19,7 @@ public:
 
     // classifies pixels
     // check the src of this class (ofxMSATFImageClassifier) to see how to do more generic stuff with ofxMSATensorFlow
+    // UPDATE: Actually the msa::tf::SimpleModel supercedes this. Need to update it.
     msa::tf::ImageClassifier classifier;
 
     // for webcam input

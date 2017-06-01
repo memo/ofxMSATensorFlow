@@ -15,39 +15,58 @@ typedef shared_ptr<tensorflow::Session> Session_ptr;
 typedef shared_ptr<tensorflow::GraphDef> GraphDef_ptr;
 
 
-
 // COMMON LOW LEVEL FUNCTIONAL STUFF (i.e. stateless).
-// TODO update these to r1.0, Using tensorflow::Scope
 
 
 // check status for error and log if error found. return status as is
 tensorflow::Status log_error(const tensorflow::Status& status, const string msg);
 
+// returns the common error I use if model data is missing (to check github repo etc)
+string missing_data_error();
+
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+// Core low level functionality
+
+// create a session, return as shared pointer
+Session_ptr create_session(const tensorflow::SessionOptions& session_options = tensorflow::SessionOptions());
 
 // load a graph definition from file, return as shared pointer
 GraphDef_ptr load_graph_def(const string path, tensorflow::Env* env = tensorflow::Env::Default());
 
+// create a graph in an existing session on a specified device from an already loaded graph definition
+void create_graph_in_session(Session_ptr session, GraphDef_ptr graph_def, const string device="");
 
-// create and initialize session with graph definition, return shared pointer to session
+// create session options (for use when creating a session) with specified gpu options
+// optionally provide a base session options as argument to use as a base (this isn't modified)
+tensorflow::SessionOptions session_gpu_options(bool allow_growth, double gpu_memory_fraction, const tensorflow::SessionOptions& session_options_base=tensorflow::SessionOptions());
+
+
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+// Convenience functions
+// directly create & initialise a session and graph from graph def in one command
+
 Session_ptr create_session_with_graph(
-        tensorflow::GraphDef& graph_def,
+        GraphDef_ptr graph_def,    // smart pointer to a graph_def
         const string device = "",   // "/cpu:0", "/gpu:0" etc.
         const tensorflow::SessionOptions& session_options = tensorflow::SessionOptions());
 
 
-// convenience method, same as above, but takes pointer
 Session_ptr create_session_with_graph(
-        GraphDef_ptr pgraph_def,
+        const string graph_def_path, // path to graph_def filename
         const string device = "",   // "/cpu:0", "/gpu:0" etc.
         const tensorflow::SessionOptions& session_options = tensorflow::SessionOptions());
 
 
-// convenience method, same as above, but takes graph filename
-Session_ptr create_session_with_graph(
-        const string graph_def_path,
-        const string device = "",   // "/cpu:0", "/gpu:0" etc.
-        const tensorflow::SessionOptions& session_options = tensorflow::SessionOptions());
+//Session_ptr create_session_with_graph(
+//        tensorflow::GraphDef& graph_def, // reference to a graph_def
+//        const string device = "",   // "/cpu:0", "/gpu:0" etc.
+//        const tensorflow::SessionOptions& session_options = tensorflow::SessionOptions());
 
+
+//--------------------------------------------------------------
+//--------------------------------------------------------------
 
 // pass in tensor (e.g. of probabilities) and number of top items desired, returns top k values and corresponding indices
 //void get_top_scores(tensorflow::Tensor scores_tensor, int topk_count, vector<int> &out_indices, vector<float> &out_scores, string output_name = "top_k");
@@ -196,7 +215,7 @@ template<typename T> void allocate_image_for_tensorshape(ofImage_<T>& img, const
     case 1: image_type = OF_IMAGE_GRAYSCALE; break;
     case 3: image_type = OF_IMAGE_COLOR; break;
     case 4: image_type = OF_IMAGE_COLOR_ALPHA; break;
-    default: ofLogError() << "allocate_image_for_tensorshape : unknown number of channels for image " << image_dims[2]; return;
+    default: ofLogError("ofxMSATensorFlow") << "allocate_image_for_tensorshape : unknown number of channels for image " << image_dims[2]; return;
     }
 
     img.allocate(image_dims[0], image_dims[1], image_type);

@@ -23,7 +23,7 @@ void LayerVisualizer::setup(tensorflow::Session& session, const tensorflow::Grap
         // lets get the weights from the network to visualize them in images
         // run the network and ask for nodes with the names selected above
         vector<tensorflow::Tensor> output_tensors;
-        if(!session.Run({}, names, {}, &output_tensors).ok()) ofLogError() << "Error running network to get viz layers";
+        if(!session.Run({}, names, {}, &output_tensors).ok()) ofLogError("ofxMSATensorFlow") << "Error running network to get viz layers";
 
         int nlayers = output_tensors.size();    // number of layers in network
 

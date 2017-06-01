@@ -24,7 +24,7 @@ and loaded in openframeworks for prediction.
 //--------------------------------------------------------------
 class ofApp : public ofBaseApp {
 public:
-    // a simple wrapper for a simple predictor model with one (n-dim) input and one (n-dim) output
+    // a simple wrapper for a simple predictor model with variable number of inputs and outputs
     msa::tf::SimpleModel model;
 
     // a bunch of properties of the models
@@ -32,8 +32,8 @@ public:
     // but trying to keep the code minimal so hardcoding them since they're the same for all models
     const int input_shape[2] = {256, 256}; // dimensions {height, width} for input image
     const int output_shape[2] = {256, 256}; // dimensions {height, width} for output image
-    ofVec2f input_range = {-1, 1}; // range of values {min, max} that model expects for input
-    ofVec2f output_range = {-1, 1}; // range of values {min, max} that model outputs
+    const ofVec2f input_range = {-1, 1}; // range of values {min, max} that model expects for input
+    const ofVec2f output_range = {-1, 1}; // range of values {min, max} that model outputs
     const string input_op_name = "generator/generator_inputs"; // name of op to feed input to
     const string output_op_name = "generator/generator_outputs"; // name of op to fetch output from
 
@@ -46,9 +46,8 @@ public:
     ofFloatImage img_out; // output from the model
 
     // model file management
-    string model_root_dir = "models";
-    vector<string> model_names;
-    int cur_model_index = 0;
+    ofDirectory models_dir;    // data/models folder which contains subfolders for each model
+    int cur_model_index = 0; // which model (i.e. folder) we're currently using
 
 
     // color management for drawing
@@ -76,18 +75,14 @@ public:
 
 
         // scan models dir
-        ofDirectory dir;
-        dir.listDir(model_root_dir);
-        if(dir.size()==0) {
-            ofLogError() << "Could not find models folder. Did you download the data files and place them in the data folder? ";
-            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
-            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+        models_dir.listDir("models");
+        if(models_dir.size()==0) {
+            ofLogError() << "Couldn't find models folder." << msa::tf::missing_data_error();
             assert(false);
             ofExit(1);
         }
-        for(int i=0; i<dir.getFiles().size(); i++) model_names.push_back(dir.getName(i));
-        sort(model_names.begin(), model_names.end());
-        load_model_index(0);
+        models_dir.sort();
+        load_model_index(0); // load first model
     }
 
 
@@ -100,9 +95,7 @@ public:
         // note that it expects arrays for input op names and output op names, so just use {}
         model.setup(ofFilePath::join(model_dir, "graph_frz.pb"), {input_op_name}, {output_op_name});
         if(! model.is_loaded()) {
-            ofLogError() << "Model init error. Did you download the data files and place them in the data folder? ";
-            ofLogError() << "Download from https://github.com/memo/ofxMSATensorFlow/releases";
-            ofLogError() << "More info at https://github.com/memo/ofxMSATensorFlow/wiki";
+            ofLogError() << "Model init error." << msa::tf::missing_data_error();
             assert(false);
             ofExit(1);
         }
@@ -170,10 +163,10 @@ public:
 
 
     //--------------------------------------------------------------
-    // Load model by folder INDEX, and initialise session
+    // Load model by folder INDEX
     void load_model_index(int index) {
-        cur_model_index = ofClamp(index, 0, model_names.size()-1);
-        load_model(model_root_dir + "/" + model_names[cur_model_index]);
+        cur_model_index = ofClamp(index, 0, models_dir.size()-1);
+        load_model(models_dir.getPath(cur_model_index));
     }
 
 
@@ -212,7 +205,7 @@ public:
 
         // run model on it
         if(do_auto_run)
-            model.run(img_in, img_out, input_range, output_range);
+            model.run_image_to_image(img_in, img_out, input_range, output_range);
 
         // DISPLAY STUFF
         stringstream str;
@@ -227,16 +220,13 @@ public:
         str << endl;
         str << "draw in the box on the left" << endl;
         str << "or drag an image (PNG) into it" << endl;
-
         str << endl;
+
         str << "Press number key to load model: " << endl;
-        str << endl;
-
-        for(int i=0; i<model_names.size(); i++) {
+        for(int i=0; i<models_dir.size(); i++) {
             auto marker = (i==cur_model_index) ? ">" : " ";
-            str << " " << (i+1) << " : " << marker << " " << model_names[i] << endl;
+            str << " " << (i+1) << " : " << marker << " " << models_dir.getName(i) << endl;
         }
-        str << endl;
 
 
 
