@@ -14,7 +14,7 @@ TensorFlow is written in C/C++ with python bindings, and most of the documentati
 
 1. **Build and train graphs** (i.e. 'networks', 'models') mostly in python (possibly Java, C++ or any other language/platform with tensorflow bindings)
 2. **Save the trained models** to binary files
-3. **Load the trained models in openframeworks**, feed them data, manipulate, get results, play, and connect them to the ofUniverse
+3. **Load the trained models in openframeworks**, feed data, manipulate, get results, play, and connect to the ofUniverse
 
 You could potentially do steps 1-2 in openframeworks as well, but the python API is more user-friendly for building graphs and training. 
 
@@ -23,7 +23,7 @@ You could potentially do steps 1-2 in openframeworks as well, but the python API
 The examples are quite minimal and shouldn't be considered comprehensive tensorflow tutorials. They demonstrate *loading and manipulating different types of tensorflow models in openFrameworks*. E.g.
 
 * for the **most basic example** of loading a model, feeding it data and fetching the results  (using just a [low level C API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFUtils.h)), see *example-basic*
-* for a **very simple barebones Image-to-Image example** (loading a model, feeding it an image, and fetching an image using a [higher level C++ API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFSimpleModel.h)) see *example-pix2pix-simple - **This is probably the template example for other examples**
+* for a **very simple barebones Image-to-Image example** (loading a model, feeding it an image, and fetching an image using a [higher level C++ API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFSimpleModel.h)) see *example-pix2pix-simple* - **This is probably the best minimal template for other examples**
 * for more complex **Image-to-Image** examples (with **Conditional Generative Adversarial Networks**) see *example-pix2pix* or *example-pix2pix-webcam*
 * for **image classification** see *example-mnist* or *example-inception3*
 * for **sequence generation of *discrete* data** such as text (with **stateful LSTM/RNN**, where LSTM state is retrieved and passed back in at every time-step) see *example-char-rnn*
