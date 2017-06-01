@@ -22,12 +22,14 @@ You could potentially do steps 1-2 in openframeworks as well, but the python API
 ## Examples
 The examples are quite minimal and shouldn't be considered comprehensive tensorflow tutorials. They demonstrate *loading and manipulating different types of tensorflow models in openFrameworks*. E.g.
 
+* for the **most basic example** of loading a model, feeding it data and fetching the results  (using just a [low level C API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFUtils.h)), see *example-basic*
+* for a **very simple barebones Image-to-Image example** (loading a model, feeding it an image, and fetching an image using a [higher level C++ API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFSimpleModel.h)) see *example-pix2pix-simple - **This is probably the template example for other examples**
+* for more complex **Image-to-Image** examples (with **Conditional Generative Adversarial Networks**) see *example-pix2pix* or *example-pix2pix-webcam*
 * for **image classification** see *example-mnist* or *example-inception3*
 * for **sequence generation of *discrete* data** such as text (with **stateful LSTM/RNN**, where LSTM state is retrieved and passed back in at every time-step) see *example-char-rnn*
 * for **sequence generation of *continuous* data** such as handwriting (with **Recurrent Mixture Density Networks**) see *example-handwriting-rnn*
 * for **image generation** (with **Conditional Generative Adversarial Networks**) see *example-pix2pix* or *example-pix2pix-webcam*
 * for **constructing graphs in C++** see *example-build-graph*
-* for the **most basic example** of loading a model, feeding it data and fetching the results, see *example-basic*
 
 Potentially you could load any pretrained model in openframeworks and manipulate. E.g. checkout Parag's [tutorials](https://github.com/pkmital/tensorflow_tutorials) and [Kadenze course](https://www.kadenze.com/courses/creative-applications-of-deep-learning-with-tensorflow-iv/info). There's info in the wiki on [how to do export and distribute models](https://github.com/memo/ofxMSATensorFlow/wiki/Loading-and-using-trained-tensorflow-models-in-openFrameworks).
 
@@ -46,6 +48,11 @@ Same as pix2pix-example with the addition of live webcam input. See description 
 ![example-pix2pix_400x2x](https://cloud.githubusercontent.com/assets/144230/26264408/a4700456-3cd4-11e7-8b2c-632f99acac28.gif)
 
 pix2pix (Image-to-Image Translation with Conditional Adversarial Nets). An accessible explanation can be found [here](https://phillipi.github.io/pix2pix/) and [here](https://affinelayer.com/pix2pix/). The network basically learns to map from one image to another. E.g. in the example you draw in the left viewport, and it generates the image in the right viewport. I'm supplying three pretrained models from the original paper: cityscapes, building facades, and maps. And a model I trained on [150 art collections from around the world](https://commons.wikimedia.org/wiki/Category:Google_Art_Project_works_by_collection). Models are trained and saved in python with [this code](https://github.com/memo/pix2pix-tensorflow) (which is based on [this](https://github.com/affinelayer/pix2pix-tensorflow) tensorflow implementation, which is based on the original [torch implementation](https://phillipi.github.io/pix2pix/)), and loaded in openframeworks for prediction. 
+
+---
+
+### example-pix2pix-simple
+This is the simplest pix2pix example with no interaction. The purpose of this example is the show the most barebones way of using the msa::tf::SimpleModel API
 
 ---
 
