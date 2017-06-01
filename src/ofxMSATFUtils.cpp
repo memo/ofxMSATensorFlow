@@ -54,10 +54,10 @@ void create_graph_in_session(Session_ptr session, GraphDef_ptr graph_def, const 
 
 
 //--------------------------------------------------------------
-tensorflow::SessionOptions session_gpu_options(bool allow_growth, double gpu_memory_fraction, const tensorflow::SessionOptions& session_options_base) {
+tensorflow::SessionOptions session_gpu_options(bool allow_growth, double per_process_gpu_memory_fraction, const tensorflow::SessionOptions& session_options_base) {
     tensorflow::SessionOptions session_options(session_options_base);
     session_options.config.mutable_gpu_options()->set_allow_growth(allow_growth);
-    session_options.config.mutable_gpu_options()->set_per_process_gpu_memory_fraction(gpu_memory_fraction);
+    session_options.config.mutable_gpu_options()->set_per_process_gpu_memory_fraction(per_process_gpu_memory_fraction);
     return session_options;
 }
 

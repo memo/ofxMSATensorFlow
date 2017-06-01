@@ -39,7 +39,7 @@ void create_graph_in_session(Session_ptr session, GraphDef_ptr graph_def, const 
 
 // create session options (for use when creating a session) with specified gpu options
 // optionally provide a base session options as argument to use as a base (this isn't modified)
-tensorflow::SessionOptions session_gpu_options(bool allow_growth, double gpu_memory_fraction, const tensorflow::SessionOptions& session_options_base=tensorflow::SessionOptions());
+tensorflow::SessionOptions session_gpu_options(bool allow_growth, double per_process_gpu_memory_fraction, const tensorflow::SessionOptions& session_options_base=tensorflow::SessionOptions());
 
 
 //--------------------------------------------------------------
