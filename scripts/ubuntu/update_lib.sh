@@ -13,7 +13,7 @@ if [[ $(/usr/bin/id -u) -ne 0 ]]; then
 	echo " 1. copies libtensorflow_cc.so"
 	echo "      from ofxMSATensorFlow/libs/tensorflow/lib/linux64"
 	echo "      to a destination lib path (~/lib by defaut, or command line arg)"
-	echo " 2. adds this path to /etc/ld.so.conf.d/lib/libtensorflow_cc.so.conf"
+	echo " 2. adds this path to /etc/ld.so.conf.d/libtensorflow_cc.so.conf"
 	echo " 3. runs ldconfig"
 	echo
     exit
