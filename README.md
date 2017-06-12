@@ -25,6 +25,7 @@ The examples are quite minimal and shouldn't be considered comprehensive tensorf
 * for the **most basic example** of loading a model, feeding it data and fetching the results  (using just a [low level C API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFUtils.h)), see *example-basic*
 * for a **very simple barebones Image-to-Image example** (loading a model, feeding it an image, and fetching an image using a [higher level C++ API](https://github.com/memo/ofxMSATensorFlow/blob/master/src/ofxMSATFSimpleModel.h)) see *example-pix2pix-simple* - **This is probably the best minimal template for other examples**
 * for more complex **Image-to-Image** examples (with **Conditional Generative Adversarial Networks**) see *example-pix2pix* or *example-pix2pix-webcam*
+* for **style transfer** see *example-style-transfer*
 * for **image classification** see *example-mnist* or *example-inception3*
 * for **sequence generation of *discrete* data** such as text (with **stateful LSTM/RNN**, where LSTM state is retrieved and passed back in at every time-step) see *example-char-rnn*
 * for **sequence generation of *continuous* data** such as handwriting (with **Recurrent Mixture Density Networks**) see *example-handwriting-rnn*
@@ -53,6 +54,21 @@ pix2pix (Image-to-Image Translation with Conditional Adversarial Nets). An acces
 
 ### example-pix2pix-simple
 This is the simplest pix2pix example with no interaction. The purpose of this example is the show the most barebones way of using the msa::tf::SimpleModel API
+
+---
+
+### example-style-transfer
+Fast Style Transfer from [Logan Engstrom](https://github.com/lengstrom/fast-style-transfer). This realtime webcam openFrameworks example is by [Ole Kristensen](http://ole.kristensen.name) who also modified the python evaluate.py script to export a graph in protobuf format for use with the c++ TF implementation. [Ole has a fork of Enstroms repo](https://github.com/olekristensen/fast-style-transfer), that will do the ugly varhack tricks to restore the graph variables for you. Note that when you want to use your own models you have to evaluate (style) one image of the same resolution as the one you want to feed in your openFrameworks app. You do this for evaluate.py to export an of.pb file for you to load from your ofApp.
+
+```
+  @misc{engstrom2016faststyletransfer,
+    author = {Logan Engstrom},
+    title = {Fast Style Transfer},
+    year = {2016},
+    howpublished = {\url{https://github.com/lengstrom/fast-style-transfer/}},
+    note = {commit xxxxxxx}
+  }
+```
 
 ---
 
