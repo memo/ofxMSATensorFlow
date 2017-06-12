@@ -58,6 +58,8 @@ This is the simplest pix2pix example with no interaction. The purpose of this ex
 ---
 
 ### example-style-transfer
+![](https://user-images.githubusercontent.com/495476/27031188-8ba7d9e6-4f6f-11e7-8a2c-6ce3f3c75284.png)
+
 Fast Style Transfer from [Logan Engstrom](https://github.com/lengstrom/fast-style-transfer). This realtime webcam openFrameworks example is by [Ole Kristensen](http://ole.kristensen.name) who also modified the python evaluate.py script to export a graph in protobuf format for use with the c++ TF implementation. [Ole has a fork of Enstroms repo](https://github.com/olekristensen/fast-style-transfer), that will do the ugly varhack tricks to restore the graph variables for you. Note that when you want to use your own models you have to evaluate (style) one image of the same resolution as the one you want to feed in your openFrameworks app. You do this for evaluate.py to export an of.pb file for you to load from your ofApp.
 
 ```
