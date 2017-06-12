@@ -33,8 +33,6 @@ class ofApp : public ofBaseApp {
 public:
     // a simple wrapper for a simple predictor model with variable number of inputs and outputs
     msa::tf::SimpleModel model;
-    msa::tf::Session_ptr session;                   // shared pointer to tensorflow session
-    msa::tf::GraphDef_ptr graph_def;                // shared pointer to tensorflow graph definition
 
     // a bunch of properties of the models
     // ideally should read from disk and vary with the model
