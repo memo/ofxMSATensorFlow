@@ -1,1 +1,2 @@
 ofxMSATensorFlow
+ofxOpenCv
