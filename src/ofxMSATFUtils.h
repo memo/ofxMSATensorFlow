@@ -189,6 +189,10 @@ template<typename T> void gray_to_color(const ofPixels_<T> &src, ofPixels_<T> &d
 template<typename T> void gray_to_color(const ofImage_<T> &src, ofImage_<T> &dst, const ofVec2f& in_range=ofVec2f(), const ofVec2f& out_range=ofVec2f(), float scale=1.0f);
 
 
+// return list of checkpoints (.pb files) in model_dir
+// if there are more than max_count files, return evenly distributed across all files
+vector<string> get_file_list(string model_dir, int max_count=1000, string ext="pb", bool do_sort=true);
+
 // IMPLEMENTATIONS
 
 //--------------------------------------------------------------

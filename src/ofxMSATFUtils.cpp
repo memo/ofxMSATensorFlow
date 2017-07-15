@@ -187,7 +187,7 @@ void get_topk(const vector<float> probs, vector<int> &out_indices, vector<float>
 bool read_labels_file(string file_name, vector<string>& result) {
     std::ifstream file(file_name);
     if (!file) {
-        ofLogError("ofxMSATensorFlow") <<"ReadLabelsFile: " << file_name << " not found.";
+        ofLogError("ofxMSATensorFlow") <<"read_labels_file: " << file_name << " not found.";
         return false;
     }
 
@@ -201,6 +201,38 @@ bool read_labels_file(string file_name, vector<string>& result) {
         result.emplace_back();
     }
     return true;
+}
+
+
+//--------------------------------------------------------------
+vector<string> get_file_list(string model_dir, int max_count, string ext, bool do_sort) {
+    ofLogVerbose("ofxMSATensorFlow")  << "get_file_list:" << model_dir << ", max_count:" << max_count << ", ext:" << ext;
+
+    ofDirectory dir;
+    dir.allowExt(ext);
+    dir.listDir(model_dir);
+    if(dir.size()==0) {
+        throw std::runtime_error("get_file_list: no models in " + model_dir);
+    }
+    vector<string> filenames;
+    for(int i=0; i<dir.getFiles().size(); i++) filenames.push_back(dir.getName(i));
+    if(do_sort) sort(filenames.begin(), filenames.end());
+
+    int count = filenames.size();
+    ofLogVerbose("ofxMSATensorFlow") << count << " checkpoints found";
+    if(count > max_count) {
+        std::reverse(filenames.begin(),filenames.end());
+        vector<string> new_filenames;
+        ofLogVerbose("ofxMSATensorFlow") << "too many, using only " << max_count;
+        for(int i=0; i<max_count; i++) {
+            int index = round(ofMap(i, 0, max_count-1, 0, count-1));
+            new_filenames.push_back(filenames[index]);
+            ofLogVerbose() << i << " -> " << index << " : " << new_filenames.back();
+        }
+        filenames = new_filenames;
+        std::reverse(filenames.begin(),filenames.end());
+    }
+    return filenames;
 }
 
 
