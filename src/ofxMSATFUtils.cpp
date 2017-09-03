@@ -227,7 +227,7 @@ vector<string> get_file_list(string model_dir, int max_count, string ext, bool d
         for(int i=0; i<max_count; i++) {
             int index = round(ofMap(i, 0, max_count-1, 0, count-1));
             new_filenames.push_back(filenames[index]);
-            ofLogVerbose() << i << " -> " << index << " : " << new_filenames.back();
+            ofLogVerbose("ofxMSATensorFlow") << i << " -> " << index << " : " << new_filenames.back();
         }
         filenames = new_filenames;
         std::reverse(filenames.begin(),filenames.end());
