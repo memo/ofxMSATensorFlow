@@ -52,32 +52,32 @@ namespace ops {
 ///
 /// (1) For the following input of shape `[4, 1, 1, 1]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 /// ```
 ///
 /// The output tensor has shape `[1, 2, 2, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [2]], [[3], [4]]]]
 /// ```
 ///
 /// (2) For the following input of shape `[4, 1, 1, 3]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// [[[1, 2, 3]], [[4, 5, 6]], [[7, 8, 9]], [[10, 11, 12]]]
 /// ```
 ///
 /// The output tensor has shape `[1, 2, 2, 3]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3], [4, 5, 6]],
 ///       [[7, 8, 9], [10, 11, 12]]]]
 /// ```
 ///
 /// (3) For the following input of shape `[4, 2, 2, 1]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
@@ -86,7 +86,7 @@ namespace ops {
 ///
 /// The output tensor has shape `[1, 4, 4, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[1],   [2],  [3],  [4]],
 ///      [[5],   [6],  [7],  [8]],
 ///      [[9],  [10], [11],  [12]],
@@ -95,14 +95,14 @@ namespace ops {
 ///
 /// (4) For the following input of shape `[8, 1, 2, 1]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
 ///      [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
 /// ```
 ///
 /// The output tensor has shape `[2, 2, 4, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]], [[5], [7]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
@@ -181,26 +181,26 @@ class BatchToSpace {
 /// (1) For the following input of shape `[4, 1, 1, 1]`, `block_shape = [2, 2]`, and
 ///     `crops = [[0, 0], [0, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 /// ```
 ///
 /// The output tensor has shape `[1, 2, 2, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [2]], [[3], [4]]]]
 /// ```
 ///
 /// (2) For the following input of shape `[4, 1, 1, 3]`, `block_shape = [2, 2]`, and
 ///     `crops = [[0, 0], [0, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// [[[1, 2, 3]], [[4, 5, 6]], [[7, 8, 9]], [[10, 11, 12]]]
 /// ```
 ///
 /// The output tensor has shape `[1, 2, 2, 3]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3], [4, 5, 6]],
 ///       [[7, 8, 9], [10, 11, 12]]]]
 /// ```
@@ -208,7 +208,7 @@ class BatchToSpace {
 /// (3) For the following input of shape `[4, 2, 2, 1]`, `block_shape = [2, 2]`, and
 ///     `crops = [[0, 0], [0, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
@@ -217,7 +217,7 @@ class BatchToSpace {
 ///
 /// The output tensor has shape `[1, 4, 4, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[1],   [2],  [3],  [4]],
 ///      [[5],   [6],  [7],  [8]],
 ///      [[9],  [10], [11],  [12]],
@@ -227,7 +227,7 @@ class BatchToSpace {
 /// (4) For the following input of shape `[8, 1, 3, 1]`, `block_shape = [2, 2]`, and
 ///     `crops = [[0, 0], [2, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
 ///      [[[0], [2], [4]]], [[[0], [10], [12]]],
 ///      [[[0], [5], [7]]], [[[0], [13], [15]]],
@@ -236,7 +236,7 @@ class BatchToSpace {
 ///
 /// The output tensor has shape `[2, 2, 4, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1],   [2],  [3],  [4]],
 ///       [[5],   [6],  [7],  [8]]],
 ///      [[[9],  [10], [11],  [12]],
@@ -354,6 +354,27 @@ class Concat {
   ::tensorflow::Output output;
 };
 
+/// Identity op for gradient debugging.
+///
+/// This op is hidden from public in Python. It is used by TensorFlow Debugger to
+/// register gradient tensors for gradient debugging.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The output tensor.
+class DebugGradientIdentity {
+ public:
+  DebugGradientIdentity(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  ::tensorflow::Output output;
+};
+
 /// DepthToSpace for tensors of type T.
 ///
 /// Rearranges data from depth into blocks of spatial data.
@@ -384,14 +405,14 @@ class Concat {
 ///
 /// For example, given this input of shape `[1, 1, 1, 4]`, and a block size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3, 4]]]]
 ///
 /// ```
 ///
 /// This operation will output a tensor of shape `[1, 2, 2, 1]`:
 ///
-/// ```prettyprint
+/// ```
 ///    [[[[1], [2]],
 ///      [[3], [4]]]]
 /// ```
@@ -403,14 +424,14 @@ class Concat {
 ///
 /// For an input tensor with larger depth, here of shape `[1, 1, 1, 12]`, e.g.
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
 /// ```
 ///
 /// This operation, for block size of 2, will return the following tensor of shape
 /// `[1, 2, 2, 3]`
 ///
-/// ```prettyprint
+/// ```
 ///    [[[[1, 2, 3], [4, 5, 6]],
 ///      [[7, 8, 9], [10, 11, 12]]]]
 ///
@@ -418,7 +439,7 @@ class Concat {
 ///
 /// Similarly, for the following input of shape `[1 2 2 4]`, and a block size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x =  [[[[1, 2, 3, 4],
 ///        [5, 6, 7, 8]],
 ///       [[9, 10, 11, 12],
@@ -427,7 +448,7 @@ class Concat {
 ///
 /// the operator will return the following tensor of shape `[1 4 4 1]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[ [1],   [2],  [5],  [6]],
 ///      [ [3],   [4],  [7],  [8]],
 ///      [ [9],  [10], [13],  [14]],
@@ -478,7 +499,7 @@ class DepthToSpace {
 ///
 /// If the mode is 'MIN_FIRST', then this approach is used:
 ///
-/// ```
+/// ```c++
 /// number_of_steps = 1 << (# of bits in T)
 /// range_adjust = number_of_steps / (number_of_steps - 1)
 /// range = (range_max - range_min) * range_adjust
@@ -535,7 +556,7 @@ class Dequantize {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'diagonal' is [1, 2, 3, 4]
 /// tf.diag(diagonal) ==> [[1, 0, 0, 0]
 ///                        [0, 2, 0, 0]
@@ -571,7 +592,7 @@ class Diag {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'input' is [[1, 0, 0, 0]
 ///               [0, 2, 0, 0]
 ///               [0, 0, 3, 0]
@@ -707,7 +728,7 @@ class EditDistance {
 ///
 /// Other examples:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is a tensor of shape [2]
 /// shape(expand_dims(t, 0)) ==> [1, 2]
 /// shape(expand_dims(t, 1)) ==> [2, 1]
@@ -757,7 +778,8 @@ class ExpandDims {
 /// input stride, specifying how far two consecutive patch samples are in the
 /// input. Equivalent to extracting patches with
 /// `patch_sizes_eff = patch_sizes + (patch_sizes - 1) * (rates - 1)`, followed by
-/// subsampling them spatially by a factor of `rates`.
+/// subsampling them spatially by a factor of `rates`. This is equivalent to
+/// `rate` in dilated (a.k.a. Atrous) convolutions.
 /// * padding: The type of padding algorithm to use.
 ///
 /// We specify the size-related attributes as:
@@ -771,7 +793,8 @@ class ExpandDims {
 /// Returns:
 /// * `Output`: 4-D Tensor with shape `[batch, out_rows, out_cols, ksize_rows *
 /// ksize_cols * depth]` containing image patches with size
-/// `ksize_rows x ksize_cols x depth` vectorized in the "depth" dimension.
+/// `ksize_rows x ksize_cols x depth` vectorized in the "depth" dimension. Note
+/// `out_rows` and `out_cols` are the dimensions of the output patches.
 class ExtractImagePatches {
  public:
   ExtractImagePatches(const ::tensorflow::Scope& scope, ::tensorflow::Input
@@ -787,9 +810,11 @@ class ExtractImagePatches {
 
 /// Fake-quantize the 'inputs' tensor, type float to 'outputs' tensor of same type.
 ///
-/// Attributes [min; max] define the clamping range for the 'inputs' data.  Op
-/// divides this range into 255 steps (total of 256 values), then replaces each
-/// 'inputs' value with the closest of the quantized step values.
+/// Attributes `[min; max]` define the clamping range for the `inputs` data.
+/// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
+/// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
+/// then de-quantized and output as floats in `[min; max]` interval.
+/// `num_bits` is the bitwidth of the quantization; between 2 and 8, inclusive.
 ///
 /// Quantization is called fake since the output is still in floating point.
 ///
@@ -816,8 +841,24 @@ class FakeQuantWithMinMaxArgs {
       return ret;
     }
 
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Defaults to false
+    Attrs NarrowRange(bool x) {
+      Attrs ret = *this;
+      ret.narrow_range_ = x;
+      return ret;
+    }
+
     float min_ = -6.0f;
     float max_ = 6.0f;
+    int64 num_bits_ = 8;
+    bool narrow_range_ = false;
   };
   FakeQuantWithMinMaxArgs(const ::tensorflow::Scope& scope, ::tensorflow::Input
                         inputs);
@@ -832,6 +873,12 @@ class FakeQuantWithMinMaxArgs {
   }
   static Attrs Max(float x) {
     return Attrs().Max(x);
+  }
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs NarrowRange(bool x) {
+    return Attrs().NarrowRange(x);
   }
 
   ::tensorflow::Output outputs;
@@ -865,8 +912,24 @@ class FakeQuantWithMinMaxArgsGradient {
       return ret;
     }
 
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Defaults to false
+    Attrs NarrowRange(bool x) {
+      Attrs ret = *this;
+      ret.narrow_range_ = x;
+      return ret;
+    }
+
     float min_ = -6.0f;
     float max_ = 6.0f;
+    int64 num_bits_ = 8;
+    bool narrow_range_ = false;
   };
   FakeQuantWithMinMaxArgsGradient(const ::tensorflow::Scope& scope,
                                 ::tensorflow::Input gradients,
@@ -885,6 +948,12 @@ class FakeQuantWithMinMaxArgsGradient {
   static Attrs Max(float x) {
     return Attrs().Max(x);
   }
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs NarrowRange(bool x) {
+    return Attrs().NarrowRange(x);
+  }
 
   ::tensorflow::Output backprops;
 };
@@ -893,11 +962,14 @@ class FakeQuantWithMinMaxArgsGradient {
 ///
 /// and `max` to 'outputs' tensor of same shape as `inputs`.
 ///
-/// [min; max] is the clamping range for the 'inputs' data.  Op divides this range
-/// into 255 steps (total of 256 values), then replaces each 'inputs' value with the
-/// closest of the quantized step values.
+/// `[min; max]` define the clamping range for the `inputs` data.
+/// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
+/// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
+/// then de-quantized and output as floats in `[min; max]` interval.
+/// `num_bits` is the bitwidth of the quantization; between 2 and 8, inclusive.
 ///
-/// This operation has a gradient and thus allows for training `min` and `max` values.
+/// This operation has a gradient and thus allows for training `min` and `max`
+/// values.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -906,12 +978,41 @@ class FakeQuantWithMinMaxArgsGradient {
 /// * `Output`: The outputs tensor.
 class FakeQuantWithMinMaxVars {
  public:
+  /// Optional attribute setters for FakeQuantWithMinMaxVars
+  struct Attrs {
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Defaults to false
+    Attrs NarrowRange(bool x) {
+      Attrs ret = *this;
+      ret.narrow_range_ = x;
+      return ret;
+    }
+
+    int64 num_bits_ = 8;
+    bool narrow_range_ = false;
+  };
   FakeQuantWithMinMaxVars(const ::tensorflow::Scope& scope, ::tensorflow::Input
                         inputs, ::tensorflow::Input min, ::tensorflow::Input
                         max);
+  FakeQuantWithMinMaxVars(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        inputs, ::tensorflow::Input min, ::tensorflow::Input
+                        max, const FakeQuantWithMinMaxVars::Attrs& attrs);
   operator ::tensorflow::Output() const { return outputs; }
   operator ::tensorflow::Input() const { return outputs; }
   ::tensorflow::Node* node() const { return outputs.node(); }
+
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs NarrowRange(bool x) {
+    return Attrs().NarrowRange(x);
+  }
 
   ::tensorflow::Output outputs;
 };
@@ -924,6 +1025,10 @@ class FakeQuantWithMinMaxVars {
 /// * inputs: Values passed as inputs to the FakeQuantWithMinMaxVars operation.
 /// min, max: Quantization interval, scalar floats.
 ///
+/// Optional attributes (see `Attrs`):
+/// * num_bits: The bitwidth of the quantization; between 2 and 8, inclusive.
+/// * narrow_range: Whether to quantize into 2^num_bits - 1 distinct values.
+///
 /// Returns:
 /// * `Output` backprops_wrt_input: Backpropagated gradients w.r.t. inputs:
 /// `gradients * (inputs >= min && inputs <= max)`.
@@ -933,10 +1038,45 @@ class FakeQuantWithMinMaxVars {
 /// `sum(gradients * (inputs > max))`.
 class FakeQuantWithMinMaxVarsGradient {
  public:
+  /// Optional attribute setters for FakeQuantWithMinMaxVarsGradient
+  struct Attrs {
+    /// The bitwidth of the quantization; between 2 and 8, inclusive.
+    ///
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Whether to quantize into 2^num_bits - 1 distinct values.
+    ///
+    /// Defaults to false
+    Attrs NarrowRange(bool x) {
+      Attrs ret = *this;
+      ret.narrow_range_ = x;
+      return ret;
+    }
+
+    int64 num_bits_ = 8;
+    bool narrow_range_ = false;
+  };
   FakeQuantWithMinMaxVarsGradient(const ::tensorflow::Scope& scope,
                                 ::tensorflow::Input gradients,
                                 ::tensorflow::Input inputs, ::tensorflow::Input
                                 min, ::tensorflow::Input max);
+  FakeQuantWithMinMaxVarsGradient(const ::tensorflow::Scope& scope,
+                                ::tensorflow::Input gradients,
+                                ::tensorflow::Input inputs, ::tensorflow::Input
+                                min, ::tensorflow::Input max, const
+                                FakeQuantWithMinMaxVarsGradient::Attrs& attrs);
+
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs NarrowRange(bool x) {
+    return Attrs().NarrowRange(x);
+  }
 
   ::tensorflow::Output backprops_wrt_input;
   ::tensorflow::Output backprop_wrt_min;
@@ -948,11 +1088,14 @@ class FakeQuantWithMinMaxVarsGradient {
 /// `[b, d]` `[b, h, w, d]` via per-channel floats `min` and `max` of shape `[d]`
 /// to 'outputs' tensor of same shape as `inputs`.
 ///
-/// [min; max] is the clamping range for the 'inputs' data in the corresponding
-/// depth channel.  Op divides this range into 255 steps (total of 256 values), then
-/// replaces each 'inputs' value with the closest of the quantized step values.
+/// `[min; max]` define the clamping range for the `inputs` data.
+/// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
+/// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
+/// then de-quantized and output as floats in `[min; max]` interval.
+/// `num_bits` is the bitwidth of the quantization; between 2 and 8, inclusive.
 ///
-/// This operation has a gradient and thus allows for training `min` and `max` values.
+/// This operation has a gradient and thus allows for training `min` and `max`
+/// values.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -961,13 +1104,45 @@ class FakeQuantWithMinMaxVarsGradient {
 /// * `Output`: The outputs tensor.
 class FakeQuantWithMinMaxVarsPerChannel {
  public:
+  /// Optional attribute setters for FakeQuantWithMinMaxVarsPerChannel
+  struct Attrs {
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Defaults to false
+    Attrs NarrowRange(bool x) {
+      Attrs ret = *this;
+      ret.narrow_range_ = x;
+      return ret;
+    }
+
+    int64 num_bits_ = 8;
+    bool narrow_range_ = false;
+  };
   FakeQuantWithMinMaxVarsPerChannel(const ::tensorflow::Scope& scope,
                                   ::tensorflow::Input inputs,
                                   ::tensorflow::Input min, ::tensorflow::Input
                                   max);
+  FakeQuantWithMinMaxVarsPerChannel(const ::tensorflow::Scope& scope,
+                                  ::tensorflow::Input inputs,
+                                  ::tensorflow::Input min, ::tensorflow::Input
+                                  max, const
+                                  FakeQuantWithMinMaxVarsPerChannel::Attrs&
+                                  attrs);
   operator ::tensorflow::Output() const { return outputs; }
   operator ::tensorflow::Input() const { return outputs; }
   ::tensorflow::Node* node() const { return outputs.node(); }
+
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs NarrowRange(bool x) {
+    return Attrs().NarrowRange(x);
+  }
 
   ::tensorflow::Output outputs;
 };
@@ -982,6 +1157,10 @@ class FakeQuantWithMinMaxVarsPerChannel {
 ///   same as `gradients`.
 /// min, max: Quantization interval, floats of shape `[d]`.
 ///
+/// Optional attributes (see `Attrs`):
+/// * num_bits: The bitwidth of the quantization; between 2 and 8, inclusive.
+/// * narrow_range: Whether to quantize into 2^num_bits - 1 distinct values.
+///
 /// Returns:
 /// * `Output` backprops_wrt_input: Backpropagated gradients w.r.t. inputs, shape same as
 /// `inputs`:
@@ -992,11 +1171,48 @@ class FakeQuantWithMinMaxVarsPerChannel {
 /// `sum_per_d(gradients * (inputs > max))`.
 class FakeQuantWithMinMaxVarsPerChannelGradient {
  public:
+  /// Optional attribute setters for FakeQuantWithMinMaxVarsPerChannelGradient
+  struct Attrs {
+    /// The bitwidth of the quantization; between 2 and 8, inclusive.
+    ///
+    /// Defaults to 8
+    Attrs NumBits(int64 x) {
+      Attrs ret = *this;
+      ret.num_bits_ = x;
+      return ret;
+    }
+
+    /// Whether to quantize into 2^num_bits - 1 distinct values.
+    ///
+    /// Defaults to false
+    Attrs NarrowRange(bool x) {
+      Attrs ret = *this;
+      ret.narrow_range_ = x;
+      return ret;
+    }
+
+    int64 num_bits_ = 8;
+    bool narrow_range_ = false;
+  };
   FakeQuantWithMinMaxVarsPerChannelGradient(const ::tensorflow::Scope& scope,
                                           ::tensorflow::Input gradients,
                                           ::tensorflow::Input inputs,
                                           ::tensorflow::Input min,
                                           ::tensorflow::Input max);
+  FakeQuantWithMinMaxVarsPerChannelGradient(const ::tensorflow::Scope& scope,
+                                          ::tensorflow::Input gradients,
+                                          ::tensorflow::Input inputs,
+                                          ::tensorflow::Input min,
+                                          ::tensorflow::Input max, const
+                                          FakeQuantWithMinMaxVarsPerChannelGradient::Attrs&
+                                          attrs);
+
+  static Attrs NumBits(int64 x) {
+    return Attrs().NumBits(x);
+  }
+  static Attrs NarrowRange(bool x) {
+    return Attrs().NarrowRange(x);
+  }
 
   ::tensorflow::Output backprops_wrt_input;
   ::tensorflow::Output backprop_wrt_min;
@@ -1009,7 +1225,7 @@ class FakeQuantWithMinMaxVarsPerChannelGradient {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # Output tensor has shape [2, 3].
 /// fill([2, 3], 9) ==> [[9, 9, 9]
 ///                      [9, 9, 9]]
@@ -1056,8 +1272,13 @@ class Fill {
 /// If `indices` is a permutation and `len(indices) == params.shape[0]` then
 /// this operation will permute `params` accordingly.
 ///
+/// `validate_indices`: DEPRECATED. If this operation is assigned to CPU, values in
+/// `indices` are always validated to be within range. If assigned to GPU,
+/// out-of-bound indices result in safe but unspecified behavior, which may include
+/// raising an error.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/Gather.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -1093,22 +1314,29 @@ class Gather {
   ::tensorflow::Output output;
 };
 
-/// Gather values or slices from `params` according to `indices`.
+/// Gather slices from `params` into a Tensor with shape specified by `indices`.
 ///
-/// `params` is a Tensor of rank `P` and `indices` is a Tensor of rank `Q`.
+/// `indices` is an K-dimensional integer tensor, best thought of as a
+/// (K-1)-dimensional tensor of indices into `params`, where each element defines a
+/// slice of `params`:
 ///
-/// `indices` must be integer tensor, containing indices into `params`.
-/// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
+///     output[i_0, ..., i_{K-2}] = params[indices[i0, ..., i_{K-2}]]
 ///
-/// The innermost dimension of `indices` (with length `K`) corresponds to
-/// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
-/// dimension of `params`.
+/// Whereas in @{tf.gather} `indices` defines slices into the first
+/// dimension of `params`, in `tf.gather_nd`, `indices` defines slices into the
+/// first `N` dimensions of `params`, where `N = indices.shape[-1]`.
 ///
-/// Produces an output tensor with shape
+/// The last dimension of `indices` can be at most the rank of
+/// `params`:
 ///
-/// ```
-/// [d_0, ..., d_{Q-2}, params.shape[K], ..., params.shape[P-1]].
-/// ```
+///     indices.shape[-1] <= params.rank
+///
+/// The last dimension of `indices` corresponds to elements
+/// (if `indices.shape[-1] == params.rank`) or slices
+/// (if `indices.shape[-1] < params.rank`) along dimension `indices.shape[-1]`
+/// of `params`.  The output tensor has shape
+///
+///     indices.shape[:-1] + params.shape[indices.shape[-1]:]
 ///
 /// Some examples below.
 ///
@@ -1189,16 +1417,62 @@ class Gather {
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * params: `P-D`.  The tensor from which to gather values.
-/// * indices: `Q-D`.  Index tensor having shape `[d_0, ..., d_{Q-2}, K]`.
+/// * params: The tensor from which to gather values.
+/// * indices: Index tensor.
 ///
 /// Returns:
-/// * `Output`: `(P+Q-K-1)-D`.  Values from `params` gathered from indices given by
-/// `indices`.
+/// * `Output`: Values from `params` gathered from indices given by `indices`, with
+/// shape `indices.shape[:-1] + params.shape[indices.shape[-1]:]`.
 class GatherNd {
  public:
   GatherNd(const ::tensorflow::Scope& scope, ::tensorflow::Input params,
          ::tensorflow::Input indices);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  ::tensorflow::Output output;
+};
+
+/// Gather slices from `params` axis `axis` according to `indices`.
+///
+/// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
+/// Produces an output tensor with shape `params.shape[:axis] + indices.shape +
+/// params.shape[axis + 1:]` where:
+///
+/// ```python
+///     # Scalar indices (output is rank(params) - 1).
+///     output[a_0, ..., a_n, b_0, ..., b_n] =
+///       params[a_0, ..., a_n, indices, b_0, ..., b_n]
+///
+///     # Vector indices (output is rank(params)).
+///     output[a_0, ..., a_n, i, b_0, ..., b_n] =
+///       params[a_0, ..., a_n, indices[i], b_0, ..., b_n]
+///
+///     # Higher rank indices (output is rank(params) + rank(indices) - 1).
+///     output[a_0, ..., a_n, i, ..., j, b_0, ... b_n] =
+///       params[a_0, ..., a_n, indices[i, ..., j], b_0, ..., b_n]
+/// ```
+///
+/// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
+/// <img style="width:100%" src="https://www.tensorflow.org/images/Gather.png" alt>
+/// </div>
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * params: The tensor from which to gather values. Must be at least rank
+/// `axis + 1`.
+/// * indices: Index tensor. Must be in range `[0, params.shape[axis])`.
+/// * axis: The axis in `params` to gather `indices` from. Defaults to the first
+/// dimension. Supports negative indexes.
+///
+/// Returns:
+/// * `Output`: Values from `params` gathered from indices given by `indices`, with
+/// shape `params.shape[:axis] + indices.shape + params.shape[axis + 1:]`.
+class GatherV2 {
+ public:
+  GatherV2(const ::tensorflow::Scope& scope, ::tensorflow::Input params,
+         ::tensorflow::Input indices, ::tensorflow::Input axis);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
@@ -1238,8 +1512,8 @@ class Identity {
 /// * `Output`: The tensor tensor.
 class ImmutableConst {
  public:
-  ImmutableConst(const ::tensorflow::Scope& scope, DataType dtype, TensorShape
-               shape, StringPiece memory_region_name);
+  ImmutableConst(const ::tensorflow::Scope& scope, DataType dtype,
+               PartialTensorShape shape, StringPiece memory_region_name);
   operator ::tensorflow::Output() const { return tensor; }
   operator ::tensorflow::Input() const { return tensor; }
   ::tensorflow::Node* node() const { return tensor.node(); }
@@ -1260,7 +1534,7 @@ class ImmutableConst {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # tensor `x` is [3, 4, 0, 2, 1]
 /// invert_permutation(x) ==> [2, 4, 3, 0, 1]
 /// ```
@@ -1293,14 +1567,14 @@ class InvertPermutation {
 ///
 /// For example, given this input:
 ///
-/// ```prettyprint
+/// ```
 /// x = [1, 2, 3, 4, 5, 6]
 /// y = [1, 3, 5]
 /// ```
 ///
 /// This operation would return:
 ///
-/// ```prettyprint
+/// ```
 /// out ==> [2, 4, 6]
 /// idx ==> [1, 3, 5]
 /// ```
@@ -1356,7 +1630,7 @@ class SetDiff1D {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # if 'input' is [[ 0,  1,  2, 3]
 ///                  [-1,  0,  1, 2]
 ///                  [-2, -1,  0, 1]
@@ -1375,7 +1649,7 @@ class SetDiff1D {
 ///
 /// Useful special cases:
 ///
-/// ```prettyprint
+/// ```
 ///  tf.matrix_band_part(input, 0, -1) ==> Upper triangular part.
 ///  tf.matrix_band_part(input, -1, 0) ==> Lower triangular part.
 ///  tf.matrix_band_part(input, 0, 0) ==> Diagonal.
@@ -1414,7 +1688,7 @@ class MatrixBandPart {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'diagonal' is [[1, 2, 3, 4], [5, 6, 7, 8]]
 ///
 /// and diagonal.shape = (2, 4)
@@ -1461,7 +1735,7 @@ class MatrixDiag {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'input' is [[[1, 0, 0, 0]
 ///                [0, 2, 0, 0]
 ///                [0, 0, 3, 0]
@@ -1545,7 +1819,7 @@ class MatrixSetDiag {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is [[1, 2, 3], [4, 5, 6]].
 /// # 'paddings' is [[1, 1]], [2, 2]].
 /// # 'mode' is SYMMETRIC.
@@ -1715,6 +1989,24 @@ class OneHot {
   ::tensorflow::Output output;
 };
 
+/// Returns a tensor of ones with the same shape and type as x.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * x: a tensor of type T.
+///
+/// Returns:
+/// * `Output`: a tensor of the same shape and type as x but filled with ones.
+class OnesLike {
+ public:
+  OnesLike(const ::tensorflow::Scope& scope, ::tensorflow::Input x);
+  operator ::tensorflow::Output() const { return y; }
+  operator ::tensorflow::Input() const { return y; }
+  ::tensorflow::Node* node() const { return y.node(); }
+
+  ::tensorflow::Output y;
+};
+
 /// Packs a list of `N` rank-`R` tensors into one rank-`(R+1)` tensor.
 ///
 /// Packs the `N` tensors in `values` into a tensor with rank one higher than each
@@ -1727,7 +2019,7 @@ class OneHot {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'x' is [1, 4]
 /// # 'y' is [2, 5]
 /// # 'z' is [3, 6]
@@ -1792,7 +2084,7 @@ class Stack {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is [[1, 1], [2, 2]]
 /// # 'paddings' is [[1, 1], [2, 2]]
 /// # rank of 't' is 2
@@ -1818,13 +2110,56 @@ class Pad {
   ::tensorflow::Output output;
 };
 
+/// Pads a tensor.
+///
+/// This operation pads `input` according to the `paddings` and `constant_values`
+/// you specify. `paddings` is an integer tensor with shape `[Dn, 2]`, where n is
+/// the rank of `input`. For each dimension D of `input`, `paddings[D, 0]` indicates
+/// how many padding values to add before the contents of `input` in that dimension,
+/// and `paddings[D, 1]` indicates how many padding values to add after the contents
+/// of `input` in that dimension. `constant_values` is a scalar tensor of the same
+/// type as `input` that indicates the value to use for padding `input`.
+///
+/// The padded size of each dimension D of the output is:
+///
+/// `paddings(D, 0) + input.dim_size(D) + paddings(D, 1)`
+///
+/// For example:
+///
+/// ```
+/// # 't' is [[1, 1], [2, 2]]
+/// # 'paddings' is [[1, 1], [2, 2]]
+/// # 'constant_values' is 0
+/// # rank of 't' is 2
+/// pad(t, paddings) ==> [[0, 0, 0, 0, 0, 0]
+///                       [0, 0, 1, 1, 0, 0]
+///                       [0, 0, 2, 2, 0, 0]
+///                       [0, 0, 0, 0, 0, 0]]
+/// ```
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The output tensor.
+class PadV2 {
+ public:
+  PadV2(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
+      ::tensorflow::Input paddings, ::tensorflow::Input constant_values);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  ::tensorflow::Output output;
+};
+
 /// Concatenates a list of `N` tensors along the first dimension.
 ///
 /// The input tensors are all required to have size 1 in the first dimension.
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'x' is [[1, 4]]
 /// # 'y' is [[2, 5]]
 /// # 'z' is [[3, 6]]
@@ -1849,7 +2184,7 @@ class Pad {
 class ParallelConcat {
  public:
   ParallelConcat(const ::tensorflow::Scope& scope, ::tensorflow::InputList
-               values, TensorShape shape);
+               values, PartialTensorShape shape);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
@@ -1880,14 +2215,14 @@ class Placeholder {
     /// (Optional) The shape of the tensor. If the shape has 0 dimensions, the
     /// shape is unconstrained.
     ///
-    /// Defaults to []
-    Attrs Shape(TensorShape x) {
+    /// Defaults to <unknown>
+    Attrs Shape(PartialTensorShape x) {
       Attrs ret = *this;
       ret.shape_ = x;
       return ret;
     }
 
-    TensorShape shape_ = {};
+    PartialTensorShape shape_ = ::tensorflow::PartialTensorShape() /* unknown */;
   };
   Placeholder(const ::tensorflow::Scope& scope, DataType dtype);
   Placeholder(const ::tensorflow::Scope& scope, DataType dtype, const
@@ -1896,34 +2231,9 @@ class Placeholder {
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
 
-  static Attrs Shape(TensorShape x) {
+  static Attrs Shape(PartialTensorShape x) {
     return Attrs().Shape(x);
   }
-
-  ::tensorflow::Output output;
-};
-
-/// A placeholder op for a value that will be fed into the computation.
-///
-/// N.B. This operation will fail with an error if it is executed. It is
-/// intended as a way to represent a value that will always be fed, and to
-/// provide attrs that enable the fed value to be checked at runtime.
-///
-/// Arguments:
-/// * scope: A Scope object
-/// * dtype: The type of elements in the tensor.
-/// * shape: The shape of the tensor. The shape can be any partially-specified
-/// shape.  To be unconstrained, pass in a shape with unknown rank.
-///
-/// Returns:
-/// * `Output`: A placeholder tensor that must be replaced using the feed mechanism.
-class PlaceholderV2 {
- public:
-  PlaceholderV2(const ::tensorflow::Scope& scope, DataType dtype, TensorShape
-              shape);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
 
   ::tensorflow::Output output;
 };
@@ -1940,7 +2250,7 @@ class PlaceholderV2 {
 class PlaceholderWithDefault {
  public:
   PlaceholderWithDefault(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                       input, TensorShape shape);
+                       input, PartialTensorShape shape);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
@@ -1993,87 +2303,6 @@ class PreventGradient {
 
   static Attrs Message(StringPiece x) {
     return Attrs().Message(x);
-  }
-
-  ::tensorflow::Output output;
-};
-
-/// Use QuantizeAndDequantizeV2 instead.
-/// DEPRECATED at GraphDef version 22:
-/// Replaced by QuantizeAndDequantizeV2.
-///
-/// Arguments:
-/// * scope: A Scope object
-///
-/// Returns:
-/// * `Output`: The output tensor.
-class QuantizeAndDequantize {
- public:
-  /// Optional attribute setters for QuantizeAndDequantize
-  struct Attrs {
-    /// Defaults to true
-    Attrs SignedInput(bool x) {
-      Attrs ret = *this;
-      ret.signed_input_ = x;
-      return ret;
-    }
-
-    /// Defaults to 8
-    Attrs NumBits(int64 x) {
-      Attrs ret = *this;
-      ret.num_bits_ = x;
-      return ret;
-    }
-
-    /// Defaults to false
-    Attrs RangeGiven(bool x) {
-      Attrs ret = *this;
-      ret.range_given_ = x;
-      return ret;
-    }
-
-    /// Defaults to 0
-    Attrs InputMin(float x) {
-      Attrs ret = *this;
-      ret.input_min_ = x;
-      return ret;
-    }
-
-    /// Defaults to 0
-    Attrs InputMax(float x) {
-      Attrs ret = *this;
-      ret.input_max_ = x;
-      return ret;
-    }
-
-    bool signed_input_ = true;
-    int64 num_bits_ = 8;
-    bool range_given_ = false;
-    float input_min_ = 0.0f;
-    float input_max_ = 0.0f;
-  };
-  QuantizeAndDequantize(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                      input);
-  QuantizeAndDequantize(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                      input, const QuantizeAndDequantize::Attrs& attrs);
-  operator ::tensorflow::Output() const { return output; }
-  operator ::tensorflow::Input() const { return output; }
-  ::tensorflow::Node* node() const { return output.node(); }
-
-  static Attrs SignedInput(bool x) {
-    return Attrs().SignedInput(x);
-  }
-  static Attrs NumBits(int64 x) {
-    return Attrs().NumBits(x);
-  }
-  static Attrs RangeGiven(bool x) {
-    return Attrs().RangeGiven(x);
-  }
-  static Attrs InputMin(float x) {
-    return Attrs().InputMin(x);
-  }
-  static Attrs InputMax(float x) {
-    return Attrs().InputMax(x);
   }
 
   ::tensorflow::Output output;
@@ -2197,6 +2426,59 @@ class QuantizeAndDequantizeV2 {
   }
   static Attrs NumBits(int64 x) {
     return Attrs().NumBits(x);
+  }
+  static Attrs RangeGiven(bool x) {
+    return Attrs().RangeGiven(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Quantizes then dequantizes a tensor.
+///
+/// This is almost identical to QuantizeAndDequantizeV2, except that num_bits is a
+/// tensor, so its value can change during training.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The output tensor.
+class QuantizeAndDequantizeV3 {
+ public:
+  /// Optional attribute setters for QuantizeAndDequantizeV3
+  struct Attrs {
+    /// Defaults to true
+    Attrs SignedInput(bool x) {
+      Attrs ret = *this;
+      ret.signed_input_ = x;
+      return ret;
+    }
+
+    /// Defaults to true
+    Attrs RangeGiven(bool x) {
+      Attrs ret = *this;
+      ret.range_given_ = x;
+      return ret;
+    }
+
+    bool signed_input_ = true;
+    bool range_given_ = true;
+  };
+  QuantizeAndDequantizeV3(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        input, ::tensorflow::Input input_min,
+                        ::tensorflow::Input input_max, ::tensorflow::Input
+                        num_bits);
+  QuantizeAndDequantizeV3(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        input, ::tensorflow::Input input_min,
+                        ::tensorflow::Input input_max, ::tensorflow::Input
+                        num_bits, const QuantizeAndDequantizeV3::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs SignedInput(bool x) {
+    return Attrs().SignedInput(x);
   }
   static Attrs RangeGiven(bool x) {
     return Attrs().RangeGiven(x);
@@ -2460,7 +2742,7 @@ class QuantizedReshape {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// # shape of tensor 't' is [2, 2, 3]
 /// rank(t) ==> 3
@@ -2500,7 +2782,7 @@ class Rank {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # tensor 't' is [1, 2, 3, 4, 5, 6, 7, 8, 9]
 /// # tensor 't' has shape [9]
 /// reshape(t, [3, 3]) ==> [[1, 2, 3],
@@ -2561,6 +2843,95 @@ class Reshape {
   ::tensorflow::Output output;
 };
 
+/// Assign `value` to the sliced l-value reference of `ref`.
+///
+/// The values of `value` are assigned to the positions in the variable
+/// `ref` that are selected by the slice parameters. The slice parameters
+/// `begin, `end`, `strides`, etc. work exactly as in `StridedSlice`.
+///
+/// NOTE this op currently does not support broadcasting and so `value`'s
+/// shape must be exactly the shape produced by the slice of `ref`.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * the created `Operation`
+class ResourceStridedSliceAssign {
+ public:
+  /// Optional attribute setters for ResourceStridedSliceAssign
+  struct Attrs {
+    /// Defaults to 0
+    Attrs BeginMask(int64 x) {
+      Attrs ret = *this;
+      ret.begin_mask_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs EndMask(int64 x) {
+      Attrs ret = *this;
+      ret.end_mask_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs EllipsisMask(int64 x) {
+      Attrs ret = *this;
+      ret.ellipsis_mask_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs NewAxisMask(int64 x) {
+      Attrs ret = *this;
+      ret.new_axis_mask_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs ShrinkAxisMask(int64 x) {
+      Attrs ret = *this;
+      ret.shrink_axis_mask_ = x;
+      return ret;
+    }
+
+    int64 begin_mask_ = 0;
+    int64 end_mask_ = 0;
+    int64 ellipsis_mask_ = 0;
+    int64 new_axis_mask_ = 0;
+    int64 shrink_axis_mask_ = 0;
+  };
+  ResourceStridedSliceAssign(const ::tensorflow::Scope& scope,
+                           ::tensorflow::Input ref, ::tensorflow::Input begin,
+                           ::tensorflow::Input end, ::tensorflow::Input
+                           strides, ::tensorflow::Input value);
+  ResourceStridedSliceAssign(const ::tensorflow::Scope& scope,
+                           ::tensorflow::Input ref, ::tensorflow::Input begin,
+                           ::tensorflow::Input end, ::tensorflow::Input
+                           strides, ::tensorflow::Input value, const
+                           ResourceStridedSliceAssign::Attrs& attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs BeginMask(int64 x) {
+    return Attrs().BeginMask(x);
+  }
+  static Attrs EndMask(int64 x) {
+    return Attrs().EndMask(x);
+  }
+  static Attrs EllipsisMask(int64 x) {
+    return Attrs().EllipsisMask(x);
+  }
+  static Attrs NewAxisMask(int64 x) {
+    return Attrs().NewAxisMask(x);
+  }
+  static Attrs ShrinkAxisMask(int64 x) {
+    return Attrs().ShrinkAxisMask(x);
+  }
+
+  Operation operation;
+};
+
 /// Reverses variable length slices.
 ///
 /// This op first slices `input` along the dimension `batch_dim`, and for each
@@ -2576,7 +2947,7 @@ class Reshape {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # Given this:
 /// batch_dim = 0
 /// seq_dim = 1
@@ -2598,7 +2969,7 @@ class Reshape {
 ///
 /// In contrast, if:
 ///
-/// ```prettyprint
+/// ```
 /// # Given this:
 /// batch_dim = 2
 /// seq_dim = 0
@@ -2676,7 +3047,7 @@ class ReverseSequence {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # tensor 't' is [[[[ 0,  1,  2,  3],
 /// #                  [ 4,  5,  6,  7],
 /// #                  [ 8,  9, 10, 11]],
@@ -2728,47 +3099,46 @@ class Reverse {
   ::tensorflow::Output output;
 };
 
+/// Scatter `updates` into a new (initially zero) tensor according to `indices`.
+///
 /// Creates a new tensor by applying sparse `updates` to individual
+/// values or slices within a zero tensor of the given `shape` according to
+/// indices.  This operator is the inverse of the @{tf.gather_nd} operator which
+/// extracts values or slices from a given tensor.
 ///
-/// values or slices within a zero tensor of the given `shape` tensor according to
-/// indices.  This operator is the inverse of the [tf.gather_nd](#gather_nd)
-/// operator which extracts values or slices from a given tensor.
+/// **WARNING**: The order in which updates are applied is nondeterministic, so the
+/// output will be nondeterministic if `indices` contains duplicates.
 ///
-/// TODO(simister): Add a link to Variable.__getitem__ documentation on slice
-/// syntax.
+/// `indices` is an integer tensor containing indices into a new tensor of shape
+/// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
 ///
-/// `shape` is a `TensorShape` with rank `P` and `indices` is a `Tensor` of rank
-/// `Q`.
+///     indices.shape[-1] <= shape.rank
 ///
-/// `indices` must be integer tensor, containing indices into `shape`.
-/// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
+/// The last dimension of `indices` corresponds to indices into elements
+/// (if `indices.shape[-1] = shape.rank`) or slices
+/// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
+/// `shape`.  `updates` is a tensor with shape
 ///
-/// The innermost dimension of `indices` (with length `K`) corresponds to
-/// indices into elements (if `K = P`) or slices (if `K < P`) along the `K`th
-/// dimension of `shape`.
-///
-/// `updates` is Tensor of rank `Q-1+P-K` with shape:
-///
-/// ```
-/// [d_0, ..., d_{Q-2}, shape[K], ..., shape[P-1]].
-/// ```
+///     indices.shape[:-1] + shape[indices.shape[-1]:]
 ///
 /// The simplest form of scatter is to insert individual elements in a tensor by
 /// index. For example, say we want to insert 4 scattered elements in a rank-1
 /// tensor with 8 elements.
 ///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/ScatterNd1.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
 /// </div>
 ///
 /// In Python, this scatter operation would look like this:
 ///
+/// ```python
 ///     indices = tf.constant([[4], [3], [1], [7]])
 ///     updates = tf.constant([9, 10, 11, 12])
 ///     shape = tf.constant([8])
 ///     scatter = tf.scatter_nd(indices, updates, shape)
 ///     with tf.Session() as sess:
-///       print sess.run(scatter)
+///       print(sess.run(scatter))
+/// ```
 ///
 /// The resulting tensor would look like this:
 ///
@@ -2779,11 +3149,12 @@ class Reverse {
 /// rank-3 tensor with two matrices of new values.
 ///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/ScatterNd2.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd2.png" alt>
 /// </div>
 ///
 /// In Python, this scatter operation would look like this:
 ///
+/// ```python
 ///     indices = tf.constant([[0], [2]])
 ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
 ///                             [7, 7, 7, 7], [8, 8, 8, 8]],
@@ -2792,7 +3163,8 @@ class Reverse {
 ///     shape = tf.constant([4, 4, 4])
 ///     scatter = tf.scatter_nd(indices, updates, shape)
 ///     with tf.Session() as sess:
-///       print sess.run(scatter)
+///       print(sess.run(scatter))
+/// ```
 ///
 /// The resulting tensor would look like this:
 ///
@@ -2803,11 +3175,9 @@ class Reverse {
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * indices: A Tensor. Must be one of the following types: int32, int64.
-/// A tensor of indices into ref.
-/// * updates: A Tensor. Must have the same type as tensor. A tensor of updated values
-/// to store in ref.
-/// * shape: A vector. The shape of the resulting tensor.
+/// * indices: Index tensor.
+/// * updates: Updates to scatter into output.
+/// * shape: 1-D. The shape of the resulting tensor.
 ///
 /// Returns:
 /// * `Output`: A new tensor with the given shape and updates applied according
@@ -2823,13 +3193,74 @@ class ScatterNd {
   ::tensorflow::Output output;
 };
 
+/// Applies sparse addition to `input` using individual values or slices
+///
+/// from `updates` according to indices `indices`.  The updates are non-aliasing:
+/// `input` is only modified in-place if no other operations will use it.
+/// Otherwise, a copy of `input` is made.  This operation has a gradient with
+/// respect to both `input` and `updates`.
+///
+/// `input` is a `Tensor` with rank `P` and `indices` is a `Tensor` of rank `Q`.
+///
+/// `indices` must be integer tensor, containing indices into `input`.
+/// It must be shape `[d_0, ..., d_{Q-2}, K]` where `0 < K <= P`.
+///
+/// The innermost dimension of `indices` (with length `K`) corresponds to
+/// indices into elements (if `K = P`) or `(P-K)`-dimensional slices
+/// (if `K < P`) along the `K`th dimension of `input`.
+///
+/// `updates` is `Tensor` of rank `Q-1+P-K` with shape:
+///
+/// ```
+/// [d_0, ..., d_{Q-2}, input.shape[K], ..., input.shape[P-1]].
+/// ```
+///
+/// For example, say we want to add 4 scattered elements to a rank-1 tensor to 8
+/// elements. In Python, that addition would look like this:
+///
+///     input = tf.constant([1, 2, 3, 4, 5, 6, 7, 8])
+///     indices = tf.constant([[4], [3], [1], [7]])
+///     updates = tf.constant([9, 10, 11, 12])
+///     output = tf.scatter_nd_non_aliasing_add(input, indices, updates)
+///     with tf.Session() as sess:
+///       print(sess.run(output))
+///
+/// The resulting value `output` would look like this:
+///
+///     [1, 13, 3, 14, 14, 6, 7, 20]
+///
+/// See @{tf.scatter_nd} for more details about how to make updates to slices.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: A Tensor.
+/// * indices: A Tensor. Must be one of the following types: `int32`, `int64`.
+/// A tensor of indices into `input`.
+/// * updates: A Tensor. Must have the same type as ref. A tensor of updated values
+/// to add to `input`.
+///
+/// Returns:
+/// * `Output`: A `Tensor` with the same shape as `input`, containing values of `input`
+/// updated with `updates`.
+class ScatterNdNonAliasingAdd {
+ public:
+  ScatterNdNonAliasingAdd(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        input, ::tensorflow::Input indices, ::tensorflow::Input
+                        updates);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  ::tensorflow::Output output;
+};
+
 /// Returns the shape of a tensor.
 ///
 /// This operation returns a 1-D integer tensor representing the shape of `input`.
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is [[[1, 1, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]
 /// shape(t) ==> [2, 2, 3]
 /// ```
@@ -2908,7 +3339,7 @@ class ShapeN {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is [[[1, 1,, 1], [2, 2, 2]], [[3, 3, 3], [4, 4, 4]]]]
 /// size(t) ==> 12
 /// ```
@@ -3015,32 +3446,32 @@ class Slice {
 ///
 /// (1) For the following input of shape `[1, 2, 2, 1]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [2]], [[3], [4]]]]
 /// ```
 ///
 /// The output tensor has shape `[4, 1, 1, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 /// ```
 ///
 /// (2) For the following input of shape `[1, 2, 2, 3]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3], [4, 5, 6]],
 ///       [[7, 8, 9], [10, 11, 12]]]]
 /// ```
 ///
 /// The output tensor has shape `[4, 1, 1, 3]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// [[[1, 2, 3]], [[4, 5, 6]], [[7, 8, 9]], [[10, 11, 12]]]
 /// ```
 ///
 /// (3) For the following input of shape `[1, 4, 4, 1]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1],   [2],  [3],  [4]],
 ///       [[5],   [6],  [7],  [8]],
 ///       [[9],  [10], [11],  [12]],
@@ -3049,7 +3480,7 @@ class Slice {
 ///
 /// The output tensor has shape `[4, 2, 2, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
@@ -3058,7 +3489,7 @@ class Slice {
 ///
 /// (4) For the following input of shape `[2, 2, 4, 1]` and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1],   [2],  [3],  [4]],
 ///       [[5],   [6],  [7],  [8]]],
 ///      [[[9],  [10], [11],  [12]],
@@ -3067,7 +3498,7 @@ class Slice {
 ///
 /// The output tensor has shape `[8, 1, 2, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
 ///      [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
 /// ```
@@ -3148,34 +3579,34 @@ class SpaceToBatch {
 /// (1) For the following input of shape `[1, 2, 2, 1]`, `block_shape = [2, 2]`, and
 ///     `paddings = [[0, 0], [0, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [2]], [[3], [4]]]]
 /// ```
 ///
 /// The output tensor has shape `[4, 1, 1, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
 /// ```
 ///
 /// (2) For the following input of shape `[1, 2, 2, 3]`, `block_shape = [2, 2]`, and
 ///     `paddings = [[0, 0], [0, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3], [4, 5, 6]],
 ///       [[7, 8, 9], [10, 11, 12]]]]
 /// ```
 ///
 /// The output tensor has shape `[4, 1, 1, 3]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// [[[1, 2, 3]], [[4, 5, 6]], [[7, 8, 9]], [[10, 11, 12]]]
 /// ```
 ///
 /// (3) For the following input of shape `[1, 4, 4, 1]`, `block_shape = [2, 2]`, and
 ///     `paddings = [[0, 0], [0, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1],   [2],  [3],  [4]],
 ///       [[5],   [6],  [7],  [8]],
 ///       [[9],  [10], [11],  [12]],
@@ -3184,7 +3615,7 @@ class SpaceToBatch {
 ///
 /// The output tensor has shape `[4, 2, 2, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [3]], [[9], [11]]],
 ///      [[[2], [4]], [[10], [12]]],
 ///      [[[5], [7]], [[13], [15]]],
@@ -3194,7 +3625,7 @@ class SpaceToBatch {
 /// (4) For the following input of shape `[2, 2, 4, 1]`, block_shape = `[2, 2]`, and
 ///     paddings = `[[0, 0], [2, 0]]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1],   [2],  [3],  [4]],
 ///       [[5],   [6],  [7],  [8]]],
 ///      [[[9],  [10], [11],  [12]],
@@ -3203,7 +3634,7 @@ class SpaceToBatch {
 ///
 /// The output tensor has shape `[8, 1, 3, 1]` and value:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
 ///      [[[0], [2], [4]]], [[[0], [10], [12]]],
 ///      [[[0], [5], [7]]], [[[0], [13], [15]]],
@@ -3252,14 +3683,14 @@ class SpaceToBatchND {
 ///
 /// For example, given this input of shape `[1, 2, 2, 1]`, and block_size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1], [2]],
 ///       [[3], [4]]]]
 /// ```
 ///
 /// This operation will output a tensor of shape `[1, 1, 1, 4]`:
 ///
-/// ```prettyprint
+/// ```
 /// [[[[1, 2, 3, 4]]]]
 /// ```
 ///
@@ -3270,7 +3701,7 @@ class SpaceToBatchND {
 ///
 /// For an input tensor with larger depth, here of shape `[1, 2, 2, 3]`, e.g.
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3], [4, 5, 6]],
 ///       [[7, 8, 9], [10, 11, 12]]]]
 /// ```
@@ -3278,13 +3709,13 @@ class SpaceToBatchND {
 /// This operation, for block_size of 2, will return the following tensor of shape
 /// `[1, 1, 1, 12]`
 ///
-/// ```prettyprint
+/// ```
 /// [[[[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]]
 /// ```
 ///
 /// Similarly, for the following input of shape `[1 4 4 1]`, and a block size of 2:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1],   [2],  [5],  [6]],
 ///       [[3],   [4],  [7],  [8]],
 ///       [[9],  [10], [13],  [14]],
@@ -3293,7 +3724,7 @@ class SpaceToBatchND {
 ///
 /// the operator will return the following tensor of shape `[1 2 2 4]`:
 ///
-/// ```prettyprint
+/// ```
 /// x = [[[[1, 2, 3, 4],
 ///        [5, 6, 7, 8]],
 ///       [[9, 10, 11, 12],
@@ -3322,7 +3753,7 @@ class SpaceToDepth {
 /// Arguments:
 /// * scope: A Scope object
 /// * axis: 0-D.  The dimension along which to split.  Must be in the range
-/// `[0, rank(value))`.
+/// `[-rank(value), rank(value))`.
 /// * value: The tensor to split.
 /// * num_split: The number of ways to split.  Must evenly divide
 /// `value.shape[split_dim]`.
@@ -3350,7 +3781,7 @@ class Split {
 /// dimension. Must sum to the dimension of value along split_dim.
 /// Can contain one -1 indicating that dimension is to be inferred.
 /// * axis: 0-D.  The dimension along which to split.  Must be in the range
-/// `[0, rank(value))`.
+/// `[-rank(value), rank(value))`.
 ///
 /// Returns:
 /// * `OutputList`: Tensors whose shape matches that of `value`
@@ -3376,14 +3807,14 @@ class SplitV {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
 /// shape(squeeze(t)) ==> [2, 3]
 /// ```
 ///
 /// Or, to remove specific size 1 dimensions:
 ///
-/// ```prettyprint
+/// ```
 /// # 't' is a tensor of shape [1, 2, 1, 3, 1, 1]
 /// shape(squeeze(t, [2, 4])) ==> [1, 2, 3, 1]
 /// ```
@@ -3513,7 +3944,7 @@ class StopGradient {
 /// particular,
 /// `foo[1, 2:4, None, ..., :-3:-1, :]` will be encoded as
 ///
-/// ```prettyprint
+/// ```
 /// begin = [1, 2, x, x, 0, x] # x denotes don't care (usually 0)
 /// end = [2, 4, x, x, -3, x]
 /// strides = [1, 1, x, x, -1, 1]
@@ -3934,7 +4365,7 @@ class Transpose {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
 /// y, idx = unique(x)
 /// y ==> [1, 2, 4, 7, 8]
@@ -3985,7 +4416,7 @@ class Unique {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
 /// y, idx, count = unique_with_counts(x)
 /// y ==> [1, 2, 4, 7, 8]
@@ -4092,7 +4523,7 @@ class Unstack {
 ///
 /// For example:
 ///
-/// ```prettyprint
+/// ```
 /// # 'input' tensor is [[True, False]
 /// #                    [True, False]]
 /// # 'input' has two true values, so output has two coordinates.

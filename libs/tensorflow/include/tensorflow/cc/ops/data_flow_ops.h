@@ -18,9 +18,9 @@ namespace ops {
 /// @defgroup data_flow_ops Data Flow Ops
 /// @{
 
-/// Applies a gradient to a given accumulator. Does not add if local_step is lesser
+/// Applies a gradient to a given accumulator.
 ///
-/// than the accumulator's global_step.
+/// Does not add if local_step is lesser than the accumulator's global_step.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -59,9 +59,10 @@ class AccumulatorNumAccumulated {
   ::tensorflow::Output num_accumulated;
 };
 
-/// Updates the accumulator with a new value for global_step. Logs warning if the
+/// Updates the accumulator with a new value for global_step.
 ///
-/// accumulator's value is already higher than new_global_step.
+/// Logs warning if the accumulator's value is already higher than
+/// new_global_step.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -79,14 +80,13 @@ class AccumulatorSetGlobalStep {
   Operation operation;
 };
 
-/// Extracts the average gradient in the given ConditionalAccumulator, provided
+/// Extracts the average gradient in the given ConditionalAccumulator.
 ///
-/// that sufficient (i.e., more than num_required) gradients have been accumulated.
-/// The op blocks until sufficient gradients have been accumulated.
-/// If the accumulator has already aggregated more than num_required gradients, it
-/// returns the average of the accumulated gradients.
-/// Also automatically increments the recorded global_step in the accumulator by 1,
-/// and resets the aggregate to 0.
+/// The op blocks until sufficient (i.e., more than num_required)
+/// gradients have been accumulated.  If the accumulator has already
+/// aggregated more than num_required gradients, it returns the average of
+/// the accumulated gradients.  Also automatically increments the recorded
+/// global_step in the accumulator by 1, and resets the aggregate to 0.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -146,7 +146,7 @@ class Barrier {
     /// component_types.
     ///
     /// Defaults to []
-    Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+    Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
       Attrs ret = *this;
       ret.shapes_ = x;
       return ret;
@@ -182,7 +182,7 @@ class Barrier {
       return ret;
     }
 
-    gtl::ArraySlice<TensorShape> shapes_ = {};
+    gtl::ArraySlice<PartialTensorShape> shapes_ = {};
     int64 capacity_ = -1;
     StringPiece container_ = "";
     StringPiece shared_name_ = "";
@@ -194,7 +194,7 @@ class Barrier {
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }
 
-  static Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+  static Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
     return Attrs().Shapes(x);
   }
   static Attrs Capacity(int64 x) {
@@ -225,7 +225,7 @@ class Barrier {
 ///
 /// Optional attributes (see `Attrs`):
 /// * cancel_pending_enqueues: If true, all pending enqueue requests that are
-/// blocked on the barrier's queue will be cancelled. InsertMany will fail, even
+/// blocked on the barrier's queue will be canceled. InsertMany will fail, even
 /// if no new key is introduced.
 ///
 /// Returns:
@@ -235,7 +235,7 @@ class BarrierClose {
   /// Optional attribute setters for BarrierClose
   struct Attrs {
     /// If true, all pending enqueue requests that are
-    /// blocked on the barrier's queue will be cancelled. InsertMany will fail, even
+    /// blocked on the barrier's queue will be canceled. InsertMany will fail, even
     /// if no new key is introduced.
     ///
     /// Defaults to false
@@ -414,13 +414,14 @@ class BarrierTakeMany {
   ::tensorflow::OutputList values;
 };
 
-/// A conditional accumulator for aggregating gradients. The accumulator accepts
+/// A conditional accumulator for aggregating gradients.
 ///
-/// gradients marked with local_step greater or equal to the most recent global_step
-/// known to the accumulator. The average can be extracted from the accumulator,
-/// provided sufficient gradients have been accumulated. Extracting the average
-/// automatically resets the aggregate to 0, and increments the global_step recorded
-/// by the accumulator.
+/// The accumulator accepts gradients marked with local_step greater or
+/// equal to the most recent global_step known to the accumulator. The
+/// average can be extracted from the accumulator, provided sufficient
+/// gradients have been accumulated. Extracting the average automatically
+/// resets the aggregate to 0, and increments the global_step recorded by
+/// the accumulator.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -430,8 +431,8 @@ class BarrierTakeMany {
 /// Optional attributes (see `Attrs`):
 /// * container: If non-empty, this accumulator is placed in the given container.
 /// Otherwise, a default container is used.
-/// * shared_name: If non-empty, this accumulator will be shared under the given name
-/// across multiple sessions.
+/// * shared_name: If non-empty, this accumulator will be shared under the
+/// given name across multiple sessions.
 ///
 /// Returns:
 /// * `Output`: The handle to the accumulator.
@@ -449,8 +450,8 @@ class ConditionalAccumulator {
       return ret;
     }
 
-    /// If non-empty, this accumulator will be shared under the given name
-    /// across multiple sessions.
+    /// If non-empty, this accumulator will be shared under the
+    /// given name across multiple sessions.
     ///
     /// Defaults to ""
     Attrs SharedName(StringPiece x) {
@@ -463,10 +464,10 @@ class ConditionalAccumulator {
     StringPiece shared_name_ = "";
   };
   ConditionalAccumulator(const ::tensorflow::Scope& scope, DataType dtype,
-                       TensorShape shape);
+                       PartialTensorShape shape);
   ConditionalAccumulator(const ::tensorflow::Scope& scope, DataType dtype,
-                       TensorShape shape, const ConditionalAccumulator::Attrs&
-                       attrs);
+                       PartialTensorShape shape, const
+                       ConditionalAccumulator::Attrs& attrs);
   operator ::tensorflow::Output() const { return handle; }
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }
@@ -532,8 +533,10 @@ class DeleteSessionTensor {
 ///     outputs[1] = [30, 40]
 /// ```
 ///
+/// See `dynamic_stitch` for an example on how to merge partitions back.
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/DynamicPartition.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicPartition.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -595,8 +598,26 @@ class DynamicPartition {
 ///               [51, 52], [61, 62]]
 /// ```
 ///
+/// This method can be used to merge partitions created by `dynamic_partition`
+/// as illustrated on the following example:
+///
+/// ```python
+///     # Apply function (increments x_i) on elements for which a certain condition
+///     # apply (x_i != -1 in this example).
+///     x=tf.constant([0.1, -1., 5.2, 4.3, -1., 7.4])
+///     condition_mask=tf.not_equal(x,tf.constant(-1.))
+///     partitioned_data = tf.dynamic_partition(
+///         x, tf.cast(condition_mask, tf.int32) , 2)
+///     partitioned_data[1] = partitioned_data[1] + 1.0
+///     condition_indices = tf.dynamic_partition(
+///         tf.range(tf.shape(x)[0]), tf.cast(condition_mask, tf.int32) , 2)
+///     x = tf.dynamic_stitch(condition_indices, partitioned_data)
+///     # Here x=[1.1, -1., 6.2, 5.3, -1, 8.4], the -1. values remain
+///     # unchanged.
+/// ```
+///
 /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-/// <img style="width:100%" src="../../images/DynamicStitch.png" alt>
+/// <img style="width:100%" src="https://www.tensorflow.org/images/DynamicStitch.png" alt>
 /// </div>
 ///
 /// Arguments:
@@ -645,7 +666,7 @@ class FIFOQueue {
     /// only one element may be dequeued at a time.
     ///
     /// Defaults to []
-    Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+    Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
       Attrs ret = *this;
       ret.shapes_ = x;
       return ret;
@@ -681,7 +702,7 @@ class FIFOQueue {
       return ret;
     }
 
-    gtl::ArraySlice<TensorShape> shapes_ = {};
+    gtl::ArraySlice<PartialTensorShape> shapes_ = {};
     int64 capacity_ = -1;
     StringPiece container_ = "";
     StringPiece shared_name_ = "";
@@ -694,7 +715,7 @@ class FIFOQueue {
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }
 
-  static Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+  static Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
     return Attrs().Shapes(x);
   }
   static Attrs Capacity(int64 x) {
@@ -710,14 +731,15 @@ class FIFOQueue {
   ::tensorflow::Output handle;
 };
 
-/// DEPRECATED at GraphDef version 23:
-/// Use GetSessionHandleV2.
+/// Store the input tensor in the state of the current session.
 ///
 /// Arguments:
 /// * scope: A Scope object
+/// * value: The tensor to be stored.
 ///
 /// Returns:
-/// * `Output`: The handle tensor.
+/// * `Output`: The handle for the tensor stored in the session state, represented
+/// as a string.
 class GetSessionHandle {
  public:
   GetSessionHandle(const ::tensorflow::Scope& scope, ::tensorflow::Input value);
@@ -767,22 +789,1006 @@ class GetSessionTensor {
   ::tensorflow::Output value;
 };
 
-/// Outputs all keys and values in the table.
+/// Op removes all elements in the underlying container.
 ///
 /// Arguments:
 /// * scope: A Scope object
-/// * table_handle: Handle to the table.
 ///
 /// Returns:
-/// * `Output` keys: Vector of all keys present in the table.
-/// * `Output` values: Tensor of all values in the table. Indexed in parallel with `keys`.
-class LookupTableExport {
+/// * the created `Operation`
+class MapClear {
  public:
-  LookupTableExport(const ::tensorflow::Scope& scope, ::tensorflow::Input
-                  table_handle, DataType Tkeys, DataType Tvalues);
+  /// Optional attribute setters for MapClear
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
 
-  ::tensorflow::Output keys;
-  ::tensorflow::Output values;
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapClear(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes);
+  MapClear(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes, const
+         MapClear::Attrs& attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  Operation operation;
+};
+
+/// Op returns the number of incomplete elements in the underlying container.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The size tensor.
+class MapIncompleteSize {
+ public:
+  /// Optional attribute setters for MapIncompleteSize
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapIncompleteSize(const ::tensorflow::Scope& scope, const DataTypeSlice&
+                  dtypes);
+  MapIncompleteSize(const ::tensorflow::Scope& scope, const DataTypeSlice&
+                  dtypes, const MapIncompleteSize::Attrs& attrs);
+  operator ::tensorflow::Output() const { return size; }
+  operator ::tensorflow::Input() const { return size; }
+  ::tensorflow::Node* node() const { return size.node(); }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output size;
+};
+
+/// Op peeks at the values at the specified key.  If the
+///
+/// underlying container does not contain this key
+/// this op will block until it does.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `OutputList`: The values tensor.
+class MapPeek {
+ public:
+  /// Optional attribute setters for MapPeek
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapPeek(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+        ::tensorflow::Input indices, const DataTypeSlice& dtypes);
+  MapPeek(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+        ::tensorflow::Input indices, const DataTypeSlice& dtypes, const
+        MapPeek::Attrs& attrs);
+  ::tensorflow::Output operator[](size_t index) const { return values[index]; }
+
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::OutputList values;
+};
+
+/// Op returns the number of elements in the underlying container.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The size tensor.
+class MapSize {
+ public:
+  /// Optional attribute setters for MapSize
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapSize(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes);
+  MapSize(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes, const
+        MapSize::Attrs& attrs);
+  operator ::tensorflow::Output() const { return size; }
+  operator ::tensorflow::Input() const { return size; }
+  ::tensorflow::Node* node() const { return size.node(); }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output size;
+};
+
+/// Stage (key, values) in the underlying container which behaves like a hashtable.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * key: int64
+/// * values: a list of tensors
+/// dtypes A list of data types that inserted values should adhere to.
+///
+/// Optional attributes (see `Attrs`):
+/// * capacity: Maximum number of elements in the Staging Area. If > 0, inserts
+/// on the container will block when the capacity is reached.
+/// * container: If non-empty, this queue is placed in the given container. Otherwise,
+/// a default container is used.
+/// * shared_name: It is necessary to match this name to the matching Unstage Op.
+///
+/// Returns:
+/// * the created `Operation`
+class MapStage {
+ public:
+  /// Optional attribute setters for MapStage
+  struct Attrs {
+    /// Maximum number of elements in the Staging Area. If > 0, inserts
+    /// on the container will block when the capacity is reached.
+    ///
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// If non-empty, this queue is placed in the given container. Otherwise,
+    /// a default container is used.
+    ///
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// It is necessary to match this name to the matching Unstage Op.
+    ///
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapStage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+         ::tensorflow::Input indices, ::tensorflow::InputList values, const
+         DataTypeSlice& dtypes);
+  MapStage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+         ::tensorflow::Input indices, ::tensorflow::InputList values, const
+         DataTypeSlice& dtypes, const MapStage::Attrs& attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  Operation operation;
+};
+
+/// Op removes and returns the values associated with the key
+///
+/// from the underlying container.   If the underlying container
+/// does not contain this key, the op will block until it does.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `OutputList`: The values tensor.
+class MapUnstage {
+ public:
+  /// Optional attribute setters for MapUnstage
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapUnstage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+           ::tensorflow::Input indices, const DataTypeSlice& dtypes);
+  MapUnstage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+           ::tensorflow::Input indices, const DataTypeSlice& dtypes, const
+           MapUnstage::Attrs& attrs);
+  ::tensorflow::Output operator[](size_t index) const { return values[index]; }
+
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::OutputList values;
+};
+
+/// Op removes and returns a random (key, value)
+///
+/// from the underlying container.   If the underlying container
+/// does not contain elements, the op will block until it does.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output` key
+/// * `OutputList` values
+class MapUnstageNoKey {
+ public:
+  /// Optional attribute setters for MapUnstageNoKey
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  MapUnstageNoKey(const ::tensorflow::Scope& scope, ::tensorflow::Input indices,
+                const DataTypeSlice& dtypes);
+  MapUnstageNoKey(const ::tensorflow::Scope& scope, ::tensorflow::Input indices,
+                const DataTypeSlice& dtypes, const MapUnstageNoKey::Attrs&
+                attrs);
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output key;
+  ::tensorflow::OutputList values;
+};
+
+/// Op removes all elements in the underlying container.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * the created `Operation`
+class OrderedMapClear {
+ public:
+  /// Optional attribute setters for OrderedMapClear
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapClear(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes);
+  OrderedMapClear(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes,
+                const OrderedMapClear::Attrs& attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  Operation operation;
+};
+
+/// Op returns the number of incomplete elements in the underlying container.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The size tensor.
+class OrderedMapIncompleteSize {
+ public:
+  /// Optional attribute setters for OrderedMapIncompleteSize
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapIncompleteSize(const ::tensorflow::Scope& scope, const DataTypeSlice&
+                         dtypes);
+  OrderedMapIncompleteSize(const ::tensorflow::Scope& scope, const DataTypeSlice&
+                         dtypes, const OrderedMapIncompleteSize::Attrs& attrs);
+  operator ::tensorflow::Output() const { return size; }
+  operator ::tensorflow::Input() const { return size; }
+  ::tensorflow::Node* node() const { return size.node(); }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output size;
+};
+
+/// Op peeks at the values at the specified key.  If the
+///
+/// underlying container does not contain this key
+/// this op will block until it does.   This Op is optimized for
+/// performance.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `OutputList`: The values tensor.
+class OrderedMapPeek {
+ public:
+  /// Optional attribute setters for OrderedMapPeek
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapPeek(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+               ::tensorflow::Input indices, const DataTypeSlice& dtypes);
+  OrderedMapPeek(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+               ::tensorflow::Input indices, const DataTypeSlice& dtypes, const
+               OrderedMapPeek::Attrs& attrs);
+  ::tensorflow::Output operator[](size_t index) const { return values[index]; }
+
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::OutputList values;
+};
+
+/// Op returns the number of elements in the underlying container.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The size tensor.
+class OrderedMapSize {
+ public:
+  /// Optional attribute setters for OrderedMapSize
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapSize(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes);
+  OrderedMapSize(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes,
+               const OrderedMapSize::Attrs& attrs);
+  operator ::tensorflow::Output() const { return size; }
+  operator ::tensorflow::Input() const { return size; }
+  ::tensorflow::Node* node() const { return size.node(); }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output size;
+};
+
+/// Stage (key, values) in the underlying container which behaves like a ordered
+///
+/// associative container.   Elements are ordered by key.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * key: int64
+/// * values: a list of tensors
+/// dtypes A list of data types that inserted values should adhere to.
+///
+/// Optional attributes (see `Attrs`):
+/// * capacity: Maximum number of elements in the Staging Area. If > 0, inserts
+/// on the container will block when the capacity is reached.
+/// * container: If non-empty, this queue is placed in the given container. Otherwise,
+/// a default container is used.
+/// * shared_name: It is necessary to match this name to the matching Unstage Op.
+///
+/// Returns:
+/// * the created `Operation`
+class OrderedMapStage {
+ public:
+  /// Optional attribute setters for OrderedMapStage
+  struct Attrs {
+    /// Maximum number of elements in the Staging Area. If > 0, inserts
+    /// on the container will block when the capacity is reached.
+    ///
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// If non-empty, this queue is placed in the given container. Otherwise,
+    /// a default container is used.
+    ///
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// It is necessary to match this name to the matching Unstage Op.
+    ///
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapStage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+                ::tensorflow::Input indices, ::tensorflow::InputList values,
+                const DataTypeSlice& dtypes);
+  OrderedMapStage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+                ::tensorflow::Input indices, ::tensorflow::InputList values,
+                const DataTypeSlice& dtypes, const OrderedMapStage::Attrs&
+                attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  Operation operation;
+};
+
+/// Op removes and returns the values associated with the key
+///
+/// from the underlying container.   If the underlying container
+/// does not contain this key, the op will block until it does.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `OutputList`: The values tensor.
+class OrderedMapUnstage {
+ public:
+  /// Optional attribute setters for OrderedMapUnstage
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapUnstage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+                  ::tensorflow::Input indices, const DataTypeSlice& dtypes);
+  OrderedMapUnstage(const ::tensorflow::Scope& scope, ::tensorflow::Input key,
+                  ::tensorflow::Input indices, const DataTypeSlice& dtypes,
+                  const OrderedMapUnstage::Attrs& attrs);
+  ::tensorflow::Output operator[](size_t index) const { return values[index]; }
+
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::OutputList values;
+};
+
+/// Op removes and returns the (key, value) element with the smallest
+///
+/// key from the underlying container.   If the underlying container
+/// does not contain elements, the op will block until it does.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output` key
+/// * `OutputList` values
+class OrderedMapUnstageNoKey {
+ public:
+  /// Optional attribute setters for OrderedMapUnstageNoKey
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  OrderedMapUnstageNoKey(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                       indices, const DataTypeSlice& dtypes);
+  OrderedMapUnstageNoKey(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                       indices, const DataTypeSlice& dtypes, const
+                       OrderedMapUnstageNoKey::Attrs& attrs);
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output key;
+  ::tensorflow::OutputList values;
 };
 
 /// A queue that produces elements in first-in first-out order.
@@ -827,7 +1833,7 @@ class PaddingFIFOQueue {
     /// different ranks and shapes, but only one element may be dequeued at a time.
     ///
     /// Defaults to []
-    Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+    Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
       Attrs ret = *this;
       ret.shapes_ = x;
       return ret;
@@ -863,7 +1869,7 @@ class PaddingFIFOQueue {
       return ret;
     }
 
-    gtl::ArraySlice<TensorShape> shapes_ = {};
+    gtl::ArraySlice<PartialTensorShape> shapes_ = {};
     int64 capacity_ = -1;
     StringPiece container_ = "";
     StringPiece shared_name_ = "";
@@ -876,7 +1882,7 @@ class PaddingFIFOQueue {
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }
 
-  static Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+  static Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
     return Attrs().Shapes(x);
   }
   static Attrs Capacity(int64 x) {
@@ -967,10 +1973,10 @@ class PriorityQueue {
     StringPiece shared_name_ = "";
   };
   PriorityQueue(const ::tensorflow::Scope& scope, const
-              gtl::ArraySlice<TensorShape>& shapes);
+              gtl::ArraySlice<PartialTensorShape>& shapes);
   PriorityQueue(const ::tensorflow::Scope& scope, const
-              gtl::ArraySlice<TensorShape>& shapes, const PriorityQueue::Attrs&
-              attrs);
+              gtl::ArraySlice<PartialTensorShape>& shapes, const
+              PriorityQueue::Attrs& attrs);
   operator ::tensorflow::Output() const { return handle; }
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }
@@ -1005,7 +2011,7 @@ class PriorityQueue {
 ///
 /// Optional attributes (see `Attrs`):
 /// * cancel_pending_enqueues: If true, all pending enqueue requests that are
-/// blocked on the given queue will be cancelled.
+/// blocked on the given queue will be canceled.
 ///
 /// Returns:
 /// * the created `Operation`
@@ -1014,7 +2020,7 @@ class QueueClose {
   /// Optional attribute setters for QueueClose
   struct Attrs {
     /// If true, all pending enqueue requests that are
-    /// blocked on the given queue will be cancelled.
+    /// blocked on the given queue will be canceled.
     ///
     /// Defaults to false
     Attrs CancelPendingEnqueues(bool x) {
@@ -1037,20 +2043,20 @@ class QueueClose {
   Operation operation;
 };
 
-/// Dequeues n tuples of one or more tensors from the given queue.
+/// Dequeues `n` tuples of one or more tensors from the given queue.
 ///
-/// If the queue is closed and there are fewer than n elements, then an
+/// If the queue is closed and there are fewer than `n` elements, then an
 /// OutOfRange error is returned.
 ///
 /// This operation concatenates queue-element component tensors along the
 /// 0th dimension to make a single component tensor.  All of the components
-/// in the dequeued tuple will have size n in the 0th dimension.
+/// in the dequeued tuple will have size `n` in the 0th dimension.
 ///
-/// This operation has k outputs, where k is the number of components in
-/// the tuples stored in the given queue, and output i is the ith
+/// This operation has `k` outputs, where `k` is the number of components in
+/// the tuples stored in the given queue, and output `i` is the ith
 /// component of the dequeued tuple.
 ///
-/// N.B. If the queue is empty, this operation will block until n elements
+/// N.B. If the queue is empty, this operation will block until `n` elements
 /// have been dequeued (or 'timeout_ms' elapses, if specified).
 ///
 /// Arguments:
@@ -1098,24 +2104,24 @@ class QueueDequeueMany {
   ::tensorflow::OutputList components;
 };
 
-/// Dequeues n tuples of one or more tensors from the given queue.
+/// Dequeues `n` tuples of one or more tensors from the given queue.
 ///
 /// This operation is not supported by all queues.  If a queue does not support
 /// DequeueUpTo, then an Unimplemented error is returned.
 ///
-/// If the queue is closed and there are more than 0 but less than n elements
-/// remaining, then instead of returning an OutOfRange error like
-/// QueueDequeueMany, less than `n` elements are returned immediately.  If the queue
-/// is closed and there are 0 elements left in the queue, then an OutOfRange
-/// error is returned just like in QueueDequeueMany.  Otherwise the behavior
-/// is identical to QueueDequeueMany:
+/// If the queue is closed and there are more than 0 but less than `n`
+/// elements remaining, then instead of returning an OutOfRange error like
+/// QueueDequeueMany, less than `n` elements are returned immediately.  If
+/// the queue is closed and there are 0 elements left in the queue, then
+/// an OutOfRange error is returned just like in QueueDequeueMany.
+/// Otherwise the behavior is identical to QueueDequeueMany:
 ///
 /// This operation concatenates queue-element component tensors along the
 /// 0th dimension to make a single component tensor.  All of the components
 /// in the dequeued tuple will have size n in the 0th dimension.
 ///
-/// This operation has k outputs, where k is the number of components in
-/// the tuples stored in the given queue, and output i is the ith
+/// This operation has `k` outputs, where `k` is the number of components in
+/// the tuples stored in the given queue, and output `i` is the ith
 /// component of the dequeued tuple.
 ///
 /// Arguments:
@@ -1323,6 +2329,48 @@ class QueueEnqueue {
   Operation operation;
 };
 
+/// Returns true if queue is closed.
+///
+/// This operation returns true if the queue is closed and false if the queue
+/// is open.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * handle: The handle to a queue.
+///
+/// Returns:
+/// * `Output`: The is_closed tensor.
+class QueueIsClosed {
+ public:
+  QueueIsClosed(const ::tensorflow::Scope& scope, ::tensorflow::Input handle);
+  operator ::tensorflow::Output() const { return is_closed; }
+  operator ::tensorflow::Input() const { return is_closed; }
+  ::tensorflow::Node* node() const { return is_closed.node(); }
+
+  ::tensorflow::Output is_closed;
+};
+
+/// Returns true if queue is closed.
+///
+/// This operation returns true if the queue is closed and false if the queue
+/// is open.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * handle: The handle to a queue.
+///
+/// Returns:
+/// * `Output`: The is_closed tensor.
+class QueueIsClosedV2 {
+ public:
+  QueueIsClosedV2(const ::tensorflow::Scope& scope, ::tensorflow::Input handle);
+  operator ::tensorflow::Output() const { return is_closed; }
+  operator ::tensorflow::Input() const { return is_closed; }
+  ::tensorflow::Node* node() const { return is_closed.node(); }
+
+  ::tensorflow::Output is_closed;
+};
+
 /// Computes the number of elements in the given queue.
 ///
 /// Arguments:
@@ -1377,7 +2425,7 @@ class RandomShuffleQueue {
     /// only one element may be dequeued at a time.
     ///
     /// Defaults to []
-    Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+    Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
       Attrs ret = *this;
       ret.shapes_ = x;
       return ret;
@@ -1443,7 +2491,7 @@ class RandomShuffleQueue {
       return ret;
     }
 
-    gtl::ArraySlice<TensorShape> shapes_ = {};
+    gtl::ArraySlice<PartialTensorShape> shapes_ = {};
     int64 capacity_ = -1;
     int64 min_after_dequeue_ = 0;
     int64 seed_ = 0;
@@ -1459,7 +2507,7 @@ class RandomShuffleQueue {
   operator ::tensorflow::Input() const { return handle; }
   ::tensorflow::Node* node() const { return handle.node(); }
 
-  static Attrs Shapes(const gtl::ArraySlice<TensorShape>& x) {
+  static Attrs Shapes(const gtl::ArraySlice<PartialTensorShape>& x) {
     return Attrs().Shapes(x);
   }
   static Attrs Capacity(int64 x) {
@@ -1582,9 +2630,10 @@ class RecordInput {
   ::tensorflow::Output records;
 };
 
-/// Applies a sparse gradient to a given accumulator. Does not add if local_step is
+/// Applies a sparse gradient to a given accumulator.
 ///
-/// lesser than the accumulator's global_step.
+/// Does not add if local_step is smaller than the accumulator's
+/// global_step.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -1614,14 +2663,14 @@ class SparseAccumulatorApplyGradient {
   Operation operation;
 };
 
-/// Extracts the average sparse gradient in the given SparseConditionalAccumulator,
+/// Extracts the average sparse gradient in a SparseConditionalAccumulator.
 ///
-/// provided that sufficient (i.e., more than num_required) gradients have been
-/// accumulated. The op will blocks until sufficient gradients have been
-/// accumulated. If the accumulator has already aggregated more than num_required
-/// gradients, it will return its average of the accumulated gradients.
-/// Also automatically increments the recorded global_step in the accumulator by 1,
-/// and resets the aggregate to 0.
+/// The op will blocks until sufficient (i.e., more than num_required)
+/// gradients have been accumulated. If the accumulator has already
+/// aggregated more than num_required gradients, it will return its
+/// average of the accumulated gradients.  Also automatically increments
+/// the recorded global_step in the accumulator by 1, and resets the
+/// aggregate to 0.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -1645,13 +2694,14 @@ class SparseAccumulatorTakeGradient {
   ::tensorflow::Output shape;
 };
 
-/// A conditional accumulator for aggregating sparse gradients. The accumulator
+/// A conditional accumulator for aggregating sparse gradients.
 ///
-/// accepts gradients marked with local_step greater or equal to the most recent
-/// global_step known to the accumulator. The average can be extracted from the
-/// accumulator, provided sufficient gradients have been accumulated. Extracting the
-/// average automatically resets the aggregate to 0, and increments the global_step
-/// recorded by the accumulator.
+/// The accumulator accepts gradients marked with local_step greater or
+/// equal to the most recent global_step known to the accumulator. The
+/// average can be extracted from the accumulator, provided sufficient
+/// gradients have been accumulated. Extracting the average automatically
+/// resets the aggregate to 0, and increments the global_step recorded by
+/// the accumulator.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -1694,9 +2744,9 @@ class SparseConditionalAccumulator {
     StringPiece shared_name_ = "";
   };
   SparseConditionalAccumulator(const ::tensorflow::Scope& scope, DataType dtype,
-                             TensorShape shape);
+                             PartialTensorShape shape);
   SparseConditionalAccumulator(const ::tensorflow::Scope& scope, DataType dtype,
-                             TensorShape shape, const
+                             PartialTensorShape shape, const
                              SparseConditionalAccumulator::Attrs& attrs);
   operator ::tensorflow::Output() const { return handle; }
   operator ::tensorflow::Input() const { return handle; }
@@ -1712,16 +2762,21 @@ class SparseConditionalAccumulator {
   ::tensorflow::Output handle;
 };
 
-/// Stage values similar to a lightweight Enqueue.  The basic functionality of this
+/// Stage values similar to a lightweight Enqueue.
 ///
-/// Op is similar to a queue with many fewer capabilities and options.  This Op is
-/// optimized for performance.
+/// The basic functionality of this Op is similar to a queue with many
+/// fewer capabilities and options.  This Op is optimized for performance.
 ///
 /// Arguments:
 /// * scope: A Scope object
 /// * values: a list of tensors
+/// dtypes A list of data types that inserted values should adhere to.
 ///
 /// Optional attributes (see `Attrs`):
+/// * capacity: Maximum number of elements in the Staging Area. If > 0, inserts
+/// on the container will block when the capacity is reached.
+/// * memory_limit: The maximum number of bytes allowed for Tensors in the Staging Area.
+/// If > 0, inserts will block until sufficient space is available.
 /// * container: If non-empty, this queue is placed in the given container. Otherwise,
 /// a default container is used.
 /// * shared_name: It is necessary to match this name to the matching Unstage Op.
@@ -1732,6 +2787,26 @@ class Stage {
  public:
   /// Optional attribute setters for Stage
   struct Attrs {
+    /// Maximum number of elements in the Staging Area. If > 0, inserts
+    /// on the container will block when the capacity is reached.
+    ///
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// The maximum number of bytes allowed for Tensors in the Staging Area.
+    /// If > 0, inserts will block until sufficient space is available.
+    ///
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
     /// If non-empty, this queue is placed in the given container. Otherwise,
     /// a default container is used.
     ///
@@ -1751,6 +2826,8 @@ class Stage {
       return ret;
     }
 
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
     StringPiece container_ = "";
     StringPiece shared_name_ = "";
   };
@@ -1759,6 +2836,12 @@ class Stage {
       Stage::Attrs& attrs);
   operator ::tensorflow::Operation() const { return operation; }
 
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
   static Attrs Container(StringPiece x) {
     return Attrs().Container(x);
   }
@@ -1769,9 +2852,213 @@ class Stage {
   Operation operation;
 };
 
-/// Delete the TensorArray from its resource container.  This enables
+/// Op removes all elements in the underlying container.
 ///
-/// the user to close and release the resource in the middle of a step/run.
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * the created `Operation`
+class StageClear {
+ public:
+  /// Optional attribute setters for StageClear
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  StageClear(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes);
+  StageClear(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes, const
+           StageClear::Attrs& attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  Operation operation;
+};
+
+/// Op peeks at the values at the specified index.  If the
+///
+/// underlying container does not contain sufficient elements
+/// this op will block until it does.   This Op is optimized for
+/// performance.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `OutputList`: The values tensor.
+class StagePeek {
+ public:
+  /// Optional attribute setters for StagePeek
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  StagePeek(const ::tensorflow::Scope& scope, ::tensorflow::Input index, const
+          DataTypeSlice& dtypes);
+  StagePeek(const ::tensorflow::Scope& scope, ::tensorflow::Input index, const
+          DataTypeSlice& dtypes, const StagePeek::Attrs& attrs);
+  ::tensorflow::Output operator[](size_t index) const { return values[index]; }
+
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::OutputList values;
+};
+
+/// Op returns the number of elements in the underlying container.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Returns:
+/// * `Output`: The size tensor.
+class StageSize {
+ public:
+  /// Optional attribute setters for StageSize
+  struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  StageSize(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes);
+  StageSize(const ::tensorflow::Scope& scope, const DataTypeSlice& dtypes, const
+          StageSize::Attrs& attrs);
+  operator ::tensorflow::Output() const { return size; }
+  operator ::tensorflow::Input() const { return size; }
+  ::tensorflow::Node* node() const { return size.node(); }
+
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output size;
+};
+
+/// Delete the TensorArray from its resource container.
+///
+/// This enables the user to close and release the resource in the middle
+/// of a step/run.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -1829,13 +3116,13 @@ class TensorArrayConcat {
     /// zero-size TensorArrays is an error.
     ///
     /// Defaults to <unknown>
-    Attrs ElementShapeExcept0(TensorShape x) {
+    Attrs ElementShapeExcept0(PartialTensorShape x) {
       Attrs ret = *this;
       ret.element_shape_except0_ = x;
       return ret;
     }
 
-    TensorShape element_shape_except0_ = {};
+    PartialTensorShape element_shape_except0_ = ::tensorflow::PartialTensorShape() /* unknown */;
   };
   TensorArrayConcat(const ::tensorflow::Scope& scope, ::tensorflow::Input handle,
                   ::tensorflow::Input flow_in, DataType dtype);
@@ -1843,7 +3130,7 @@ class TensorArrayConcat {
                   ::tensorflow::Input flow_in, DataType dtype, const
                   TensorArrayConcat::Attrs& attrs);
 
-  static Attrs ElementShapeExcept0(TensorShape x) {
+  static Attrs ElementShapeExcept0(PartialTensorShape x) {
     return Attrs().ElementShapeExcept0(x);
   }
 
@@ -1879,13 +3166,13 @@ class TensorArrayGather {
     /// fully specified, gathering zero-size TensorArrays is an error.
     ///
     /// Defaults to <unknown>
-    Attrs ElementShape(TensorShape x) {
+    Attrs ElementShape(PartialTensorShape x) {
       Attrs ret = *this;
       ret.element_shape_ = x;
       return ret;
     }
 
-    TensorShape element_shape_ = {};
+    PartialTensorShape element_shape_ = ::tensorflow::PartialTensorShape() /* unknown */;
   };
   TensorArrayGather(const ::tensorflow::Scope& scope, ::tensorflow::Input handle,
                   ::tensorflow::Input indices, ::tensorflow::Input flow_in,
@@ -1897,7 +3184,7 @@ class TensorArrayGather {
   operator ::tensorflow::Input() const { return value; }
   ::tensorflow::Node* node() const { return value.node(); }
 
-  static Attrs ElementShape(TensorShape x) {
+  static Attrs ElementShape(PartialTensorShape x) {
     return Attrs().ElementShape(x);
   }
 
@@ -1930,7 +3217,7 @@ class TensorArrayGather {
 ///
 /// TensorArray gradient calls use an accumulator TensorArray object.  If
 /// multiple gradients are calculated and run in the same session, the multiple
-/// gradient nodes may accidentally flow throuth the same accumulator TensorArray.
+/// gradient nodes may accidentally flow through the same accumulator TensorArray.
 /// This double counts and generally breaks the TensorArray gradient flow.
 ///
 /// The solution is to identify which gradient call this particular
@@ -2071,9 +3358,9 @@ class TensorArraySplit {
   ::tensorflow::Output flow_out;
 };
 
-/// An array of Tensors of given size, with data written via Write and read
+/// An array of Tensors of given size.
 ///
-/// via Read or Pack.
+/// Write data via Write and read via Read or Pack.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -2105,7 +3392,7 @@ class TensorArray {
     /// fully specified, gathering zero-size TensorArrays is an error.
     ///
     /// Defaults to <unknown>
-    Attrs ElementShape(TensorShape x) {
+    Attrs ElementShape(PartialTensorShape x) {
       Attrs ret = *this;
       ret.element_shape_ = x;
       return ret;
@@ -2143,7 +3430,7 @@ class TensorArray {
       return ret;
     }
 
-    TensorShape element_shape_ = {};
+    PartialTensorShape element_shape_ = ::tensorflow::PartialTensorShape() /* unknown */;
     bool dynamic_size_ = false;
     bool clear_after_read_ = true;
     StringPiece tensor_array_name_ = "";
@@ -2153,7 +3440,7 @@ class TensorArray {
   TensorArray(const ::tensorflow::Scope& scope, ::tensorflow::Input size,
             DataType dtype, const TensorArray::Attrs& attrs);
 
-  static Attrs ElementShape(TensorShape x) {
+  static Attrs ElementShape(PartialTensorShape x) {
     return Attrs().ElementShape(x);
   }
   static Attrs DynamicSize(bool x) {
@@ -2193,10 +3480,10 @@ class TensorArrayWrite {
   ::tensorflow::Output flow_out;
 };
 
-/// Op is similar to a lightweight Dequeue.  The basic funtionality is similar to
+/// Op is similar to a lightweight Dequeue.
 ///
-/// dequeue with many fewer capabilities and options.  This Op is optimized for
-/// performance.
+/// The basic functionality is similar to dequeue with many fewer
+/// capabilities and options.  This Op is optimized for performance.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -2207,6 +3494,20 @@ class Unstage {
  public:
   /// Optional attribute setters for Unstage
   struct Attrs {
+    /// Defaults to 0
+    Attrs Capacity(int64 x) {
+      Attrs ret = *this;
+      ret.capacity_ = x;
+      return ret;
+    }
+
+    /// Defaults to 0
+    Attrs MemoryLimit(int64 x) {
+      Attrs ret = *this;
+      ret.memory_limit_ = x;
+      return ret;
+    }
+
     /// Defaults to ""
     Attrs Container(StringPiece x) {
       Attrs ret = *this;
@@ -2221,6 +3522,8 @@ class Unstage {
       return ret;
     }
 
+    int64 capacity_ = 0;
+    int64 memory_limit_ = 0;
     StringPiece container_ = "";
     StringPiece shared_name_ = "";
   };
@@ -2230,6 +3533,12 @@ class Unstage {
   ::tensorflow::Output operator[](size_t index) const { return values[index]; }
 
 
+  static Attrs Capacity(int64 x) {
+    return Attrs().Capacity(x);
+  }
+  static Attrs MemoryLimit(int64 x) {
+    return Attrs().MemoryLimit(x);
+  }
   static Attrs Container(StringPiece x) {
     return Attrs().Container(x);
   }

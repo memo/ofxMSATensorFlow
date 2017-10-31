@@ -9,6 +9,20 @@
 
 namespace tensorflow {
 
+// Message-text conversion for tensorflow.AutoParallelOptions
+string ProtoDebugString(
+    const ::tensorflow::AutoParallelOptions& msg);
+string ProtoShortDebugString(
+    const ::tensorflow::AutoParallelOptions& msg);
+bool ProtoParseFromString(
+    const string& s,
+    ::tensorflow::AutoParallelOptions* msg)
+        TF_MUST_USE_RESULT;
+
+// Enum text output for tensorflow.RewriterConfig.MemOptType
+const char* EnumName_RewriterConfig_MemOptType(
+    ::tensorflow::RewriterConfig_MemOptType value);
+
 // Message-text conversion for tensorflow.RewriterConfig
 string ProtoDebugString(
     const ::tensorflow::RewriterConfig& msg);

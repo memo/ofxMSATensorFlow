@@ -302,7 +302,7 @@ class RandomPoisson {
 ///   to one and only one `output[i]`. For example, a mapping that might occur for a
 ///   3x2 tensor is:
 ///
-/// ```prettyprint
+/// ```
 /// [[1, 2],       [[5, 6],
 ///  [3, 4],  ==>   [1, 2],
 ///  [5, 6]]        [3, 4]]

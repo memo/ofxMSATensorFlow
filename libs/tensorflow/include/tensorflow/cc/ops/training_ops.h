@@ -211,6 +211,7 @@ class ApplyAdagradDA {
 /// * use_locking: If `True`, updating of the var, m, and v tensors will be protected
 /// by a lock; otherwise the behavior is undefined, but may exhibit less
 /// contention.
+/// * use_nesterov: If `True`, uses the nesterov update.
 ///
 /// Returns:
 /// * `Output`: Same as "var".
@@ -229,7 +230,17 @@ class ApplyAdam {
       return ret;
     }
 
+    /// If `True`, uses the nesterov update.
+    ///
+    /// Defaults to false
+    Attrs UseNesterov(bool x) {
+      Attrs ret = *this;
+      ret.use_nesterov_ = x;
+      return ret;
+    }
+
     bool use_locking_ = false;
+    bool use_nesterov_ = false;
   };
   ApplyAdam(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
           ::tensorflow::Input m, ::tensorflow::Input v, ::tensorflow::Input
@@ -248,6 +259,9 @@ class ApplyAdam {
 
   static Attrs UseLocking(bool x) {
     return Attrs().UseLocking(x);
+  }
+  static Attrs UseNesterov(bool x) {
+    return Attrs().UseNesterov(x);
   }
 
   ::tensorflow::Output out;
@@ -331,6 +345,63 @@ class ApplyCenteredRMSProp {
   ::tensorflow::Output out;
 };
 
+/// var -= alpha * (delta + lambda * delta * (var - shadow))
+///
+/// Update '*shadow' by changing it to the new value of 'var'
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * var: Should be from a Variable().
+/// * alpha: Scaling factor. Must be a scalar.
+/// * delta: The change.
+/// * lambda: The variance parameter.
+/// * shadow: Same as "var".
+///
+/// Optional attributes (see `Attrs`):
+/// * use_locking: If `True`, the subtraction will be protected by a lock;
+/// otherwise the behavior is undefined, but may exhibit less contention.
+///
+/// Returns:
+/// * the created `Operation`
+class ApplyDelayCompensatedGradientDescent {
+ public:
+  /// Optional attribute setters for ApplyDelayCompensatedGradientDescent
+  struct Attrs {
+    /// If `True`, the subtraction will be protected by a lock;
+    /// otherwise the behavior is undefined, but may exhibit less contention.
+    ///
+    /// Defaults to false
+    Attrs UseLocking(bool x) {
+      Attrs ret = *this;
+      ret.use_locking_ = x;
+      return ret;
+    }
+
+    bool use_locking_ = false;
+  };
+  ApplyDelayCompensatedGradientDescent(const ::tensorflow::Scope& scope,
+                                     ::tensorflow::Input var,
+                                     ::tensorflow::Input alpha,
+                                     ::tensorflow::Input delta,
+                                     ::tensorflow::Input lambda,
+                                     ::tensorflow::Input shadow);
+  ApplyDelayCompensatedGradientDescent(const ::tensorflow::Scope& scope,
+                                     ::tensorflow::Input var,
+                                     ::tensorflow::Input alpha,
+                                     ::tensorflow::Input delta,
+                                     ::tensorflow::Input lambda,
+                                     ::tensorflow::Input shadow, const
+                                     ApplyDelayCompensatedGradientDescent::Attrs&
+                                     attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs UseLocking(bool x) {
+    return Attrs().UseLocking(x);
+  }
+
+  Operation operation;
+};
+
 /// Update '*var' according to the Ftrl-proximal scheme.
 ///
 /// accum_new = accum + grad * grad
@@ -383,6 +454,73 @@ class ApplyFtrl {
           ::tensorflow::Input grad, ::tensorflow::Input lr, ::tensorflow::Input
           l1, ::tensorflow::Input l2, ::tensorflow::Input lr_power, const
           ApplyFtrl::Attrs& attrs);
+  operator ::tensorflow::Output() const { return out; }
+  operator ::tensorflow::Input() const { return out; }
+  ::tensorflow::Node* node() const { return out.node(); }
+
+  static Attrs UseLocking(bool x) {
+    return Attrs().UseLocking(x);
+  }
+
+  ::tensorflow::Output out;
+};
+
+/// Update '*var' according to the Ftrl-proximal scheme.
+///
+/// grad_with_shrinkage = grad + 2 * l2_shrinkage * var
+/// accum_new = accum + grad_with_shrinkage * grad_with_shrinkage
+/// linear += grad_with_shrinkage +
+///     (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+/// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
+/// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
+/// accum = accum_new
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * var: Should be from a Variable().
+/// * accum: Should be from a Variable().
+/// * linear: Should be from a Variable().
+/// * grad: The gradient.
+/// * lr: Scaling factor. Must be a scalar.
+/// * l1: L1 regulariation. Must be a scalar.
+/// * l2: L2 shrinkage regulariation. Must be a scalar.
+/// * lr_power: Scaling factor. Must be a scalar.
+///
+/// Optional attributes (see `Attrs`):
+/// * use_locking: If `True`, updating of the var and accum tensors will be protected
+/// by a lock; otherwise the behavior is undefined, but may exhibit less
+/// contention.
+///
+/// Returns:
+/// * `Output`: Same as "var".
+class ApplyFtrlV2 {
+ public:
+  /// Optional attribute setters for ApplyFtrlV2
+  struct Attrs {
+    /// If `True`, updating of the var and accum tensors will be protected
+    /// by a lock; otherwise the behavior is undefined, but may exhibit less
+    /// contention.
+    ///
+    /// Defaults to false
+    Attrs UseLocking(bool x) {
+      Attrs ret = *this;
+      ret.use_locking_ = x;
+      return ret;
+    }
+
+    bool use_locking_ = false;
+  };
+  ApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
+            ::tensorflow::Input accum, ::tensorflow::Input linear,
+            ::tensorflow::Input grad, ::tensorflow::Input lr,
+            ::tensorflow::Input l1, ::tensorflow::Input l2, ::tensorflow::Input
+            l2_shrinkage, ::tensorflow::Input lr_power);
+  ApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
+            ::tensorflow::Input accum, ::tensorflow::Input linear,
+            ::tensorflow::Input grad, ::tensorflow::Input lr,
+            ::tensorflow::Input l1, ::tensorflow::Input l2, ::tensorflow::Input
+            l2_shrinkage, ::tensorflow::Input lr_power, const
+            ApplyFtrlV2::Attrs& attrs);
   operator ::tensorflow::Output() const { return out; }
   operator ::tensorflow::Input() const { return out; }
   ::tensorflow::Node* node() const { return out.node(); }
@@ -886,6 +1024,7 @@ class ResourceApplyAdagradDA {
 /// * use_locking: If `True`, updating of the var, m, and v tensors will be protected
 /// by a lock; otherwise the behavior is undefined, but may exhibit less
 /// contention.
+/// * use_nesterov: If `True`, uses the nesterov update.
 ///
 /// Returns:
 /// * the created `Operation`
@@ -904,7 +1043,17 @@ class ResourceApplyAdam {
       return ret;
     }
 
+    /// If `True`, uses the nesterov update.
+    ///
+    /// Defaults to false
+    Attrs UseNesterov(bool x) {
+      Attrs ret = *this;
+      ret.use_nesterov_ = x;
+      return ret;
+    }
+
     bool use_locking_ = false;
+    bool use_nesterov_ = false;
   };
   ResourceApplyAdam(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
                   ::tensorflow::Input m, ::tensorflow::Input v,
@@ -923,6 +1072,9 @@ class ResourceApplyAdam {
 
   static Attrs UseLocking(bool x) {
     return Attrs().UseLocking(x);
+  }
+  static Attrs UseNesterov(bool x) {
+    return Attrs().UseNesterov(x);
   }
 
   Operation operation;
@@ -1009,7 +1161,7 @@ class ResourceApplyCenteredRMSProp {
 /// Update '*var' according to the Ftrl-proximal scheme.
 ///
 /// accum_new = accum + grad * grad
-/// linear += grad + (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+/// linear += grad - (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
 /// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
 /// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
 /// accum = accum_new
@@ -1060,6 +1212,72 @@ class ResourceApplyFtrl {
                   ::tensorflow::Input l1, ::tensorflow::Input l2,
                   ::tensorflow::Input lr_power, const ResourceApplyFtrl::Attrs&
                   attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs UseLocking(bool x) {
+    return Attrs().UseLocking(x);
+  }
+
+  Operation operation;
+};
+
+/// Update '*var' according to the Ftrl-proximal scheme.
+///
+/// grad_with_shrinkage = grad + 2 * l2_shrinkage * var
+/// accum_new = accum + grad_with_shrinkage * grad_with_shrinkage
+/// linear += grad_with_shrinkage +
+///     (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+/// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
+/// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
+/// accum = accum_new
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * var: Should be from a Variable().
+/// * accum: Should be from a Variable().
+/// * linear: Should be from a Variable().
+/// * grad: The gradient.
+/// * lr: Scaling factor. Must be a scalar.
+/// * l1: L1 regulariation. Must be a scalar.
+/// * l2: L2 shrinkage regulariation. Must be a scalar.
+/// * lr_power: Scaling factor. Must be a scalar.
+///
+/// Optional attributes (see `Attrs`):
+/// * use_locking: If `True`, updating of the var and accum tensors will be protected
+/// by a lock; otherwise the behavior is undefined, but may exhibit less
+/// contention.
+///
+/// Returns:
+/// * the created `Operation`
+class ResourceApplyFtrlV2 {
+ public:
+  /// Optional attribute setters for ResourceApplyFtrlV2
+  struct Attrs {
+    /// If `True`, updating of the var and accum tensors will be protected
+    /// by a lock; otherwise the behavior is undefined, but may exhibit less
+    /// contention.
+    ///
+    /// Defaults to false
+    Attrs UseLocking(bool x) {
+      Attrs ret = *this;
+      ret.use_locking_ = x;
+      return ret;
+    }
+
+    bool use_locking_ = false;
+  };
+  ResourceApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
+                    ::tensorflow::Input accum, ::tensorflow::Input linear,
+                    ::tensorflow::Input grad, ::tensorflow::Input lr,
+                    ::tensorflow::Input l1, ::tensorflow::Input l2,
+                    ::tensorflow::Input l2_shrinkage, ::tensorflow::Input
+                    lr_power);
+  ResourceApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
+                    ::tensorflow::Input accum, ::tensorflow::Input linear,
+                    ::tensorflow::Input grad, ::tensorflow::Input lr,
+                    ::tensorflow::Input l1, ::tensorflow::Input l2,
+                    ::tensorflow::Input l2_shrinkage, ::tensorflow::Input
+                    lr_power, const ResourceApplyFtrlV2::Attrs& attrs);
   operator ::tensorflow::Operation() const { return operation; }
 
   static Attrs UseLocking(bool x) {
@@ -1694,6 +1912,75 @@ class ResourceSparseApplyFtrl {
   Operation operation;
 };
 
+/// Update relevant entries in '*var' according to the Ftrl-proximal scheme.
+///
+/// That is for rows we have grad for, we update var, accum and linear as follows:
+/// grad_with_shrinkage = grad + 2 * l2_shrinkage * var
+/// accum_new = accum + grad_with_shrinkage * grad_with_shrinkage
+/// linear += grad_with_shrinkage +
+///     (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+/// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
+/// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
+/// accum = accum_new
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * var: Should be from a Variable().
+/// * accum: Should be from a Variable().
+/// * linear: Should be from a Variable().
+/// * grad: The gradient.
+/// * indices: A vector of indices into the first dimension of var and accum.
+/// * lr: Scaling factor. Must be a scalar.
+/// * l1: L1 regularization. Must be a scalar.
+/// * l2: L2 shrinkage regulariation. Must be a scalar.
+/// * lr_power: Scaling factor. Must be a scalar.
+///
+/// Optional attributes (see `Attrs`):
+/// * use_locking: If `True`, updating of the var and accum tensors will be protected
+/// by a lock; otherwise the behavior is undefined, but may exhibit less
+/// contention.
+///
+/// Returns:
+/// * the created `Operation`
+class ResourceSparseApplyFtrlV2 {
+ public:
+  /// Optional attribute setters for ResourceSparseApplyFtrlV2
+  struct Attrs {
+    /// If `True`, updating of the var and accum tensors will be protected
+    /// by a lock; otherwise the behavior is undefined, but may exhibit less
+    /// contention.
+    ///
+    /// Defaults to false
+    Attrs UseLocking(bool x) {
+      Attrs ret = *this;
+      ret.use_locking_ = x;
+      return ret;
+    }
+
+    bool use_locking_ = false;
+  };
+  ResourceSparseApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                          var, ::tensorflow::Input accum, ::tensorflow::Input
+                          linear, ::tensorflow::Input grad, ::tensorflow::Input
+                          indices, ::tensorflow::Input lr, ::tensorflow::Input
+                          l1, ::tensorflow::Input l2, ::tensorflow::Input
+                          l2_shrinkage, ::tensorflow::Input lr_power);
+  ResourceSparseApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                          var, ::tensorflow::Input accum, ::tensorflow::Input
+                          linear, ::tensorflow::Input grad, ::tensorflow::Input
+                          indices, ::tensorflow::Input lr, ::tensorflow::Input
+                          l1, ::tensorflow::Input l2, ::tensorflow::Input
+                          l2_shrinkage, ::tensorflow::Input lr_power, const
+                          ResourceSparseApplyFtrlV2::Attrs& attrs);
+  operator ::tensorflow::Operation() const { return operation; }
+
+  static Attrs UseLocking(bool x) {
+    return Attrs().UseLocking(x);
+  }
+
+  Operation operation;
+};
+
 /// Update relevant entries in '*var' and '*accum' according to the momentum scheme.
 ///
 /// Set use_nesterov = True if you want to use Nesterov momentum.
@@ -2280,6 +2567,77 @@ class SparseApplyFtrl {
                 ::tensorflow::Input lr, ::tensorflow::Input l1,
                 ::tensorflow::Input l2, ::tensorflow::Input lr_power, const
                 SparseApplyFtrl::Attrs& attrs);
+  operator ::tensorflow::Output() const { return out; }
+  operator ::tensorflow::Input() const { return out; }
+  ::tensorflow::Node* node() const { return out.node(); }
+
+  static Attrs UseLocking(bool x) {
+    return Attrs().UseLocking(x);
+  }
+
+  ::tensorflow::Output out;
+};
+
+/// Update relevant entries in '*var' according to the Ftrl-proximal scheme.
+///
+/// That is for rows we have grad for, we update var, accum and linear as follows:
+/// grad_with_shrinkage = grad + 2 * l2_shrinkage * var
+/// accum_new = accum + grad_with_shrinkage * grad_with_shrinkage
+/// linear += grad_with_shrinkage +
+///     (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
+/// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
+/// var = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
+/// accum = accum_new
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * var: Should be from a Variable().
+/// * accum: Should be from a Variable().
+/// * linear: Should be from a Variable().
+/// * grad: The gradient.
+/// * indices: A vector of indices into the first dimension of var and accum.
+/// * lr: Scaling factor. Must be a scalar.
+/// * l1: L1 regularization. Must be a scalar.
+/// * l2: L2 shrinkage regulariation. Must be a scalar.
+/// * lr_power: Scaling factor. Must be a scalar.
+///
+/// Optional attributes (see `Attrs`):
+/// * use_locking: If `True`, updating of the var and accum tensors will be protected
+/// by a lock; otherwise the behavior is undefined, but may exhibit less
+/// contention.
+///
+/// Returns:
+/// * `Output`: Same as "var".
+class SparseApplyFtrlV2 {
+ public:
+  /// Optional attribute setters for SparseApplyFtrlV2
+  struct Attrs {
+    /// If `True`, updating of the var and accum tensors will be protected
+    /// by a lock; otherwise the behavior is undefined, but may exhibit less
+    /// contention.
+    ///
+    /// Defaults to false
+    Attrs UseLocking(bool x) {
+      Attrs ret = *this;
+      ret.use_locking_ = x;
+      return ret;
+    }
+
+    bool use_locking_ = false;
+  };
+  SparseApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
+                  ::tensorflow::Input accum, ::tensorflow::Input linear,
+                  ::tensorflow::Input grad, ::tensorflow::Input indices,
+                  ::tensorflow::Input lr, ::tensorflow::Input l1,
+                  ::tensorflow::Input l2, ::tensorflow::Input l2_shrinkage,
+                  ::tensorflow::Input lr_power);
+  SparseApplyFtrlV2(const ::tensorflow::Scope& scope, ::tensorflow::Input var,
+                  ::tensorflow::Input accum, ::tensorflow::Input linear,
+                  ::tensorflow::Input grad, ::tensorflow::Input indices,
+                  ::tensorflow::Input lr, ::tensorflow::Input l1,
+                  ::tensorflow::Input l2, ::tensorflow::Input l2_shrinkage,
+                  ::tensorflow::Input lr_power, const SparseApplyFtrlV2::Attrs&
+                  attrs);
   operator ::tensorflow::Output() const { return out; }
   operator ::tensorflow::Input() const { return out; }
   ::tensorflow::Node* node() const { return out.node(); }

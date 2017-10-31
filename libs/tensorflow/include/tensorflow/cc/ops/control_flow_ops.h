@@ -18,7 +18,10 @@ namespace ops {
 /// @defgroup control_flow_ops Control Flow Ops
 /// @{
 
-/// Raise a exception to abort the process when called. If exit_without_error is true, the process will exit normally, otherwise it will exit with a SIGABORT signal.
+/// Raise a exception to abort the process when called.
+///
+/// If exit_without_error is true, the process will exit normally,
+/// otherwise it will exit with a SIGABORT signal.
 ///
 /// Returns nothing but an exception.
 ///
@@ -110,7 +113,7 @@ class LoopCond {
 /// `Merge` waits for at least one of the tensors in `inputs` to become available.
 /// It is usually combined with `Switch` to implement branching.
 ///
-/// `Merge` forwards the first tensor for become available to `output`, and sets
+/// `Merge` forwards the first tensor to become available to `output`, and sets
 /// `value_index` to its index in `inputs`.
 ///
 /// Arguments:

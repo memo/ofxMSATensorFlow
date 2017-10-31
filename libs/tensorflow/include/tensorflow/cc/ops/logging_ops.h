@@ -358,6 +358,10 @@ class ScalarSummary {
 
 /// Outputs a `Summary` protocol buffer with a tensor.
 ///
+/// This op is being phased out in favor of TensorSummaryV2, which lets callers pass
+/// a tag as well as a serialized SummaryMetadata proto string that contains
+/// plugin-specific data. We will keep this op to maintain backwards compatibility.
+///
 /// Arguments:
 /// * scope: A Scope object
 /// * tensor: A tensor to serialize.
@@ -420,6 +424,29 @@ class TensorSummary {
   static Attrs DisplayName(StringPiece x) {
     return Attrs().DisplayName(x);
   }
+
+  ::tensorflow::Output summary;
+};
+
+/// Outputs a `Summary` protocol buffer with a tensor and per-plugin data.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * tag: A string attached to this summary. Used for organization in TensorBoard.
+/// * tensor: A tensor to serialize.
+/// * serialized_summary_metadata: A serialized SummaryMetadata proto. Contains plugin
+/// data.
+///
+/// Returns:
+/// * `Output`: The summary tensor.
+class TensorSummaryV2 {
+ public:
+  TensorSummaryV2(const ::tensorflow::Scope& scope, ::tensorflow::Input tag,
+                ::tensorflow::Input tensor, ::tensorflow::Input
+                serialized_summary_metadata);
+  operator ::tensorflow::Output() const { return summary; }
+  operator ::tensorflow::Input() const { return summary; }
+  ::tensorflow::Node* node() const { return summary.node(); }
 
   ::tensorflow::Output summary;
 };

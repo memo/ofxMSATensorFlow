@@ -13,24 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-// An optimization pass that performs node merging and rewrite on graph nodes
+#ifndef TENSORFLOW_KERNELS_WARN_ABOUT_INTS_H_
+#define TENSORFLOW_KERNELS_WARN_ABOUT_INTS_H_
 
-#ifndef TENSORFLOW_GRAPH_MKL_OPTIMIZER_MERGE_H_
-#define TENSORFLOW_GRAPH_MKL_OPTIMIZER_MERGE_H_
-
-#ifdef INTEL_MKL
-
-#include <sys/types.h>
-#include <memory>
-#include "tensorflow/core/graph/graph.h"
+#include "tensorflow/core/framework/op_kernel.h"
 
 namespace tensorflow {
-// Interface to invoke the pass for unit test
-//
-// Returns true if and only if 'g' is mutated.
-extern bool OptimizeNodeMerge(std::unique_ptr<Graph>* g);
+
+// Warn if a kernel is being created using ints
+// TODO(irving): Remove in TF 2.0 along with the bad op registrations.
+void WarnAboutInts(OpKernelConstruction* context);
+
 }  // namespace tensorflow
 
-#endif  // INTEL_MKL
-
-#endif  // TENSORFLOW_GRAPH_MKL_OPTIMIZER_MERGE_H_
+#endif  // TENSORFLOW_KERNELS_WARN_ABOUT_INTS_H_

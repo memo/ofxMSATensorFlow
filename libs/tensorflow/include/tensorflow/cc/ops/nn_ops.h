@@ -86,16 +86,47 @@ class AvgPool {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The average pooled output tensor.
 class AvgPool3D {
  public:
+  /// Optional attribute setters for AvgPool3D
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   AvgPool3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
           gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
           StringPiece padding);
+  AvgPool3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
+          gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
+          StringPiece padding, const AvgPool3D::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -112,17 +143,49 @@ class AvgPool3D {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The backprop for input.
 class AvgPool3DGrad {
  public:
+  /// Optional attribute setters for AvgPool3DGrad
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   AvgPool3DGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
               orig_input_shape, ::tensorflow::Input grad, const
               gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
               StringPiece padding);
+  AvgPool3DGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
+              orig_input_shape, ::tensorflow::Input grad, const
+              gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
+              StringPiece padding, const AvgPool3DGrad::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -500,16 +563,47 @@ class Conv2DBackpropInput {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The output tensor.
 class Conv3D {
  public:
+  /// Optional attribute setters for Conv3D
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   Conv3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
        ::tensorflow::Input filter, const gtl::ArraySlice<int>& strides,
        StringPiece padding);
+  Conv3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input,
+       ::tensorflow::Input filter, const gtl::ArraySlice<int>& strides,
+       StringPiece padding, const Conv3D::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -529,17 +623,50 @@ class Conv3D {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The output tensor.
 class Conv3DBackpropFilterV2 {
  public:
+  /// Optional attribute setters for Conv3DBackpropFilterV2
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   Conv3DBackpropFilterV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
                        input, ::tensorflow::Input filter_sizes,
                        ::tensorflow::Input out_backprop, const
                        gtl::ArraySlice<int>& strides, StringPiece padding);
+  Conv3DBackpropFilterV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                       input, ::tensorflow::Input filter_sizes,
+                       ::tensorflow::Input out_backprop, const
+                       gtl::ArraySlice<int>& strides, StringPiece padding,
+                       const Conv3DBackpropFilterV2::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -559,17 +686,50 @@ class Conv3DBackpropFilterV2 {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The output tensor.
 class Conv3DBackpropInputV2 {
  public:
+  /// Optional attribute setters for Conv3DBackpropInputV2
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   Conv3DBackpropInputV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
                       input_sizes, ::tensorflow::Input filter,
                       ::tensorflow::Input out_backprop, const
                       gtl::ArraySlice<int>& strides, StringPiece padding);
+  Conv3DBackpropInputV2(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input_sizes, ::tensorflow::Input filter,
+                      ::tensorflow::Input out_backprop, const
+                      gtl::ArraySlice<int>& strides, StringPiece padding, const
+                      Conv3DBackpropInputV2::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -584,11 +744,13 @@ class Conv3DBackpropInputV2 {
 /// `channel_multiplier` channels for each), then concatenates the results
 /// together. Thus, the output has `in_channels * channel_multiplier` channels.
 ///
+/// ```
 /// for k in 0..in_channels-1
 ///   for q in 0..channel_multiplier-1
 ///     output[b, i, j, k * channel_multiplier + q] =
 ///       sum_{di, dj} input[b, strides[1] * i + di, strides[2] * j + dj, k] *
 ///                         filter[di, dj, k, q]
+/// ```
 ///
 /// Must have `strides[0] = strides[3] = 1`.  For the most common case of the same
 /// horizontal and vertices strides, `strides = [1, stride, stride, 1]`.
@@ -1758,16 +1920,47 @@ class MaxPool {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The max pooled output tensor.
 class MaxPool3D {
  public:
+  /// Optional attribute setters for MaxPool3D
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   MaxPool3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
           gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
           StringPiece padding);
+  MaxPool3D(const ::tensorflow::Scope& scope, ::tensorflow::Input input, const
+          gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
+          StringPiece padding, const MaxPool3D::Attrs& attrs);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
 
   ::tensorflow::Output output;
 };
@@ -1785,14 +1978,195 @@ class MaxPool3D {
 /// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
 /// * padding: The type of padding algorithm to use.
 ///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
 /// Returns:
 /// * `Output`: The output tensor.
 class MaxPool3DGrad {
  public:
+  /// Optional attribute setters for MaxPool3DGrad
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
   MaxPool3DGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input orig_input,
               ::tensorflow::Input orig_output, ::tensorflow::Input grad, const
               gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
               StringPiece padding);
+  MaxPool3DGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input orig_input,
+              ::tensorflow::Input orig_output, ::tensorflow::Input grad, const
+              gtl::ArraySlice<int>& ksize, const gtl::ArraySlice<int>& strides,
+              StringPiece padding, const MaxPool3DGrad::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Computes second-order gradients of the maxpooling function.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * orig_input: The original input tensor.
+/// * orig_output: The original output tensor.
+/// * grad: Output backprop of shape `[batch, depth, rows, cols, channels]`.
+/// * ksize: 1-D tensor of length 5. The size of the window for each dimension of
+/// the input tensor. Must have `ksize[0] = ksize[4] = 1`.
+/// * strides: 1-D tensor of length 5. The stride of the sliding window for each
+/// dimension of `input`. Must have `strides[0] = strides[4] = 1`.
+/// * padding: The type of padding algorithm to use.
+///
+/// Optional attributes (see `Attrs`):
+/// * data_format: The data format of the input and output data. With the
+/// default format "NDHWC", the data is stored in the order of:
+///     [batch, in_depth, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCDHW", the data storage order is:
+///     [batch, in_channels, in_depth, in_height, in_width].
+///
+/// Returns:
+/// * `Output`: Gradients of gradients w.r.t. the input to `max_pool`.
+class MaxPool3DGradGrad {
+ public:
+  /// Optional attribute setters for MaxPool3DGradGrad
+  struct Attrs {
+    /// The data format of the input and output data. With the
+    /// default format "NDHWC", the data is stored in the order of:
+    ///     [batch, in_depth, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCDHW", the data storage order is:
+    ///     [batch, in_channels, in_depth, in_height, in_width].
+    ///
+    /// Defaults to "NDHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NDHWC";
+  };
+  MaxPool3DGradGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                  orig_input, ::tensorflow::Input orig_output,
+                  ::tensorflow::Input grad, const gtl::ArraySlice<int>& ksize,
+                  const gtl::ArraySlice<int>& strides, StringPiece padding);
+  MaxPool3DGradGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                  orig_input, ::tensorflow::Input orig_output,
+                  ::tensorflow::Input grad, const gtl::ArraySlice<int>& ksize,
+                  const gtl::ArraySlice<int>& strides, StringPiece padding,
+                  const MaxPool3DGradGrad::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Computes second-order gradients of the maxpooling function.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * orig_input: The original input tensor.
+/// * orig_output: The original output tensor.
+/// * grad: 4-D.  Gradients of gradients w.r.t. the input of `max_pool`.
+/// * ksize: The size of the window for each dimension of the input tensor.
+/// * strides: The stride of the sliding window for each dimension of the
+/// input tensor.
+/// * padding: The type of padding algorithm to use.
+///
+/// Optional attributes (see `Attrs`):
+/// * data_format: Specify the data format of the input and output data. With the
+/// default format "NHWC", the data is stored in the order of:
+///     [batch, in_height, in_width, in_channels].
+/// Alternatively, the format could be "NCHW", the data storage order of:
+///     [batch, in_channels, in_height, in_width].
+///
+/// Returns:
+/// * `Output`: Gradients of gradients w.r.t. the input to `max_pool`.
+class MaxPoolGradGrad {
+ public:
+  /// Optional attribute setters for MaxPoolGradGrad
+  struct Attrs {
+    /// Specify the data format of the input and output data. With the
+    /// default format "NHWC", the data is stored in the order of:
+    ///     [batch, in_height, in_width, in_channels].
+    /// Alternatively, the format could be "NCHW", the data storage order of:
+    ///     [batch, in_channels, in_height, in_width].
+    ///
+    /// Defaults to "NHWC"
+    Attrs DataFormat(StringPiece x) {
+      Attrs ret = *this;
+      ret.data_format_ = x;
+      return ret;
+    }
+
+    StringPiece data_format_ = "NHWC";
+  };
+  MaxPoolGradGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                orig_input, ::tensorflow::Input orig_output,
+                ::tensorflow::Input grad, const gtl::ArraySlice<int>& ksize,
+                const gtl::ArraySlice<int>& strides, StringPiece padding);
+  MaxPoolGradGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                orig_input, ::tensorflow::Input orig_output,
+                ::tensorflow::Input grad, const gtl::ArraySlice<int>& ksize,
+                const gtl::ArraySlice<int>& strides, StringPiece padding, const
+                MaxPoolGradGrad::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs DataFormat(StringPiece x) {
+    return Attrs().DataFormat(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Computes second-order gradients of the maxpooling function.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input: The original input.
+/// * grad: 4-D with shape `[batch, height, width, channels]`.  Gradients w.r.t. the
+/// input of `max_pool`.
+/// * argmax: The indices of the maximum values chosen for each output of `max_pool`.
+/// * ksize: The size of the window for each dimension of the input tensor.
+/// * strides: The stride of the sliding window for each dimension of the
+/// input tensor.
+/// * padding: The type of padding algorithm to use.
+///
+/// Returns:
+/// * `Output`: Gradients of gradients w.r.t. the input of `max_pool`.
+class MaxPoolGradGradWithArgmax {
+ public:
+  MaxPoolGradGradWithArgmax(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                          input, ::tensorflow::Input grad, ::tensorflow::Input
+                          argmax, const gtl::ArraySlice<int>& ksize, const
+                          gtl::ArraySlice<int>& strides, StringPiece padding);
   operator ::tensorflow::Output() const { return output; }
   operator ::tensorflow::Input() const { return output; }
   ::tensorflow::Node* node() const { return output.node(); }
@@ -1805,6 +2179,11 @@ class MaxPool3DGrad {
 /// The indices in `argmax` are flattened, so that a maximum value at position
 /// `[b, y, x, c]` becomes flattened index
 /// `((b * height + y) * width + x) * channels + c`.
+///
+/// The indices returned are always in `[0, height) x [0, width)` before flattening,
+/// even if padding is involved and the mathematically correct answer is outside
+/// (either negative or too large).  This is a bug, but fixing it is difficult to do
+/// in a safe backwards compatible way, especially due to flattening.
 ///
 /// Arguments:
 /// * scope: A Scope object

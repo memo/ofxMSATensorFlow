@@ -32,7 +32,10 @@ namespace ops {
 /// scalar default value for that column or empty if the column is required.
 ///
 /// Optional attributes (see `Attrs`):
-/// * field_delim: delimiter to separate fields in a record.
+/// * field_delim: char delimiter to separate fields in a record.
+/// * use_quote_delim: If false, treats double quotation marks as regular
+/// characters inside of the string fields (ignoring RFC 4180, Section 2,
+/// Bullet 5).
 ///
 /// Returns:
 /// * `OutputList`: Each tensor will have the same shape as records.
@@ -40,7 +43,7 @@ class DecodeCSV {
  public:
   /// Optional attribute setters for DecodeCSV
   struct Attrs {
-    /// delimiter to separate fields in a record.
+    /// char delimiter to separate fields in a record.
     ///
     /// Defaults to ","
     Attrs FieldDelim(StringPiece x) {
@@ -49,7 +52,19 @@ class DecodeCSV {
       return ret;
     }
 
+    /// If false, treats double quotation marks as regular
+    /// characters inside of the string fields (ignoring RFC 4180, Section 2,
+    /// Bullet 5).
+    ///
+    /// Defaults to true
+    Attrs UseQuoteDelim(bool x) {
+      Attrs ret = *this;
+      ret.use_quote_delim_ = x;
+      return ret;
+    }
+
     StringPiece field_delim_ = ",";
+    bool use_quote_delim_ = true;
   };
   DecodeCSV(const ::tensorflow::Scope& scope, ::tensorflow::Input records,
           ::tensorflow::InputList record_defaults);
@@ -61,6 +76,9 @@ class DecodeCSV {
 
   static Attrs FieldDelim(StringPiece x) {
     return Attrs().FieldDelim(x);
+  }
+  static Attrs UseQuoteDelim(bool x) {
+    return Attrs().UseQuoteDelim(x);
   }
 
   ::tensorflow::OutputList output;
@@ -196,7 +214,7 @@ class ParseExample {
              ::tensorflow::Input names, ::tensorflow::InputList sparse_keys,
              ::tensorflow::InputList dense_keys, ::tensorflow::InputList
              dense_defaults, const DataTypeSlice& sparse_types, const
-             gtl::ArraySlice<TensorShape>& dense_shapes);
+             gtl::ArraySlice<PartialTensorShape>& dense_shapes);
 
   ::tensorflow::OutputList sparse_indices;
   ::tensorflow::OutputList sparse_values;
@@ -298,7 +316,7 @@ class ParseSingleSequenceExample {
     /// The shape of context_dense_values[j] will match context_dense_shapes[j].
     ///
     /// Defaults to []
-    Attrs ContextDenseShapes(const gtl::ArraySlice<TensorShape>& x) {
+    Attrs ContextDenseShapes(const gtl::ArraySlice<PartialTensorShape>& x) {
       Attrs ret = *this;
       ret.context_dense_shapes_ = x;
       return ret;
@@ -323,7 +341,7 @@ class ParseSingleSequenceExample {
     /// feature_list_dense_shapes[j].NumEntries().
     ///
     /// Defaults to []
-    Attrs FeatureListDenseShapes(const gtl::ArraySlice<TensorShape>& x) {
+    Attrs FeatureListDenseShapes(const gtl::ArraySlice<PartialTensorShape>& x) {
       Attrs ret = *this;
       ret.feature_list_dense_shapes_ = x;
       return ret;
@@ -331,9 +349,9 @@ class ParseSingleSequenceExample {
 
     DataTypeSlice context_sparse_types_ = {};
     DataTypeSlice feature_list_dense_types_ = {};
-    gtl::ArraySlice<TensorShape> context_dense_shapes_ = {};
+    gtl::ArraySlice<PartialTensorShape> context_dense_shapes_ = {};
     DataTypeSlice feature_list_sparse_types_ = {};
-    gtl::ArraySlice<TensorShape> feature_list_dense_shapes_ = {};
+    gtl::ArraySlice<PartialTensorShape> feature_list_dense_shapes_ = {};
   };
   ParseSingleSequenceExample(const ::tensorflow::Scope& scope,
                            ::tensorflow::Input serialized, ::tensorflow::Input
@@ -361,13 +379,13 @@ class ParseSingleSequenceExample {
   static Attrs FeatureListDenseTypes(const DataTypeSlice& x) {
     return Attrs().FeatureListDenseTypes(x);
   }
-  static Attrs ContextDenseShapes(const gtl::ArraySlice<TensorShape>& x) {
+  static Attrs ContextDenseShapes(const gtl::ArraySlice<PartialTensorShape>& x) {
     return Attrs().ContextDenseShapes(x);
   }
   static Attrs FeatureListSparseTypes(const DataTypeSlice& x) {
     return Attrs().FeatureListSparseTypes(x);
   }
-  static Attrs FeatureListDenseShapes(const gtl::ArraySlice<TensorShape>& x) {
+  static Attrs FeatureListDenseShapes(const gtl::ArraySlice<PartialTensorShape>& x) {
     return Attrs().FeatureListDenseShapes(x);
   }
 

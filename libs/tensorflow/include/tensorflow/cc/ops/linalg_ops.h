@@ -21,9 +21,18 @@ namespace ops {
 /// Computes the Cholesky decomposition of one or more square matrices.
 ///
 /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
-/// form square matrices, with the same constraints as the single matrix Cholesky
-/// decomposition above. The output is a tensor of the same shape as the input
+/// form square matrices.
+///
+/// The input has to be symmetric and positive definite. Only the lower-triangular
+/// part of the input will be used for this operation. The upper-triangular part
+/// will not be read.
+///
+/// The output is a tensor of the same shape as the input
 /// containing the Cholesky decompositions for all input submatrices `[..., :, :]`.
+///
+/// **Note**: The gradient computation on GPU is faster for large matrices but
+/// not for large batch dimensions when the submatrices are small. In this
+/// case it might be faster to use the CPU.
 ///
 /// Arguments:
 /// * scope: A Scope object
@@ -357,7 +366,7 @@ class MatrixTriangularSolve {
 /// Computes the QR decomposition of each inner matrix in `tensor` such that
 /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
 ///
-/// ```prettyprint
+/// ```python
 /// # a is a tensor.
 /// # q is a tensor of orthonormal matrices.
 /// # r is a tensor of upper triangular matrices.
@@ -413,7 +422,7 @@ class Qr {
 /// Computes the eigenvalues and (optionally) eigenvectors of each inner matrix in
 /// `input` such that `input[..., :, :] = v[..., :, :] * diag(e[..., :])`.
 ///
-/// ```prettyprint
+/// ```python
 /// # a is a tensor.
 /// # e is a tensor of eigenvalues.
 /// # v is a tensor of eigenvectors.
@@ -465,7 +474,7 @@ class SelfAdjointEig {
 /// Computes the SVD of each inner matrix in `input` such that
 /// `input[..., :, :] = u[..., :, :] * diag(s[..., :, :]) * transpose(v[..., :, :])`
 ///
-/// ```prettyprint
+/// ```python
 /// # a is a tensor containing a batch of matrices.
 /// # s is a tensor of singular values for each matrix.
 /// # u is the tensor containing of left singular vectors for each matrix.

@@ -35,7 +35,7 @@ namespace ops {
 /// * true_classes: A batch_size * num_true matrix, in which each row contains the
 /// IDs of the num_true target_classes in the corresponding original label.
 /// * num_true: Number of true labels per context.
-/// * num_sampled: Number of candidates to produce per batch.
+/// * num_sampled: Number of candidates to produce.
 /// * unique: If unique is true, we sample with rejection, so that all sampled
 /// candidates in a batch are unique. This requires some approximation to
 /// estimate the post-rejection sampling probabilities.
@@ -196,7 +196,7 @@ class ComputeAccidentalHits {
 /// * true_classes: A batch_size * num_true matrix, in which each row contains the
 /// IDs of the num_true target_classes in the corresponding original label.
 /// * num_true: Number of true labels per context.
-/// * num_sampled: Number of candidates to randomly sample per batch.
+/// * num_sampled: Number of candidates to randomly sample.
 /// * unique: If unique is true, we sample with rejection, so that all sampled
 /// candidates in a batch are unique. This requires some approximation to
 /// estimate the post-rejection sampling probabilities.
@@ -400,7 +400,7 @@ class FixedUnigramCandidateSampler {
 /// * true_classes: A batch_size * num_true matrix, in which each row contains the
 /// IDs of the num_true target_classes in the corresponding original label.
 /// * num_true: Number of true labels per context.
-/// * num_sampled: Number of candidates to randomly sample per batch.
+/// * num_sampled: Number of candidates to randomly sample.
 /// * unique: If unique is true, we sample with rejection, so that all sampled
 /// candidates in a batch are unique. This requires some approximation to
 /// estimate the post-rejection sampling probabilities.
@@ -488,7 +488,7 @@ class LearnedUnigramCandidateSampler {
 /// * true_classes: A batch_size * num_true matrix, in which each row contains the
 /// IDs of the num_true target_classes in the corresponding original label.
 /// * num_true: Number of true labels per context.
-/// * num_sampled: Number of candidates to randomly sample per batch.
+/// * num_sampled: Number of candidates to randomly sample.
 /// * unique: If unique is true, we sample with rejection, so that all sampled
 /// candidates in a batch are unique. This requires some approximation to
 /// estimate the post-rejection sampling probabilities.
@@ -574,7 +574,7 @@ class LogUniformCandidateSampler {
 /// * true_classes: A batch_size * num_true matrix, in which each row contains the
 /// IDs of the num_true target_classes in the corresponding original label.
 /// * num_true: Number of true labels per context.
-/// * num_sampled: Number of candidates to randomly sample per batch.
+/// * num_sampled: Number of candidates to randomly sample.
 /// * unique: If unique is true, we sample with rejection, so that all sampled
 /// candidates in a batch are unique. This requires some approximation to
 /// estimate the post-rejection sampling probabilities.

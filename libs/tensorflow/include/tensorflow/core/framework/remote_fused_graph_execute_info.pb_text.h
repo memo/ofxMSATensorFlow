@@ -9,6 +9,10 @@
 
 namespace tensorflow {
 
+// Enum text output for tensorflow.RemoteFusedGraphExecuteInfo.NodeType
+const char* EnumName_RemoteFusedGraphExecuteInfo_NodeType(
+    ::tensorflow::RemoteFusedGraphExecuteInfo_NodeType value);
+
 // Message-text conversion for tensorflow.RemoteFusedGraphExecuteInfo.TensorShapeTypeProto
 string ProtoDebugString(
     const ::tensorflow::RemoteFusedGraphExecuteInfo_TensorShapeTypeProto& msg);

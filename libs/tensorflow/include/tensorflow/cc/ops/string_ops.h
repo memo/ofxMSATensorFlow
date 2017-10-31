@@ -202,7 +202,7 @@ class EncodeBase64 {
 ///
 /// For example:
 ///
-/// ```
+/// ```python
 /// # tensor `a` is [["a", "b"], ["c", "d"]]
 /// tf.reduce_join(a, 0) ==> ["ac", "bd"]
 /// tf.reduce_join(a, 1) ==> ["ab", "cd"]
@@ -473,7 +473,7 @@ class StringToHashBucketStrong {
 ///
 /// Using scalar `pos` and `len`:
 ///
-/// ```
+/// ```python
 /// input = [b'Hello', b'World']
 /// position = 1
 /// length = 3
@@ -483,7 +483,7 @@ class StringToHashBucketStrong {
 ///
 /// Using `pos` and `len` with same shape as `input`:
 ///
-/// ```
+/// ```python
 /// input = [[b'ten', b'eleven', b'twelve'],
 ///          [b'thirteen', b'fourteen', b'fifteen'],
 ///          [b'sixteen', b'seventeen', b'eighteen']]

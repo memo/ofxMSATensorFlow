@@ -22,12 +22,19 @@ namespace ops {
 ///
 /// Arguments:
 /// * scope: A Scope object
+/// * record_bytes: Number of bytes in the record.
 ///
 /// Optional attributes (see `Attrs`):
+/// * header_bytes: Number of bytes in the header, defaults to 0.
+/// * footer_bytes: Number of bytes in the footer, defaults to 0.
+/// * hop_bytes: Number of bytes to hop before each read. Default of 0 means using
+/// record_bytes.
 /// * container: If non-empty, this reader is placed in the given container.
 /// Otherwise, a default container is used.
 /// * shared_name: If non-empty, this reader is named in the given bucket
 /// with this shared_name. Otherwise, the node name is used instead.
+/// * encoding: The type of encoding for the file. Currently ZLIB and GZIP
+/// are supported. Defaults to none.
 ///
 /// Returns:
 /// * `Output`: The handle to reference the Reader.
@@ -35,6 +42,8 @@ class FixedLengthRecordReader {
  public:
   /// Optional attribute setters for FixedLengthRecordReader
   struct Attrs {
+    /// Number of bytes in the header, defaults to 0.
+    ///
     /// Defaults to 0
     Attrs HeaderBytes(int64 x) {
       Attrs ret = *this;
@@ -42,10 +51,22 @@ class FixedLengthRecordReader {
       return ret;
     }
 
+    /// Number of bytes in the footer, defaults to 0.
+    ///
     /// Defaults to 0
     Attrs FooterBytes(int64 x) {
       Attrs ret = *this;
       ret.footer_bytes_ = x;
+      return ret;
+    }
+
+    /// Number of bytes to hop before each read. Default of 0 means using
+    /// record_bytes.
+    ///
+    /// Defaults to 0
+    Attrs HopBytes(int64 x) {
+      Attrs ret = *this;
+      ret.hop_bytes_ = x;
       return ret;
     }
 
@@ -69,10 +90,22 @@ class FixedLengthRecordReader {
       return ret;
     }
 
+    /// The type of encoding for the file. Currently ZLIB and GZIP
+    /// are supported. Defaults to none.
+    ///
+    /// Defaults to ""
+    Attrs Encoding(StringPiece x) {
+      Attrs ret = *this;
+      ret.encoding_ = x;
+      return ret;
+    }
+
     int64 header_bytes_ = 0;
     int64 footer_bytes_ = 0;
+    int64 hop_bytes_ = 0;
     StringPiece container_ = "";
     StringPiece shared_name_ = "";
+    StringPiece encoding_ = "";
   };
   FixedLengthRecordReader(const ::tensorflow::Scope& scope, int64 record_bytes);
   FixedLengthRecordReader(const ::tensorflow::Scope& scope, int64 record_bytes,
@@ -87,11 +120,17 @@ class FixedLengthRecordReader {
   static Attrs FooterBytes(int64 x) {
     return Attrs().FooterBytes(x);
   }
+  static Attrs HopBytes(int64 x) {
+    return Attrs().HopBytes(x);
+  }
   static Attrs Container(StringPiece x) {
     return Attrs().Container(x);
   }
   static Attrs SharedName(StringPiece x) {
     return Attrs().SharedName(x);
+  }
+  static Attrs Encoding(StringPiece x) {
+    return Attrs().Encoding(x);
   }
 
   ::tensorflow::Output reader_handle;
@@ -143,6 +182,62 @@ class IdentityReader {
   IdentityReader(const ::tensorflow::Scope& scope);
   IdentityReader(const ::tensorflow::Scope& scope, const IdentityReader::Attrs&
                attrs);
+  operator ::tensorflow::Output() const { return reader_handle; }
+  operator ::tensorflow::Input() const { return reader_handle; }
+  ::tensorflow::Node* node() const { return reader_handle.node(); }
+
+  static Attrs Container(StringPiece x) {
+    return Attrs().Container(x);
+  }
+  static Attrs SharedName(StringPiece x) {
+    return Attrs().SharedName(x);
+  }
+
+  ::tensorflow::Output reader_handle;
+};
+
+/// A Reader that outputs the records from a LMDB file.
+///
+/// Arguments:
+/// * scope: A Scope object
+///
+/// Optional attributes (see `Attrs`):
+/// * container: If non-empty, this reader is placed in the given container.
+/// Otherwise, a default container is used.
+/// * shared_name: If non-empty, this reader is named in the given bucket
+/// with this shared_name. Otherwise, the node name is used instead.
+///
+/// Returns:
+/// * `Output`: The handle to reference the Reader.
+class LMDBReader {
+ public:
+  /// Optional attribute setters for LMDBReader
+  struct Attrs {
+    /// If non-empty, this reader is placed in the given container.
+    /// Otherwise, a default container is used.
+    ///
+    /// Defaults to ""
+    Attrs Container(StringPiece x) {
+      Attrs ret = *this;
+      ret.container_ = x;
+      return ret;
+    }
+
+    /// If non-empty, this reader is named in the given bucket
+    /// with this shared_name. Otherwise, the node name is used instead.
+    ///
+    /// Defaults to ""
+    Attrs SharedName(StringPiece x) {
+      Attrs ret = *this;
+      ret.shared_name_ = x;
+      return ret;
+    }
+
+    StringPiece container_ = "";
+    StringPiece shared_name_ = "";
+  };
+  LMDBReader(const ::tensorflow::Scope& scope);
+  LMDBReader(const ::tensorflow::Scope& scope, const LMDBReader::Attrs& attrs);
   operator ::tensorflow::Output() const { return reader_handle; }
   operator ::tensorflow::Input() const { return reader_handle; }
   ::tensorflow::Node* node() const { return reader_handle.node(); }
@@ -893,7 +988,9 @@ class WholeFileReader {
   ::tensorflow::Output reader_handle;
 };
 
-/// Writes contents to the file at input filename. Creates file if not existing.
+/// Writes contents to the file at input filename. Creates file and recursively
+///
+/// creates directory if not existing.
 ///
 /// Arguments:
 /// * scope: A Scope object

@@ -13,6 +13,13 @@ namespace internal {
 
 void AppendProtoDebugString(
     ::tensorflow::strings::ProtoTextOutput* o,
+    const ::tensorflow::AutoParallelOptions& msg);
+bool ProtoParseFromScanner(
+    ::tensorflow::strings::Scanner* scanner, bool nested, bool close_curly,
+    ::tensorflow::AutoParallelOptions* msg);
+
+void AppendProtoDebugString(
+    ::tensorflow::strings::ProtoTextOutput* o,
     const ::tensorflow::RewriterConfig& msg);
 bool ProtoParseFromScanner(
     ::tensorflow::strings::Scanner* scanner, bool nested, bool close_curly,

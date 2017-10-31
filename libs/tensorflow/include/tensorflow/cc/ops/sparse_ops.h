@@ -441,6 +441,76 @@ class SparseConcat {
   ::tensorflow::Output output_shape;
 };
 
+/// Generates sparse cross from a list of sparse and dense tensors.
+///
+/// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
+/// representing features of one feature column. It outputs a 2D `SparseTensor` with
+/// the batchwise crosses of these features.
+///
+/// For example, if the inputs are
+///
+///     inputs[0]: SparseTensor with shape = [2, 2]
+///     [0, 0]: "a"
+///     [1, 0]: "b"
+///     [1, 1]: "c"
+///
+///     inputs[1]: SparseTensor with shape = [2, 1]
+///     [0, 0]: "d"
+///     [1, 0]: "e"
+///
+///     inputs[2]: Tensor [["f"], ["g"]]
+///
+/// then the output will be
+///
+///     shape = [2, 2]
+///     [0, 0]: "a_X_d_X_f"
+///     [1, 0]: "b_X_e_X_g"
+///     [1, 1]: "c_X_e_X_g"
+///
+/// if hashed_output=true then the output will be
+///
+///     shape = [2, 2]
+///     [0, 0]: FingerprintCat64(
+///                 Fingerprint64("f"), FingerprintCat64(
+///                     Fingerprint64("d"), Fingerprint64("a")))
+///     [1, 0]: FingerprintCat64(
+///                 Fingerprint64("g"), FingerprintCat64(
+///                     Fingerprint64("e"), Fingerprint64("b")))
+///     [1, 1]: FingerprintCat64(
+///                 Fingerprint64("g"), FingerprintCat64(
+///                     Fingerprint64("e"), Fingerprint64("c")))
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * indices: 2-D.  Indices of each input `SparseTensor`.
+/// * values: 1-D.   values of each `SparseTensor`.
+/// * shapes: 1-D.   Shapes of each `SparseTensor`.
+/// * dense_inputs: 2-D.    Columns represented by dense `Tensor`.
+/// * hashed_output: If true, returns the hash of the cross instead of the string.
+/// This will allow us avoiding string manipulations.
+/// * num_buckets: It is used if hashed_output is true.
+/// output = hashed_value%num_buckets if num_buckets > 0 else hashed_value.
+/// * hash_key: Specify the hash_key that will be used by the `FingerprintCat64`
+/// function to combine the crosses fingerprints.
+///
+/// Returns:
+/// * `Output` output_indices: 2-D.  Indices of the concatenated `SparseTensor`.
+/// * `Output` output_values: 1-D.  Non-empty values of the concatenated or hashed
+/// `SparseTensor`.
+/// * `Output` output_shape: 1-D.  Shape of the concatenated `SparseTensor`.
+class SparseCross {
+ public:
+  SparseCross(const ::tensorflow::Scope& scope, ::tensorflow::InputList indices,
+            ::tensorflow::InputList values, ::tensorflow::InputList shapes,
+            ::tensorflow::InputList dense_inputs, bool hashed_output, int64
+            num_buckets, int64 hash_key, DataType out_type, DataType
+            internal_type);
+
+  ::tensorflow::Output output_indices;
+  ::tensorflow::Output output_values;
+  ::tensorflow::Output output_shape;
+};
+
 /// Adds up a SparseTensor and a dense Tensor, using these special rules:
 ///
 /// (1) Broadcasts the dense side to have the same shape as the sparse side, if
@@ -530,6 +600,226 @@ class SparseDenseCwiseMul {
   ::tensorflow::Node* node() const { return output.node(); }
 
   ::tensorflow::Output output;
+};
+
+/// Fills empty rows in the input 2-D `SparseTensor` with a default value.
+///
+/// The input `SparseTensor` is represented via the tuple of inputs
+/// (`indices`, `values`, `dense_shape`).  The output `SparseTensor` has the
+/// same `dense_shape` but with indices `output_indices` and values
+/// `output_values`.
+///
+/// This op inserts a single entry for every row that doesn't have any values.
+/// The index is created as `[row, 0, ..., 0]` and the inserted value
+/// is `default_value`.
+///
+/// For example, suppose `sp_input` has shape `[5, 6]` and non-empty values:
+///
+///     [0, 1]: a
+///     [0, 3]: b
+///     [2, 0]: c
+///     [3, 1]: d
+///
+/// Rows 1 and 4 are empty, so the output will be of shape `[5, 6]` with values:
+///
+///     [0, 1]: a
+///     [0, 3]: b
+///     [1, 0]: default_value
+///     [2, 0]: c
+///     [3, 1]: d
+///     [4, 0]: default_value
+///
+/// The output `SparseTensor` will be in row-major order and will have the
+/// same shape as the input.
+///
+/// This op also returns an indicator vector shaped `[dense_shape[0]]` such that
+///
+///     empty_row_indicator[i] = True iff row i was an empty row.
+///
+/// And a reverse index map vector shaped `[indices.shape[0]]` that is used during
+/// backpropagation,
+///
+///     reverse_index_map[j] = out_j s.t. indices[j, :] == output_indices[out_j, :]
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * indices: 2-D. the indices of the sparse tensor.
+/// * values: 1-D. the values of the sparse tensor.
+/// * dense_shape: 1-D. the shape of the sparse tensor.
+/// * default_value: 0-D. default value to insert into location `[row, 0, ..., 0]`
+///   for rows missing from the input sparse tensor.
+/// output indices: 2-D. the indices of the filled sparse tensor.
+///
+/// Returns:
+/// * `Output` output_indices
+/// * `Output` output_values: 1-D. the values of the filled sparse tensor.
+/// * `Output` empty_row_indicator: 1-D. whether the dense row was missing in the
+/// input sparse tensor.
+/// * `Output` reverse_index_map: 1-D. a map from the input indices to the output indices.
+class SparseFillEmptyRows {
+ public:
+  SparseFillEmptyRows(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                    indices, ::tensorflow::Input values, ::tensorflow::Input
+                    dense_shape, ::tensorflow::Input default_value);
+
+  ::tensorflow::Output output_indices;
+  ::tensorflow::Output output_values;
+  ::tensorflow::Output empty_row_indicator;
+  ::tensorflow::Output reverse_index_map;
+};
+
+/// The gradient of SparseFillEmptyRows.
+///
+/// Takes vectors reverse_index_map, shaped `[N]`, and grad_values,
+/// shaped `[N_full]`, where `N_full >= N` and copies data into either
+/// `d_values` or `d_default_value`.  Here `d_values` is shaped `[N]` and
+/// `d_default_value` is a scalar.
+///
+///   d_values[j] = grad_values[reverse_index_map[j]]
+///   d_default_value = sum_{k : 0 .. N_full - 1} (
+///      grad_values[k] * 1{k not in reverse_index_map})
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * reverse_index_map: 1-D.  The reverse index map from SparseFillEmptyRows.
+/// * grad_values: 1-D.  The gradients from backprop.
+///
+/// Returns:
+/// * `Output` d_values: 1-D.  The backprop into values.
+/// * `Output` d_default_value: 0-D.  The backprop into default_value.
+class SparseFillEmptyRowsGrad {
+ public:
+  SparseFillEmptyRowsGrad(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                        reverse_index_map, ::tensorflow::Input grad_values);
+
+  ::tensorflow::Output d_values;
+  ::tensorflow::Output d_default_value;
+};
+
+/// Computes the max of elements across dimensions of a SparseTensor.
+///
+/// This Op takes a SparseTensor and is the sparse counterpart to
+/// `tf.reduce_max()`.  In particular, this Op also returns a dense `Tensor`
+/// instead of a sparse one.
+///
+/// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
+/// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
+/// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
+/// with length 1.
+///
+/// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
+/// with a single element is returned.  Additionally, the axes can be negative,
+/// which are interpreted according to the indexing rules in Python.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input_indices: 2-D.  `N x R` matrix with the indices of non-empty values in a
+/// SparseTensor, possibly not in canonical ordering.
+/// * input_values: 1-D.  `N` non-empty values corresponding to `input_indices`.
+/// * input_shape: 1-D.  Shape of the input SparseTensor.
+/// * reduction_axes: 1-D.  Length-`K` vector containing the reduction axes.
+///
+/// Optional attributes (see `Attrs`):
+/// * keep_dims: If true, retain reduced dimensions with length 1.
+///
+/// Returns:
+/// * `Output`: `R-K`-D.  The reduced Tensor.
+class SparseReduceMax {
+ public:
+  /// Optional attribute setters for SparseReduceMax
+  struct Attrs {
+    /// If true, retain reduced dimensions with length 1.
+    ///
+    /// Defaults to false
+    Attrs KeepDims(bool x) {
+      Attrs ret = *this;
+      ret.keep_dims_ = x;
+      return ret;
+    }
+
+    bool keep_dims_ = false;
+  };
+  SparseReduceMax(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                input_indices, ::tensorflow::Input input_values,
+                ::tensorflow::Input input_shape, ::tensorflow::Input
+                reduction_axes);
+  SparseReduceMax(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                input_indices, ::tensorflow::Input input_values,
+                ::tensorflow::Input input_shape, ::tensorflow::Input
+                reduction_axes, const SparseReduceMax::Attrs& attrs);
+  operator ::tensorflow::Output() const { return output; }
+  operator ::tensorflow::Input() const { return output; }
+  ::tensorflow::Node* node() const { return output.node(); }
+
+  static Attrs KeepDims(bool x) {
+    return Attrs().KeepDims(x);
+  }
+
+  ::tensorflow::Output output;
+};
+
+/// Computes the max of elements across dimensions of a SparseTensor.
+///
+/// This Op takes a SparseTensor and is the sparse counterpart to
+/// `tf.reduce_max()`.  In contrast to SparseReduceMax, this Op returns a
+/// SparseTensor.
+///
+/// Reduces `sp_input` along the dimensions given in `reduction_axes`.  Unless
+/// `keep_dims` is true, the rank of the tensor is reduced by 1 for each entry in
+/// `reduction_axes`. If `keep_dims` is true, the reduced dimensions are retained
+/// with length 1.
+///
+/// If `reduction_axes` has no entries, all dimensions are reduced, and a tensor
+/// with a single element is returned.  Additionally, the axes can be negative,
+/// which are interpreted according to the indexing rules in Python.
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * input_indices: 2-D.  `N x R` matrix with the indices of non-empty values in a
+/// SparseTensor, possibly not in canonical ordering.
+/// * input_values: 1-D.  `N` non-empty values corresponding to `input_indices`.
+/// * input_shape: 1-D.  Shape of the input SparseTensor.
+/// * reduction_axes: 1-D.  Length-`K` vector containing the reduction axes.
+///
+/// Optional attributes (see `Attrs`):
+/// * keep_dims: If true, retain reduced dimensions with length 1.
+///
+/// Returns:
+/// * `Output` output_indices
+/// * `Output` output_values
+/// * `Output` output_shape
+class SparseReduceMaxSparse {
+ public:
+  /// Optional attribute setters for SparseReduceMaxSparse
+  struct Attrs {
+    /// If true, retain reduced dimensions with length 1.
+    ///
+    /// Defaults to false
+    Attrs KeepDims(bool x) {
+      Attrs ret = *this;
+      ret.keep_dims_ = x;
+      return ret;
+    }
+
+    bool keep_dims_ = false;
+  };
+  SparseReduceMaxSparse(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input_indices, ::tensorflow::Input input_values,
+                      ::tensorflow::Input input_shape, ::tensorflow::Input
+                      reduction_axes);
+  SparseReduceMaxSparse(const ::tensorflow::Scope& scope, ::tensorflow::Input
+                      input_indices, ::tensorflow::Input input_values,
+                      ::tensorflow::Input input_shape, ::tensorflow::Input
+                      reduction_axes, const SparseReduceMaxSparse::Attrs&
+                      attrs);
+
+  static Attrs KeepDims(bool x) {
+    return Attrs().KeepDims(x);
+  }
+
+  ::tensorflow::Output output_indices;
+  ::tensorflow::Output output_values;
+  ::tensorflow::Output output_shape;
 };
 
 /// Computes the sum of elements across dimensions of a SparseTensor.
@@ -728,6 +1018,51 @@ class SparseReshape {
               ::tensorflow::Input new_shape);
 
   ::tensorflow::Output output_indices;
+  ::tensorflow::Output output_shape;
+};
+
+/// Slice a `SparseTensor` based on the `start` and `size`.
+///
+/// For example, if the input is
+///
+///     input_tensor = shape = [2, 7]
+///     [    a   d e  ]
+///     [b c          ]
+///
+/// Graphically the output tensors are:
+///
+///     sparse_slice([0, 0], [2, 4]) = shape = [2, 4]
+///     [    a  ]
+///     [b c    ]
+///
+///     sparse_slice([0, 4], [2, 3]) = shape = [2, 3]
+///     [ d e  ]
+///     [      ]
+///
+/// Arguments:
+/// * scope: A Scope object
+/// * indices: 2-D tensor represents the indices of the sparse tensor.
+/// * values: 1-D tensor represents the values of the sparse tensor.
+/// * shape: 1-D. tensor represents the shape of the sparse tensor.
+/// * start: 1-D. tensor represents the start of the slice.
+/// * size: 1-D. tensor represents the size of the slice.
+/// output indices: A list of 1-D tensors represents the indices of the output
+/// sparse tensors.
+///
+/// Returns:
+/// * `Output` output_indices
+/// * `Output` output_values: A list of 1-D tensors represents the values of the output sparse
+/// tensors.
+/// * `Output` output_shape: A list of 1-D tensors represents the shape of the output sparse
+/// tensors.
+class SparseSlice {
+ public:
+  SparseSlice(const ::tensorflow::Scope& scope, ::tensorflow::Input indices,
+            ::tensorflow::Input values, ::tensorflow::Input shape,
+            ::tensorflow::Input start, ::tensorflow::Input size);
+
+  ::tensorflow::Output output_indices;
+  ::tensorflow::Output output_values;
   ::tensorflow::Output output_shape;
 };
 
@@ -977,7 +1312,7 @@ class SparseTensorDenseMatMul {
 ///
 /// Builds an array `dense` with shape `output_shape` such that
 ///
-/// ```prettyprint
+/// ```
 /// # If sparse_indices is scalar
 /// dense[i] = (i == sparse_indices ? sparse_values : default_value)
 ///
