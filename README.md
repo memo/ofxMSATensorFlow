@@ -1,4 +1,6 @@
+This addon is no longer maintained. For up-to-date openFrameworks x Tensorflow integration please see [ZKM Center for Art & Media](https://zkm.de/)'s addon https://github.com/zkmkarlsruhe/ofxTensorFlow2
 
+----
 # ofxMSATensorFlow
 [OpenFrameworks](http://openframeworks.cc) addon for Google's graph based machine intelligence / deep learning library [TensorFlow](https://www.tensorflow.org).
 
