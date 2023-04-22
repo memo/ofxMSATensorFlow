@@ -123,3 +123,8 @@ Simplest example possible. A very simple graph that multiples two numbers is bui
 
 ### example-build-graph
 Builds a simple graph from scratch directly in openframeworks using the C++ API without any python. Really not very exciting to look at, more of a syntax demo than anything. Based on https://www.tensorflow.org/api_guides/cc/guide
+
+---
+
+<img src="https://i.vimeocdn.com/portrait/7112268_300x300" width="75"></img>
+<img src="https://lucene.apache.org/images/mantle-asf.png" width="225"></img>
